@@ -1,0 +1,325 @@
+<resources>
+    <string name="app_name">هلا شات</string>
+
+    <!-- Auth -->
+    <string name="login_title">تسجيل الدخول</string>
+    <string name="login_welcome">أهلاً بعودتك</string>
+    <string name="login_subtitle">سجّل الدخول لمواصلة الدردشة</string>
+    <string name="register_title">إنشاء حساب جديد</string>
+    <string name="register_subtitle">ابدأ رحلتك مع هلا</string>
+
+    <string name="field_name">الاسم</string>
+    <string name="field_email">البريد الإلكتروني</string>
+    <string name="field_password">كلمة المرور</string>
+    <string name="field_confirm_password">تأكيد كلمة المرور</string>
+
+    <string name="btn_login">تسجيل الدخول</string>
+    <string name="btn_register">إنشاء حساب</string>
+    <string name="btn_forgot_password">نسيت كلمة المرور؟</string>
+    <string name="btn_send_code">إرسال رمز التحقق</string>
+    <string name="btn_reset_password">تعيين كلمة مرور جديدة</string>
+
+    <string name="no_account">ليس لديك حساب؟</string>
+    <string name="create_account">أنشئ حسابك</string>
+    <string name="have_account">لديك حساب بالفعل؟</string>
+    <string name="go_to_login">سجّل الدخول</string>
+
+    <string name="forgot_password_title">استعادة كلمة المرور</string>
+    <string name="forgot_password_subtitle">أدخل بريدك الإلكتروني لاستلام رمز التحقق</string>
+    <string name="reset_password_title">كلمة مرور جديدة</string>
+    <string name="reset_password_subtitle">أدخل الرمز وكلمة المرور الجديدة</string>
+    <string name="field_reset_code">رمز التحقق</string>
+    <string name="field_new_password">كلمة المرور الجديدة</string>
+
+    <!-- Validation -->
+    <string name="err_name_required">الاسم مطلوب</string>
+    <string name="err_email_required">البريد الإلكتروني مطلوب</string>
+    <string name="err_email_invalid">البريد الإلكتروني غير صحيح</string>
+    <string name="err_password_required">كلمة المرور مطلوبة</string>
+    <string name="err_password_short">كلمة المرور يجب أن تكون 6 أحرف على الأقل</string>
+    <string name="err_password_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="password_hint">يجب أن تحتوي على حرف كبير، صغير، ورقم</string>
+
+    <!-- Feedback -->
+    <string name="loading">جاري المعالجة…</string>
+    <string name="generic_error">حدث خطأ، حاول مرة أخرى</string>
+    <string name="network_error">تحقق من اتصالك بالإنترنت</string>
+
+    <!-- Legal -->
+    <string name="terms_title">شروط الاستخدام</string>
+    <string name="privacy_title">سياسة الخصوصية</string>
+    <string name="terms_footer_prefix">باستخدامك للتطبيق أنت توافق على</string>
+    <string name="terms_and">و</string>
+    <string name="terms_agree">أوافق على</string>
+    <string name="err_must_agree">يجب الموافقة على الشروط وسياسة الخصوصية</string>
+
+    <!-- Google sign in -->
+    <string name="btn_google_signin">المتابعة باستخدام Google</string>
+    <string name="or_divider">أو</string>
+
+    <!-- Profile completion -->
+    <string name="profile_title">أكمل ملفك الشخصي</string>
+    <string name="profile_subtitle">ساعدنا لنعرفك أكثر</string>
+    <string name="field_birthdate">تاريخ الميلاد</string>
+    <string name="field_gender">الجنس</string>
+    <string name="gender_male">ذكر</string>
+    <string name="gender_female">أنثى</string>
+    <string name="field_country">الدولة</string>
+    <string name="choose_country">اختر دولتك</string>
+    <string name="field_interests">اهتماماتك</string>
+    <string name="interests_hint">اختر ما يلائمك (من 1 إلى 10)</string>
+    <string name="btn_save_continue">حفظ ومتابعة</string>
+    <string name="btn_skip">تخطّي الآن</string>
+    <string name="loading_interests">جاري تحميل الاهتمامات…</string>
+    <string name="err_interests_required">اختر اهتماماً واحداً على الأقل</string>
+    <string name="err_country_required">اختر دولتك</string>
+    <string name="err_gender_required">اختر جنسك</string>
+
+    <!-- Main tabs -->
+    <string name="tab_discover">الاكتشاف</string>
+    <string name="tab_chats">المحادثات</string>
+    <string name="tab_notifications">الإشعارات</string>
+    <string name="tab_profile">ملفي</string>
+    <string name="placeholder_coming_soon">قريباً…</string>
+
+    <!-- Profile screen -->
+    <string name="profile_screen_title">ملفي الشخصي</string>
+    <string name="profile_label_id">معرّف هلا</string>
+    <string name="profile_label_joined">عضو منذ</string>
+    <string name="profile_section_basic">المعلومات الأساسية</string>
+    <string name="profile_label_gender">الجنس</string>
+    <string name="profile_label_age">العمر</string>
+    <string name="profile_label_country">الدولة</string>
+    <string name="profile_label_subscription">الاشتراك</string>
+    <string name="profile_section_bio">نبذة عني</string>
+    <string name="profile_section_interests">اهتماماتي</string>
+    <string name="profile_subscription_premium">بريميوم</string>
+    <string name="profile_subscription_free">مجاني</string>
+    <string name="profile_no_bio">لم تُضف نبذة بعد</string>
+    <string name="profile_no_interests">لم تُضف اهتمامات بعد</string>
+    <string name="profile_age_years">%1$d سنة</string>
+    <string name="profile_loading">جاري تحميل بياناتك…</string>
+    <string name="profile_section_photos">الصور</string>
+    <string name="profile_label_zodiac">البرج</string>
+    <string name="profile_label_city">المدينة</string>
+    <string name="profile_not_set">لم يُضف بعد</string>
+    <string name="profile_gender_male">ذكر</string>
+    <string name="profile_gender_female">أنثى</string>
+
+    <!-- Edit profile -->
+    <string name="edit_profile_title">تعديل الملف الشخصي</string>
+    <string name="edit_profile_save">حفظ التغييرات</string>
+    <string name="edit_profile_discard_title">تغييرات غير محفوظة</string>
+    <string name="edit_profile_discard_message">لديك تعديلات لم تُحفظ. هل تريد الخروج وتجاهلها؟</string>
+    <string name="edit_profile_discard_confirm">تجاهل وخروج</string>
+    <string name="edit_profile_discard_cancel">متابعة التعديل</string>
+    <string name="edit_profile_delete_photo">حذف الصورة</string>
+
+    <!-- Settings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_section_appearance">المظهر</string>
+    <string name="settings_appearance_mode">الوضع</string>
+    <string name="settings_theme_system">تلقائي (النظام)</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_theme_title">اختر المظهر</string>
+    <string name="settings_section_docs">المستندات</string>
+    <string name="settings_section_about">عن التطبيق</string>
+    <string name="settings_version">الإصدار</string>
+    <string name="settings_support">الدعم</string>
+    <string name="settings_section_account">الحساب</string>
+    <string name="settings_logout">تسجيل الخروج</string>
+    <string name="settings_delete_account">حذف الحساب</string>
+
+    <!-- Delete account -->
+    <string name="delete_account_title">حذف الحساب نهائياً</string>
+    <string name="delete_account_message">سيتم حذف حسابك وجميع رسائلك وصورك بشكل دائم. لا يمكن التراجع.</string>
+    <string name="delete_account_password_hint">أدخل كلمة المرور للتأكيد</string>
+    <string name="delete_account_confirm">حذف الحساب</string>
+    <string name="delete_account_cancel">إلغاء</string>
+
+    <!-- QR -->
+    <string name="qr_share_hint">شارك هذا الرمز مع أصدقائك ليجدوك بسرعة</string>
+
+    <!-- Offline -->
+    <string name="offline_banner">أنت غير متصل بالإنترنت</string>
+
+    <!-- Google button -->
+    <string name="btn_google_continue">المتابعة باستخدام Google</string>
+
+    <!-- Common -->
+    <string name="retry">إعادة المحاولة</string>
+    <string name="copied">تم النسخ</string>
+    <string name="confirm">تأكيد</string>
+    <string name="cancel">إلغاء</string>
+    <string name="back">رجوع</string>
+    <!-- User search -->
+    <string name="user_search_hint">ابحث بالاسم…</string>
+    <string name="user_search_prompt_title">ابحث عن أشخاص</string>
+    <string name="user_search_prompt_desc">اكتب اسم الشخص الذي تبحث عنه (حرفان على الأقل)</string>
+    <string name="user_search_empty_title">لا توجد نتائج</string>
+    <string name="user_search_empty_desc">جرّب اسماً مختلفاً أو تحقق من الإملاء</string>
+    <string name="user_search_section_premium">مشتركون مميّزون</string>
+    <string name="user_search_section_online">متصلون الآن</string>
+    <string name="user_search_section_recent">عمليات بحث سابقة</string>
+    <string name="user_search_clear_recent">مسح</string>
+    <string name="search_gender_all">الكل</string>
+    <string name="search_gender_male">شباب</string>
+    <string name="search_gender_female">بنات</string>
+    <!-- Search filters (premium) -->
+    <string name="search_filters_title">تصفية البحث</string>
+    <string name="search_filter_gender">الجنس</string>
+    <string name="search_filter_country">الدولة</string>
+    <string name="search_filter_age">العمر</string>
+    <string name="search_filters_apply">تطبيق</string>
+    <string name="search_filters_reset">إعادة تعيين</string>
+    <string name="premium_filter_gate_title">التصفية للمشتركين</string>
+    <string name="premium_filter_gate_msg">تصفية البحث حسب الجنس والدولة والعمر ميزة للمشتركين. اشترك للوصول إليها وزيادة ظهورك.</string>
+    <!-- Premium promo card -->
+    <string name="premium_promo_title">اشترك في النسخة المدفوعة</string>
+    <string name="premium_promo_desc">زِد ظهورك للآخرين وافتح التصفية المتقدمة والمزيد</string>
+    <string name="search">بحث…</string>
+    <string name="updated">تم التحديث</string>
+    <string name="enabled">مفعّل</string>
+    <string name="disabled">مُعطّل</string>
+
+    <!-- Privacy Settings -->
+    <string name="privacy_show_distance">إظهار المسافة</string>
+    <string name="privacy_show_distance_desc">إظهار المسافة بينك وبين المستخدمين</string>
+    <string name="privacy_stealth">وضع التخفي</string>
+    <string name="privacy_stealth_desc">مشاهدة الملفات الشخصية دون ترك أثر (للمشتركين فقط)</string>
+    <string name="privacy_profile_visibility">ظهور الملف الشخصي</string>
+    <string name="privacy_visibility_public">عام</string>
+    <string name="privacy_visibility_private">خاص</string>
+    <string name="privacy_last_seen">إظهار آخر ظهور</string>
+    <string name="privacy_notification_sound">صوت الإشعارات</string>
+
+    <!-- About -->
+    <string name="about_title">حول التطبيق</string>
+
+    <!-- Contact -->
+    <string name="contact_title">اتصل بنا</string>
+    <string name="contact_email">البريد الإلكتروني</string>
+    <string name="contact_phone">الهاتف</string>
+    <string name="contact_website">الموقع</string>
+    <string name="contact_social">وسائل التواصل</string>
+
+    <!-- Change Password -->
+    <string name="change_password_title">تغيير كلمة المرور</string>
+    <string name="change_password_current">كلمة المرور الحالية</string>
+    <string name="change_password_new">كلمة المرور الجديدة</string>
+    <string name="change_password_confirm">تأكيد كلمة المرور الجديدة</string>
+    <string name="change_password_submit">تحديث كلمة المرور</string>
+
+    <!-- Settings new sections -->
+    <string name="settings_section_privacy_security">الخصوصية والأمان</string>
+    <string name="settings_section_notifications">الإشعارات</string>
+    <string name="settings_section_discover">الاكتشاف</string>
+    <string name="settings_section_account_settings">إعدادات الحساب</string>
+    <string name="blocked_users_title">المستخدمون المحظورون</string>
+    <string name="privacy_policy_doc">سياسة الخصوصية</string>
+
+    <!-- Discover settings screen -->
+    <string name="discover_settings_title">إعدادات الاكتشاف</string>
+    <string name="discover_premium_badge">مشترك</string>
+    <string name="discover_section_visibility">ظهور ملفي</string>
+    <string name="discover_section_requests">طلبات المحادثة</string>
+    <string name="discover_hide_profile_title">إخفاء ملفي الشخصي</string>
+    <string name="discover_hide_profile_desc">إخفاء آخر ظهورك وحالة اتصالك عن الآخرين</string>
+    <string name="discover_hide_age_title">إخفاء العمر</string>
+    <string name="discover_hide_age_desc">لن يظهر عمرك في الاكتشاف أو ملفك الشخصي</string>
+    <string name="discover_hide_country_title">إخفاء الدولة</string>
+    <string name="discover_hide_country_desc">لن تظهر دولتك في الاكتشاف أو ملفك الشخصي</string>
+    <string name="discover_stop_requests_title">عدم تلقي دعوات جديدة</string>
+    <string name="discover_stop_requests_desc">إيقاف استقبال طلبات المحادثة الجديدة من الآخرين</string>
+    <string name="discover_premium_only_title">الدعوات من المشتركين فقط</string>
+    <string name="discover_premium_only_desc">استقبل طلبات المحادثة من المشتركين فقط</string>
+    <string name="discover_pause_title">إيقاف ظهوري مؤقتاً</string>
+    <string name="discover_pause_desc">لن يظهر ملفك لأي أحد في الاكتشاف خلال فترة الإيقاف</string>
+    <string name="discover_pause_active_desc">ملفك مُخفي حالياً من الاكتشاف — أعد التفعيل للظهور</string>
+    <string name="discover_pause_dialog_title">مدة إيقاف الظهور</string>
+    <string name="discover_pause_24h">24 ساعة</string>
+    <string name="discover_pause_3d">3 أيام</string>
+    <string name="discover_pause_1w">أسبوع</string>
+    <string name="discover_pause_until_resume">حتى أعيد التفعيل يدوياً</string>
+
+    <!-- Notification settings screen -->
+    <string name="notif_settings_title">إعدادات الإشعارات</string>
+    <string name="notif_master_title">تفعيل الإشعارات</string>
+    <string name="notif_master_desc">استقبال إشعارات التطبيق على جهازك</string>
+    <string name="notif_categories_header">أنواع الإشعارات</string>
+    <string name="notif_invitations_title">دعوات المحادثة</string>
+    <string name="notif_invitations_desc">عند تلقّي دعوة أو قبول طلب محادثة</string>
+    <string name="notif_messages_title">رسالة جديدة</string>
+    <string name="notif_messages_desc">عند وصول رسالة جديدة في محادثاتك</string>
+    <string name="notif_profile_visits_title">زيارة الملف الشخصي</string>
+    <string name="notif_profile_visits_desc">عند زيارة شخص جديد لملفك الشخصي</string>
+    <string name="notif_app_alerts_title">تنبيهات التطبيق</string>
+    <string name="notif_app_alerts_desc">الإعلانات والتحديثات والأخبار من هلا</string>
+    <string name="notif_critical_note">ملاحظة: التنبيهات الأمنية والإدارية المهمة (مثل التحذيرات وحالة الحساب) تصلك دائماً ولا تتأثر بهذه الإعدادات.</string>
+    <string name="notif_quiet_header">ساعات الهدوء</string>
+    <string name="notif_quiet_title">عدم الإزعاج</string>
+    <string name="notif_quiet_desc">إيقاف الإشعارات خلال فترة محددة من اليوم</string>
+    <string name="notif_quiet_from">من</string>
+    <string name="notif_quiet_to">إلى</string>
+
+    <!-- Notifications screen -->
+    <string name="notifications_title">الإشعارات</string>
+    <string name="notifications_filter_all">الكل</string>
+    <string name="notifications_filter_unread">غير المقروءة</string>
+    <string name="notifications_filter_social">تفاعلات</string>
+    <string name="notifications_filter_system">تنبيهات النظام</string>
+    <string name="notifications_mark_all_read">تعليم الكل كمقروء</string>
+    <string name="notifications_delete_all">حذف الكل</string>
+    <string name="notifications_delete_one">حذف</string>
+    <string name="notifications_more_actions">المزيد</string>
+    <string name="notifications_empty_title">لا توجد إشعارات</string>
+    <string name="notifications_empty_subtitle">ستظهر هنا الإعجابات والتعليقات والتنبيهات الخاصة بك</string>
+    <string name="notifications_empty_unread">تم قراءة كل شيء ✓</string>
+    <string name="notifications_group_badge">+%1$d</string>
+    <string name="notifications_unread_dot">غير مقروء</string>
+    <string name="notifications_delete_all_title">حذف جميع الإشعارات</string>
+    <string name="notifications_delete_all_message">سيتم حذف جميع الإشعارات الحالية. لا يمكن التراجع.</string>
+    <string name="notifications_load_more_error">تعذّر تحميل المزيد</string>
+
+    <!-- Chat input & attachments -->
+    <string name="chat_input_hint">اكتب رسالة…</string>
+    <string name="chat_send">إرسال</string>
+    <string name="chat_record_audio">تسجيل صوتي</string>
+    <string name="chat_attach">إرفاق</string>
+    <string name="chat_attach_gallery">المعرض</string>
+    <string name="chat_attach_camera">الكاميرا</string>
+    <string name="chat_recording">جاري التسجيل… %1$s</string>
+
+    <!-- Image preview (disappearing) -->
+    <string name="preview_source_camera">من الكاميرا</string>
+    <string name="preview_source_gallery">من المعرض</string>
+    <string name="preview_self_destruct">مدة التدمير الذاتي</string>
+    <string name="preview_duration_normal">عادية</string>
+    <string name="preview_send">إرسال</string>
+    <string name="preview_send_disappearing">إرسال (يختفي بعد %1$dث)</string>
+    <string name="preview_close">إغلاق</string>
+
+    <!-- Password strength -->
+    <string name="pwd_strength_weak">ضعيفة</string>
+    <string name="pwd_strength_medium">متوسطة</string>
+    <string name="pwd_strength_strong">قوية</string>
+    <string name="pwd_strength_label">قوة كلمة المرور: %1$s</string>
+
+    <!-- Avatar picker -->
+    <string name="avatar_section_title">صورة الملف الشخصي</string>
+    <string name="avatar_section_hint">اختر صورة جاهزة أو ارفع صورتك</string>
+    <string name="avatar_upload">من جهازي</string>
+
+    <!-- Content policy acknowledgment -->
+    <string name="policy_title">سياسة المحتوى والسلوك</string>
+    <string name="policy_subtitle">للحفاظ على بيئة آمنة ومحترمة للجميع، يُمنع منعاً باتاً ما يلي:</string>
+    <string name="policy_check">أقررت بقراءة سياسة المحتوى وأوافق على الالتزام بها بالكامل</string>
+    <string name="policy_agree">موافق ومتابعة</string>
+    <string name="policy_decline">لا أوافق</string>
+    <string name="policy_footer">مخالفة هذه السياسة تعرّض حسابك للتقييد أو الحظر الدائم دون إشعار مسبق، وقد يتم إبلاغ الجهات المختصّة عند الضرورة.</string>
+    <string name="policy_decline_title">إلغاء إنشاء الحساب؟</string>
+    <string name="policy_decline_message">لا يمكن استخدام التطبيق دون الموافقة على سياسة المحتوى. سيتم تسجيل خروجك.</string>
+    <string name="policy_decline_confirm">خروج</string>
+    <string name="policy_back">رجوع</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="hala_primary">#E91E8C</color>
+    <color name="hala_primary_dark">#FF4DB8</color>
+    <color name="hala_bg_light">#FFF0F5</color>
+    <color name="hala_bg_dark">#0D0010</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="notification_accent">#E91E8C</color>
+</resources>

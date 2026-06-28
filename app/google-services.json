@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "38952257484",
+    "project_id": "chathala-ce979",
+    "storage_bucket": "chathala-ce979.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38952257484:android:88ed085ecbe419b324ff69",
+        "android_client_info": {
+          "package_name": "com.chathala.hala"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "38952257484-e18ep1cmqg16alfrd5rdo5ccgddo6s35.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQW9iKFoUT1qkXir4T_bk0IHALGfcMALE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "38952257484-e18ep1cmqg16alfrd5rdo5ccgddo6s35.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "38952257484-nslfi4eknovl8bopfbtjuen6905ii10p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.hala",
+                "app_store_id": "1369295351"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
