@@ -330,6 +330,13 @@ interface ApiService {
         @Path("id") id: String
     ): SimpleResponse
 
+    // إنهاء/إلغاء المحادثة للطرفين (تبقى الرسائل) — يتطلب طلباً جديداً للاستئناف
+    @PUT("api/mobile/conversations/{id}/cancel")
+    suspend fun cancelConversation(
+        @Header("Authorization") bearer: String,
+        @Path("id") id: String
+    ): SimpleResponse
+
     // ── Messages ──────────────────────────────────────────────────
 
     @GET("api/mobile/messages/{conversationId}")

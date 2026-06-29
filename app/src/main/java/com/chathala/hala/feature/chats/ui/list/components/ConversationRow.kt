@@ -95,23 +95,31 @@ fun ConversationRow(
         Column(modifier = Modifier.weight(1f)) {
             // الصف الأعلى: الاسم + الوقت
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = other?.name ?: "مستخدم",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                if (isVerified) {
-                    Spacer(Modifier.size(4.dp))
-                    Icon(
-                        imageVector = Icons.Filled.Verified,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(14.dp)
+                // مجموعة الاسم + التوثيق تأخذ كل المساحة المرنة وتدفع الوقت لأقصى الحافة
+                // (الثبات: الوقت يلتصق دائماً بنهاية الصف بدل أن يتدرّج حسب طول الاسم)
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = other?.name ?: "مستخدم",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
+                    if (isVerified) {
+                        Spacer(Modifier.size(4.dp))
+                        Icon(
+                            imageVector = Icons.Filled.Verified,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 }
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.size(8.dp))
                 if (isPinned) {
                     Icon(
                         imageVector = Icons.Filled.PushPin,

@@ -80,6 +80,7 @@ data class ChatUiState(
     val otherUserVerified: Boolean = false,
     val reporting: Boolean = false,
     val deleting: Boolean = false,
+    val reopening: Boolean = false,
     val conversationDeleted: Boolean = false,
     val blocking: Boolean = false,
     val blocked: Boolean = false,
@@ -278,6 +279,43 @@ class ChatViewModel(
         }
     }
 
+    /** إنهاء/إلغاء المحادثة للطرفين — تبقى الرسائل، ويتطلب طلباً جديداً للاستئناف. */
+    fun cancelConversation() {
+        if (_state.value.deleting) return
+        _state.update { it.copy(deleting = true) }
+        viewModelScope.launch {
+            when (val r = conversationsRepo.cancelConversation(conversationId)) {
+                is NetworkResult.Success -> {
+                    _state.update { it.copy(deleting = false, conversationStatus = "cancelled") }
+                    _message.tryEmit(r.data)
+                }
+                is NetworkResult.Error -> {
+                    _state.update { it.copy(deleting = false) }
+                    _message.tryEmit(ErrorMessages.friendly(r))
+                }
+            }
+        }
+    }
+
+    /** استئناف محادثة منتهية بإرسال طلب جديد للطرف الآخر. */
+    fun reopenConversation() {
+        if (_state.value.reopening) return
+        val targetId = _state.value.otherUserId ?: return
+        _state.update { it.copy(reopening = true) }
+        viewModelScope.launch {
+            when (val r = conversationsRepo.requestConversation(targetId)) {
+                is NetworkResult.Success -> {
+                    _state.update { it.copy(reopening = false, conversationStatus = "pending", isCreator = true) }
+                    _message.tryEmit("تم إرسال طلب محادثة جديد")
+                }
+                is NetworkResult.Error -> {
+                    _state.update { it.copy(reopening = false) }
+                    _message.tryEmit(ErrorMessages.friendly(r))
+                }
+            }
+        }
+    }
+
     private fun onSocketEvent(evt: SocketEvent) {
         when (evt) {
             is SocketEvent.NewMessage -> {
@@ -370,6 +408,13 @@ class ChatViewModel(
                 if (convId != conversationId) return
                 val mode = evt.json.optString("chatMode").takeIf { it.isNotBlank() } ?: return
                 _state.update { it.copy(chatMode = mode) }
+            }
+            is SocketEvent.ConversationCancelled -> {
+                // الطرف الآخر أنهى المحادثة → اقفل الإرسال فوراً
+                val convId = evt.json.optString("conversationId")
+                if (convId != conversationId) return
+                _state.update { it.copy(conversationStatus = "cancelled") }
+                _message.tryEmit("أنهى الطرف الآخر المحادثة")
             }
             is SocketEvent.PhotoViewed -> {
                 // الطرف الآخر شاهد صورتي المؤقتة → ابدأ مؤقّت الحذف عند المرسِل
@@ -896,10 +941,18 @@ class ChatViewModel(
 
     fun toggleTrustConversation() {
         viewModelScope.launch {
-            if (_state.value.isTrustedConversation) {
-                appPreferences.untrustConversation(conversationId)
-            } else {
+            val willTrust = !_state.value.isTrustedConversation
+            if (willTrust) {
                 appPreferences.trustConversation(conversationId)
+                // كشف فوري للمحتوى الحساس الموجود حالياً (بدل انتظار إعادة التحميل)
+                val selfId = _state.value.currentUserId
+                _state.value.messages.filter { m ->
+                    m.hasFlaggedContent == true && m.sender?.id != selfId
+                }.forEach { m -> revealSensitiveMessage(m) }
+                _message.tryEmit("تم تفعيل الثقة — يُكشف المحتوى الحساس في هذه المحادثة تلقائياً")
+            } else {
+                appPreferences.untrustConversation(conversationId)
+                _message.tryEmit("تم إلغاء الثقة بهذه المحادثة")
             }
             // state يتحدث تلقائياً عبر الـ Flow collector في init
         }

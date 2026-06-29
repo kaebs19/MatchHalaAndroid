@@ -24,6 +24,7 @@ sealed class SocketEvent {
     data class ConversationRequest(val json: JSONObject) : SocketEvent()
     data class ConversationAccepted(val json: JSONObject) : SocketEvent()
     data class ConversationRejected(val json: JSONObject) : SocketEvent()
+    data class ConversationCancelled(val json: JSONObject) : SocketEvent()
     data class ChatModeChanged(val json: JSONObject) : SocketEvent()
 
     data class UsersOnline(val json: JSONObject) : SocketEvent()

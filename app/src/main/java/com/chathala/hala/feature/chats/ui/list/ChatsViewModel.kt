@@ -46,11 +46,11 @@ data class ChatsUiState(
     val processingIds: Set<String> = emptySet()
 ) {
     /**
-     * المحادثات الظاهرة في القائمة الرئيسية: المقبولة فقط.
-     * الطلبات (مستلمة/مرسلة) تظهر فقط في شاشة الطلبات.
+     * المحادثات الظاهرة في القائمة الرئيسية: المقبولة + المنتهية (cancelled).
+     * المنتهية تبقى ظاهرة مع رسائلها، والطلبات (pending) تظهر فقط في شاشة الطلبات.
      */
     val accepted: List<Conversation>
-        get() = all.filter { it.status == "accepted" }
+        get() = all.filter { it.status == "accepted" || it.status == "cancelled" }
 
     val unreadCount: Int get() = accepted.sumOf { it.unreadCount }
 

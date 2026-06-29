@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.RateReview
@@ -116,6 +117,7 @@ fun ChatScreen(
     var showChatModeDialog by remember { mutableStateOf(false) }
     var showReportSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCancelDialog by remember { mutableStateOf(false) }
     var showBlockDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.conversationDeleted) {
@@ -283,6 +285,10 @@ fun ChatScreen(
                 onDelete = {
                     menuExpanded = false
                     showDeleteDialog = true
+                },
+                onCancelConversation = {
+                    menuExpanded = false
+                    showCancelDialog = true
                 },
                 onToggleTrust = {
                     menuExpanded = false
@@ -496,7 +502,9 @@ fun ChatScreen(
                 else -> {
                     PendingBanner(
                         status = state.conversationStatus,
-                        isCreator = state.isCreator
+                        isCreator = state.isCreator,
+                        onReopen = viewModel::reopenConversation,
+                        reopening = state.reopening
                     )
                 }
             }
@@ -594,8 +602,8 @@ fun ChatScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.deleting) showDeleteDialog = false },
-            title = { Text("حذف المحادثة") },
-            text = { Text("سيتم حذف المحادثة من قائمتك فقط. هل تريد المتابعة؟") },
+            title = { Text("حذف من قائمتي") },
+            text = { Text("سيتم حذف المحادثة من قائمتك فقط (لا يتأثر الطرف الآخر، وتعود عند أي رسالة جديدة). هل تريد المتابعة؟") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -611,6 +619,30 @@ fun ChatScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) { Text("إلغاء") }
+            }
+        )
+    }
+
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!state.deleting) showCancelDialog = false },
+            title = { Text("إنهاء المحادثة للطرفين") },
+            text = { Text("سيتم إنهاء المحادثة للطرفين مع بقاء الرسائل. لن يمكن الإرسال إلا بإرسال طلب جديد يُقبل من الطرف الآخر. هل تريد المتابعة؟") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showCancelDialog = false
+                        viewModel.cancelConversation()
+                    },
+                    enabled = !state.deleting,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) { Text("إنهاء") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelDialog = false }) { Text("تراجع") }
             }
         )
     }
@@ -674,6 +706,7 @@ private fun ChatHeader(
     onReport: () -> Unit,
     onBlock: () -> Unit,
     onDelete: () -> Unit,
+    onCancelConversation: () -> Unit = {},
     onToggleTrust: () -> Unit = {}
 ) {
     val borderColor = contrastBorderColor()
@@ -834,7 +867,7 @@ private fun ChatHeader(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            "إغلاق المحادثة",
+                            "حذف من قائمتي",
                             color = MaterialTheme.colorScheme.error
                         )
                     },
@@ -842,6 +875,22 @@ private fun ChatHeader(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.DeleteOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            "إنهاء المحادثة للطرفين",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    onClick = onCancelConversation,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error
                         )
@@ -942,26 +991,42 @@ private fun NewMessagesPill(
 }
 
 @Composable
-private fun PendingBanner(status: String?, isCreator: Boolean) {
+private fun PendingBanner(
+    status: String?,
+    isCreator: Boolean,
+    onReopen: (() -> Unit)? = null,
+    reopening: Boolean = false
+) {
     val text = when {
+        status == "cancelled" -> "انتهت هذه المحادثة — أرسل طلباً جديداً للاستئناف"
         status == "rejected" -> "تم رفض هذه المحادثة"
         status == "expired" -> "انتهت صلاحية الطلب"
         status == "pending" && isCreator -> "في انتظار قبول الطرف الآخر…"
         status == "pending" -> "اقبل الطلب أولاً للردّ"
         else -> "لا يمكن الردّ حالياً"
     }
-    Row(
+    val canReopen = (status == "cancelled" || status == "rejected") && onReopen != null
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
+        if (canReopen) {
+            Spacer(Modifier.size(10.dp))
+            Button(
+                onClick = { onReopen?.invoke() },
+                enabled = !reopening
+            ) {
+                Text(if (reopening) "جارٍ الإرسال…" else "إرسال طلب جديد")
+            }
+        }
     }
 }
 

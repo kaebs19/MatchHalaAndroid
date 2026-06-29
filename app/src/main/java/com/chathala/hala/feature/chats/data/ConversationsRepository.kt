@@ -30,9 +30,9 @@ class ConversationsRepository(
         page: Int = 1,
         limit: Int = 100
     ): NetworkResult<ConversationsData> = safeApiCall {
-        // ✅ نطلب المقبولة فقط — الطلبات (pending) لها endpoint/شاشة مستقلة، والمرفوضة لا تُعرض.
-        // هذا يمنع مزاحمة الطلبات/المرفوضة للمحادثات المقبولة خارج نافذة الجلب (مشكلة اختفاء "الكل").
-        val resp = api.getConversations(bearer(), page, limit, status = "accepted")
+        // ✅ نطلب المقبولة + المنتهية (cancelled) — تبقى المحادثات الملغاة ظاهرة مع رسائلها.
+        // الطلبات (pending) لها endpoint/شاشة مستقلة، والمرفوضة لا تُعرض.
+        val resp = api.getConversations(bearer(), page, limit, status = "accepted,cancelled")
         val data = resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
         _totalUnread.value = data.totalUnread
         data
@@ -82,6 +82,24 @@ class ConversationsRepository(
     suspend fun deleteConversation(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteConversation(bearer(), conversationId)
         resp.message ?: "تم حذف المحادثة"
+    }
+
+    suspend fun cancelConversation(conversationId: String): NetworkResult<String> = safeApiCall {
+        val resp = api.cancelConversation(bearer(), conversationId)
+        resp.message ?: "تم إنهاء المحادثة"
+    }
+
+    /** إرسال طلب محادثة جديد (يُستخدم لاستئناف محادثة منتهية). */
+    suspend fun requestConversation(targetUserId: String): NetworkResult<String> = safeApiCall {
+        val resp = api.requestConversation(
+            bearer = bearer(),
+            body = com.chathala.hala.feature.discover.data.RequestConversationRequest(
+                targetUserId = targetUserId,
+                initialMessage = null,
+                isSuperLike = false
+            )
+        )
+        resp.message ?: "تم إرسال الطلب"
     }
 
     suspend fun setMute(

@@ -164,6 +164,7 @@ class HalaSocket(
         s.on("conversation:request") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationRequest(it)) } }
         s.on("conversation-accepted") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationAccepted(it)) } }
         s.on("conversation-rejected") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationRejected(it)) } }
+        s.on("conversation:cancelled") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationCancelled(it)) } }
         s.on("chat-mode-changed") { args -> args.firstJson()?.let { emit(SocketEvent.ChatModeChanged(it)) } }
         s.on("users-online") { args -> args.firstJson()?.let { emit(SocketEvent.UsersOnline(it)) } }
         s.on("user:online") { args -> args.firstJson()?.let { emit(SocketEvent.UserOnline(it)) } }
