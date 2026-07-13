@@ -78,6 +78,8 @@ data class ChatUiState(
     val otherUserAvatar: String? = null,
     val otherUserOnline: Boolean = false,
     val otherUserVerified: Boolean = false,
+    // الطرف الآخر موقوف بالكامل → نمنع إرسال رسائل جديدة
+    val otherUserSuspended: Boolean = false,
     val reporting: Boolean = false,
     val deleting: Boolean = false,
     val reopening: Boolean = false,
@@ -221,6 +223,7 @@ class ChatViewModel(
                 otherUserAvatar = other.profileImage,
                 otherUserOnline = other.isOnline == true,
                 otherUserVerified = other.verification?.isVerified == true,
+                otherUserSuspended = other.isSuspendedAccount == true,
                 conversationStatus = conv.status,
                 isCreator = conv.creator == selfId
             )
@@ -545,6 +548,11 @@ class ChatViewModel(
     fun send() {
         val content = _state.value.input.trim()
         if (content.isBlank() || _state.value.sending) return
+        // الطرف الآخر موقوف → منع الإرسال نهائياً
+        if (_state.value.otherUserSuspended) {
+            _message.tryEmit("لا يمكن مراسلة مستخدم موقوف")
+            return
+        }
         // مقيّد بسبب نشر حسابات خارجية → منع الإرسال نهائياً
         _state.value.messagingRestriction?.let { r ->
             _message.tryEmit(

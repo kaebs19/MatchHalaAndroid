@@ -43,7 +43,9 @@ data class Participant(
     val isPremium: Boolean? = null,
     val isOnline: Boolean? = null,
     val lastLogin: String? = null,
-    val verification: VerificationFlag? = null
+    val verification: VerificationFlag? = null,
+    /** يرجّعه الخادم = true للحساب الموقوف (بيانات مقنّعة) → نمنع مراسلته. */
+    val isSuspendedAccount: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)

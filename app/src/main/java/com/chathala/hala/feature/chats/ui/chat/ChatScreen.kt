@@ -245,15 +245,18 @@ fun ChatScreen(
             ChatHeader(
                 title = state.otherUserName ?: "محادثة",
                 avatarUrl = state.otherUserAvatar,
-                isOnline = state.otherUserOnline,
+                // الموقوف دائماً غير متصل بغضّ النظر عن الكاش
+                isOnline = state.otherUserOnline && !state.otherUserSuspended,
                 isVerified = state.otherUserVerified,
                 subtitle = when {
+                    state.otherUserSuspended -> "غير متصل"
                     state.typingUser != null -> "يكتب"
                     state.otherUserOnline -> "متصل الآن"
                     state.socketConnected -> "متصل"
                     else -> "…"
                 },
                 subtitleTint = when {
+                    state.otherUserSuspended -> MaterialTheme.colorScheme.onSurfaceVariant
                     state.typingUser != null -> MaterialTheme.colorScheme.primary
                     state.otherUserOnline -> MaterialTheme.colorScheme.primary
                     state.socketConnected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
@@ -476,6 +479,10 @@ fun ChatScreen(
             }
 
             when {
+                // الطرف الآخر موقوف → لا يمكن إرسال رسائل جديدة
+                state.otherUserSuspended -> {
+                    SuspendedUserInputBar()
+                }
                 // مقيّد بسبب نشر حسابات خارجية → شريط مقفل (لا كتابة/صور/تسجيل)
                 state.messagingRestriction != null -> {
                     LockedInputBar(
@@ -1072,6 +1079,32 @@ private fun MessagingRestrictionBanner(
                 )
             }
         }
+    }
+}
+
+/** شريط بديل عن الإدخال حين يكون الطرف الآخر حساباً موقوفاً — لا كتابة/صور/تسجيل. */
+@Composable
+private fun SuspendedUserInputBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Block,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.size(8.dp))
+        Text(
+            text = "لا يمكن مراسلة مستخدم موقوف",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

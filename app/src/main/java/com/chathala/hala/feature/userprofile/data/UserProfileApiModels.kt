@@ -29,6 +29,8 @@ data class UserProfile(
     val lastLogin: String? = null,
     val isPremium: Boolean? = null,
     val isActive: Boolean? = null,
+    /** يرجّعه الخادم = true للحساب الموقوف بالكامل (بيانات مقنّعة) → نخفي أزرار التفاعل. */
+    val isSuspendedAccount: Boolean? = null,
     val verification: ProfileVerification? = null,
     val distance: Double? = null,
     val joinDate: String? = null,

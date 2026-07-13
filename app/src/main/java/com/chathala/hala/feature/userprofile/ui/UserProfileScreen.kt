@@ -234,6 +234,9 @@ private fun ProfileContent(
     blocked: Boolean,
     reported: Boolean
 ) {
+    // حساب موقوف بالكامل → بيانات مقنّعة، نخفي كل أزرار التفاعل والأمان
+    val suspended = user.isSuspendedAccount == true
+
     // بوابة زر الرسالة حسب إعدادات الطرف الآخر
     val messageBlockedReason: String? = when {
         user.acceptingRequests == false -> "لا يستقبل طلبات جديدة"
@@ -262,39 +265,44 @@ private fun ProfileContent(
                 BioCard(user)
                 PhotosCard(user, onOpenPhoto = onOpenPhoto)
 
-                messageBlockedReason?.let { reason ->
-                    Text(
-                        text = "ℹ️ $reason",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(horizontal = 4.dp)
+                if (!suspended) {
+                    messageBlockedReason?.let { reason ->
+                        Text(
+                            text = "ℹ️ $reason",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+                    SafetyActions(
+                        blocked = blocked,
+                        reported = reported,
+                        onBlock = onBlock,
+                        onUnblock = onUnblock,
+                        onReport = onReport
                     )
                 }
-
-                Spacer(Modifier.height(8.dp))
-                SafetyActions(
-                    blocked = blocked,
-                    reported = reported,
-                    onBlock = onBlock,
-                    onUnblock = onUnblock,
-                    onReport = onReport
-                )
             }
         }
 
         TopBar(onBack = onBack)
 
-        FloatingActionBar(
-            onSkip = onSkip,
-            onSuperLike = onSuperLike,
-            onLike = onLike,
-            onMessage = onMessage,
-            liked = liked,
-            messageEnabled = messageBlockedReason == null,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 20.dp, vertical = 24.dp)
-        )
+        // الحساب الموقوف لا يملك أزرار تفاعل (رسالة/إعجاب/مميز/تخطي)
+        if (!suspended) {
+            FloatingActionBar(
+                onSkip = onSkip,
+                onSuperLike = onSuperLike,
+                onLike = onLike,
+                onMessage = onMessage,
+                liked = liked,
+                messageEnabled = messageBlockedReason == null,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            )
+        }
     }
 }
 
