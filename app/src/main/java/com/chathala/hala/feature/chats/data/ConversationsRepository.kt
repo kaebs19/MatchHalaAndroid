@@ -38,6 +38,12 @@ class ConversationsRepository(
         data
     }
 
+    /** جلب محادثة واحدة (للطرف الآخر عند فتح الشات) — أخفّ بكثير من جلب القائمة كاملة. */
+    suspend fun fetchConversation(conversationId: String): NetworkResult<Conversation> = safeApiCall {
+        val resp = api.getConversation(bearer(), conversationId)
+        resp.data?.conversation ?: throw IllegalStateException("المحادثة غير متوفرة")
+    }
+
     suspend fun refreshPendingCount(): NetworkResult<PendingCountData> = safeApiCall {
         val resp = api.getPendingCount(bearer())
         val data = resp.data ?: PendingCountData()

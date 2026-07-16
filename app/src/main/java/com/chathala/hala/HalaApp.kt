@@ -121,6 +121,12 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var userProfileRepository: UserProfileRepository
         private set
 
+    lateinit var billingManager: com.chathala.hala.feature.premium.data.BillingManager
+        private set
+
+    lateinit var subscriptionRepository: com.chathala.hala.feature.premium.data.SubscriptionRepository
+        private set
+
     lateinit var networkMonitor: NetworkMonitor
         private set
 
@@ -170,6 +176,23 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         verificationRepository = VerificationRepository(tokenStorage = tokenStorage)
         reportRepository = ReportRepository(tokenStorage = tokenStorage)
         userProfileRepository = UserProfileRepository(tokenStorage = tokenStorage)
+
+        // ── Premium / الاشتراكات ──
+        subscriptionRepository = com.chathala.hala.feature.premium.data.SubscriptionRepository(
+            packageName = packageName,
+            userRepository = userRepository,
+            tokenStorage = tokenStorage
+        )
+        billingManager = com.chathala.hala.feature.premium.data.BillingManager(applicationContext)
+        // تحقّق الشراء يمرّ عبر الخادم — لا نثق بالعميل
+        billingManager.purchaseVerifier = { purchase ->
+            val plan = purchase.products
+                .firstNotNullOfOrNull { com.chathala.hala.feature.premium.data.PremiumPlan.fromProductId(it) }
+            if (plan != null) {
+                subscriptionRepository.verifyGooglePurchase(purchase.purchaseToken, plan)
+            } else false
+        }
+
         HalaNotificationChannels.registerAll(this)
 
         // الاستجابة لطلب السيرفر بتحديث FCM token (عند connect لـ Socket)

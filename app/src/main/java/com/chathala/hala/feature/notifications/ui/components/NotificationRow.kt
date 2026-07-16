@@ -1,9 +1,5 @@
 package com.chathala.hala.feature.notifications.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.border
@@ -14,12 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -67,26 +61,14 @@ fun NotificationRow(
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val pressedElevation by animateDpAsState(
-        targetValue = if (isPressed) 6.dp else 1.dp,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "press-elevation"
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (!isRead)
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-        else
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
-        label = "border"
-    )
 
+    // تصميم مبسّط ومسطّح: كل الصفوف بلون البطاقة نفسه — الجديد يُميَّز بنقطة صغيرة فقط
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        shadowElevation = pressedElevation,
-        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
+        shadowElevation = if (isPressed) 2.dp else 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -97,23 +79,15 @@ fun NotificationRow(
                 ) {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     onClick()
-                },
+                }
+                .padding(horizontal = 14.dp, vertical = 14.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // شريط عمودي للإشعارات غير المقروءة
-            UnreadBar(visible = !isRead)
+            NotificationLeading(item = item)
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                NotificationLeading(item = item)
+            Spacer(Modifier.size(12.dp))
 
-                Spacer(Modifier.size(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f)) {
                     if (isOfficial(item.type)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -174,29 +148,22 @@ fun NotificationRow(
                         }
                     }
                 }
-            }
+                if (!isRead) {
+                    Spacer(Modifier.size(8.dp))
+                    UnreadDot()
+                }
         }
     }
 }
 
+/** نقطة صغيرة تُميّز الإشعار غير المقروء (بلا خلفية ملوّنة). */
 @Composable
-private fun UnreadBar(visible: Boolean) {
-    val width by animateDpAsState(
-        targetValue = if (visible) 4.dp else 0.dp,
-        label = "unread-bar"
-    )
+private fun UnreadDot() {
     Box(
         modifier = Modifier
-            .width(width)
-            .fillMaxHeight()
-            .background(
-                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                    )
-                )
-            )
+            .size(9.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
     )
 }
 
@@ -214,11 +181,6 @@ private fun NotificationLeading(item: NotificationItem) {
                 .size(46.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .border(
-                    width = 1.5.dp,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                    shape = CircleShape
-                )
         ) {
             AsyncImage(
                 model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
@@ -303,12 +265,7 @@ private fun OfficialAvatar() {
     Box(
         modifier = Modifier
             .size(46.dp)
-            .clip(CircleShape)
-            .border(
-                width = 1.5.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
-                shape = CircleShape
-            ),
+            .clip(CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Image(

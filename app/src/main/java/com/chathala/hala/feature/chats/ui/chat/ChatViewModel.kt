@@ -165,10 +165,13 @@ class ChatViewModel(
 
         loadMessages()
 
-        // تعليم كمقروء على السيرفر + Socket
+        // تعليم كمقروء — عبر السوكِت أولاً (فوري + يُشعِر الطرف الآخر).
+        // HTTP كـ fallback فقط لو السوكِت غير متصل بعد، لضمان حفظ الحالة.
         viewModelScope.launch {
-            conversationsRepo.markRead(conversationId)
             socket.markRead(conversationId)
+            if (!socket.connected.value) {
+                runCatching { conversationsRepo.markRead(conversationId) }
+            }
         }
 
         // جلب وضع المحادثة
@@ -200,21 +203,22 @@ class ChatViewModel(
 
     private suspend fun resolveOtherUser() {
         val selfId = userRepo.currentUser.first()?.id
-        // جرّب من الكاش أولاً (فوري)
+        // جرّب من الكاش أولاً (فوري) — القائمة المخزّنة محلياً
         val cached = runCatching { cache.readConversations() }.getOrNull()
+            ?.firstOrNull { it.id == conversationId }
         applyOtherFrom(cached, selfId)
-        // ثم من الشبكة لضمان التحديث
-        val r = conversationsRepo.fetchConversations()
+        // ثم من الشبكة: نجلب هذه المحادثة فقط (بدل القائمة كاملة) → أسرع بكثير
+        val r = conversationsRepo.fetchConversation(conversationId)
         if (r is NetworkResult.Success) {
-            applyOtherFrom(r.data.conversations, selfId)
+            applyOtherFrom(r.data, selfId)
         }
     }
 
     private fun applyOtherFrom(
-        conversations: List<com.chathala.hala.feature.chats.data.Conversation>?,
+        conv: com.chathala.hala.feature.chats.data.Conversation?,
         selfId: String?
     ) {
-        val conv = conversations?.firstOrNull { it.id == conversationId } ?: return
+        conv ?: return
         val other = conv.participants.firstOrNull { it.id != selfId } ?: return
         _state.update {
             it.copy(
@@ -339,11 +343,9 @@ class ChatViewModel(
                         newIncomingCount = it.newIncomingCount + 1
                     )
                 }
-                // علّم مقروء
+                // علّم مقروء عبر السوكِت فقط — متصل بالتأكيد (وصلتنا رسالة منه للتو)،
+                // والخادم يحدّث readBy + status ويُشعِر الطرف الآخر. لا حاجة لطلب HTTP زائد.
                 socket.markRead(conversationId)
-                viewModelScope.launch {
-                    runCatching { conversationsRepo.markRead(conversationId) }
-                }
             }
             is SocketEvent.UserTyping -> {
                 val json = evt.json

@@ -131,12 +131,22 @@ fun NotificationsScreen(
                             val senderId = (item.data?.get("senderId") as? String)
                                 ?: (item.data?.get("userId") as? String)
                                 ?: item.sender?.id
+                            val action = item.data?.get("action") as? String
                             when (item.type) {
-                                "conversation_request", "super_like" -> {
+                                "conversation_request" -> {
+                                    if (!convId.isNullOrBlank()) {
+                                        // action=accepted → المحادثة صارت نشطة → افتحها؛
+                                        // طلب جديد/رفض/إلغاء → معاينة الطلب
+                                        if (action == "accepted") onOpenConversation(convId)
+                                        else onOpenRequestPreview(convId)
+                                    }
+                                }
+                                "super_like" -> {
                                     if (!convId.isNullOrBlank()) onOpenRequestPreview(convId)
                                 }
                                 "conversation_accepted",
                                 "new_message",
+                                "message",
                                 "chat_mode_changed",
                                 "conversation_reminder",
                                 "flagged_message" -> {

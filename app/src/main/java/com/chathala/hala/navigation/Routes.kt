@@ -10,6 +10,7 @@ object Routes {
     const val REGISTER = "register"
     const val FORGOT = "forgot"
     const val RESET = "reset/{email}"
+    const val WELCOME = "welcome"
     const val PROFILE_COMPLETE = "profile_complete"
     const val CONTENT_POLICY = "content_policy"
     const val EDIT_PROFILE = "edit_profile"
@@ -37,6 +38,7 @@ object Routes {
     const val USER_PROFILE = "user/{userId}"
     const val USER_SEARCH = "user/search"
     const val SUSPENDED = "suspended/{mode}"
+    const val SUBSCRIPTION = "subscription"
 
     fun reset(email: String) = "reset/$email"
     fun chat(conversationId: String) = "chat/$conversationId"
@@ -49,6 +51,7 @@ object Routes {
 /** مسارات تتطلب جلسة صالحة — لو فُقد التوكن نُعيد توجيه Login. */
 internal val PROTECTED_ROUTES = setOf(
     Routes.HOME,
+    Routes.WELCOME,
     Routes.PROFILE_COMPLETE,
     Routes.EDIT_PROFILE,
     Routes.SETTINGS,
@@ -56,5 +59,6 @@ internal val PROTECTED_ROUTES = setOf(
     Routes.SETTINGS_NOTIFICATIONS,
     Routes.SETTINGS_DISCOVER,
     Routes.SETTINGS_ACCOUNT,
-    Routes.SETTINGS_CHANGE_PASSWORD
+    Routes.SETTINGS_CHANGE_PASSWORD,
+    Routes.SUBSCRIPTION
 )

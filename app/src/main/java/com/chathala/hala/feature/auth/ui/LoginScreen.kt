@@ -50,6 +50,7 @@ fun LoginScreen(
     onOpenPrivacy: () -> Unit,
     onBanned: (com.chathala.hala.feature.suspension.data.SuspensionMode) -> Unit,
     onSuccess: () -> Unit,
+    onNewUser: () -> Unit,
     viewModel: AuthViewModel = viewModel(factory = AuthViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -74,7 +75,8 @@ fun LoginScreen(
 
     LaunchedEffect(state.done) {
         if (state.done) {
-            onSuccess()
+            // أول دخول عبر Google/Apple → شاشة الترحيب ثم إكمال الملف؛ الحساب القائم → الرئيسية مباشرة.
+            if (state.isNewUser) onNewUser() else onSuccess()
             viewModel.resetFeedback()
         }
     }

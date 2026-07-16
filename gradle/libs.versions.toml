@@ -28,6 +28,7 @@ playServicesLocation = "21.3.0"
 playServicesAds = "23.6.0"
 socketio = "2.1.0"
 lottie = "6.4.0"
+billing = "7.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -74,6 +75,8 @@ play-services-ads = { group = "com.google.android.gms", name = "play-services-ad
 socketio-client = { group = "io.socket", name = "socket.io-client", version.ref = "socketio" }
 
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+
+billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

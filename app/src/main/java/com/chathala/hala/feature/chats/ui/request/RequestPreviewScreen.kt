@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -84,9 +85,7 @@ fun RequestPreviewScreen(
     LaunchedEffect(state.rejected) {
         if (state.rejected) onBack()
     }
-    LaunchedEffect(state.notFound) {
-        if (state.notFound && !state.loading) onBack()
-    }
+    // ملاحظة: notFound لم يعد يُغلق الشاشة تلقائياً — نعرض حالة واضحة بدلاً من الارتداد الصامت
 
     Box(
         modifier = Modifier
@@ -171,6 +170,7 @@ fun RequestPreviewScreen(
                     onAcceptWithGreeting = { showGreeting = true },
                     onReject = { viewModel.reject() }
                 )
+                state.notFound -> RequestUnavailable(onBack = onBack)
             }
         }
 
@@ -201,6 +201,40 @@ fun RequestPreviewScreen(
             },
             onDismiss = { showReport = false }
         )
+    }
+}
+
+/** حالة: الطلب لم يعد متاحاً (تم قبوله/رفضه/إلغاؤه) — بدل الارتداد الصامت. */
+@Composable
+private fun RequestUnavailable(onBack: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Inbox,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            modifier = Modifier.size(60.dp)
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = "لم يعد هذا الطلب متاحاً",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "ربما تم قبوله أو رفضه أو ألغاه الطرف الآخر.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Spacer(Modifier.height(24.dp))
+        Button(onClick = onBack) {
+            Text("رجوع")
+        }
     }
 }
 

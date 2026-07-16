@@ -108,7 +108,7 @@ fun PendingRequestsScreen(
                             horizontal = 12.dp,
                             vertical = 8.dp
                         ),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(state.items, key = { it.id }) { req ->
                             RequestListItem(
@@ -255,28 +255,33 @@ private fun RequestListItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onOpen),
-        color = Color.Transparent
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 12.dp),
+                .padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             RingAvatar(url = creator?.profileImage, ringColor = ringColor, name = creator?.name)
 
             Spacer(Modifier.size(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                // السطر الأول: الاسم (+ توثيق) واليمين الوقت
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    NewBadge()
-                    Spacer(Modifier.size(6.dp))
                     Text(
                         text = creator?.name ?: "مستخدم",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onBackground,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     if (creator?.isVerified == true) {
                         Spacer(Modifier.size(4.dp))
@@ -287,30 +292,33 @@ private fun RequestListItem(
                             modifier = Modifier.size(14.dp)
                         )
                     }
-                }
-                Spacer(Modifier.size(4.dp))
-                Text(
-                    text = if (isSent) "بانتظار الرد" else "يريد التحدث معك",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                // معاينة الرسالة الأولية إن وُجدت
-                val initial = request.initialMessage?.content?.takeIf { it.isNotBlank() }
-                if (!initial.isNullOrBlank()) {
-                    Spacer(Modifier.size(2.dp))
+                    Spacer(Modifier.weight(1f))
                     Text(
-                        text = initial,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        text = NotificationFormat.timeAgoArabic(request.createdAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(Modifier.size(2.dp))
-                Text(
-                    text = NotificationFormat.timeAgoArabic(request.createdAt),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                // السطر الثاني: معاينة الرسالة إن وُجدت، وإلا نص الحالة — مع شارة "جديد" على الطرف
+                val initial = request.initialMessage?.content?.takeIf { it.isNotBlank() }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = initial ?: if (isSent) "بانتظار الرد" else "يريد التحدث معك",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (initial != null)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (!isSent) {
+                        Spacer(Modifier.size(6.dp))
+                        NewBadge()
+                    }
+                }
             }
 
             // المرسَلة فقط: زر إلغاء صغير. المستلَمة: نقرة على الصف تفتح المعاينة.

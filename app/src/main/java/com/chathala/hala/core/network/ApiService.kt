@@ -274,6 +274,13 @@ interface ApiService {
         @Query("status") status: String? = null
     ): ConversationsResponse
 
+    // جلب محادثة واحدة فقط — لاستخراج الطرف الآخر بسرعة عند فتح الشات (بدل جلب القائمة كاملة)
+    @GET("api/mobile/conversations/{id}")
+    suspend fun getConversation(
+        @Header("Authorization") bearer: String,
+        @Path("id") id: String
+    ): com.chathala.hala.feature.chats.data.SingleConversationResponse
+
     @GET("api/mobile/users/search")
     suspend fun searchUsers(
         @Header("Authorization") bearer: String,
@@ -411,6 +418,9 @@ interface ApiService {
         @Path("id") id: String
     ): ChatModeInfoResponse
 
+    // هيدر app-version يقرأه الخادم في نقطة الـreveal فقط (لا يقرأه الفحص العام الذي يستخدم x-app-version).
+    // نرسل قيمة عالية لأن هذا الإصدار يدعم عرض المحتوى الحساس فعلاً — الهيدر مخصّص لحجب العملاء القديمة العاجزة.
+    @retrofit2.http.Headers("app-version: 99.0")
     @POST("api/v2/mobile/messages/{messageId}/reveal")
     suspend fun revealSensitiveContent(
         @Header("Authorization") bearer: String,
@@ -479,6 +489,19 @@ interface ApiService {
     suspend fun getPromoKeywords(
         @Header("Authorization") bearer: String
     ): com.chathala.hala.feature.chats.data.PromoKeywordsResponse
+
+    // ── Premium / الاشتراكات ─────────────────────────────────────
+
+    @POST("api/mobile/subscription/verify-google")
+    suspend fun verifyGoogleSubscription(
+        @Header("Authorization") bearer: String,
+        @Body body: com.chathala.hala.feature.premium.data.GoogleVerifyRequest
+    ): com.chathala.hala.feature.premium.data.SubscriptionVerifyResponse
+
+    @GET("api/mobile/subscription/status")
+    suspend fun getSubscriptionStatus(
+        @Header("Authorization") bearer: String
+    ): com.chathala.hala.feature.premium.data.SubscriptionStatusResponse
 
     // ── Discover ─────────────────────────────────────────────────
 

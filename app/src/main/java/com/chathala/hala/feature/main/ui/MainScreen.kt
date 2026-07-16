@@ -43,6 +43,7 @@ fun MainScreen(
     onOpenRequestPreview: (String) -> Unit = {},
     onOpenChatRequests: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
+    onOpenPremium: () -> Unit = {},
     onOpenUserProfile: (String) -> Unit = {},
     onOpenUserSearch: () -> Unit = {},
     onOpenRequests: () -> Unit = {}
@@ -103,7 +104,8 @@ fun MainScreen(
                     onLoggedOut = onLoggedOut,
                     onEditProfile = onEditProfile,
                     onOpenSettings = onOpenSettings,
-                    onOpenVerification = onOpenVerification
+                    onOpenVerification = onOpenVerification,
+                    onOpenPremium = onOpenPremium
                 )
             }
         }

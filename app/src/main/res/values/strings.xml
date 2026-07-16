@@ -57,9 +57,21 @@
     <string name="btn_google_signin">المتابعة باستخدام Google</string>
     <string name="or_divider">أو</string>
 
+    <!-- Welcome (after successful sign-up via Google/Apple/email) -->
+    <string name="welcome_title">أهلاً بك في هلا! 🎉</string>
+    <string name="welcome_subtitle">تم إنشاء حسابك بنجاح</string>
+    <string name="welcome_greeting_named">مرحباً %1$s،</string>
+    <string name="welcome_greeting">مرحباً بك،</string>
+    <string name="welcome_body">بقيت خطوة واحدة قصيرة — أكمل ملفك لتظهر للأعضاء المناسبين وتبدأ التعارف.</string>
+    <string name="welcome_point_profile">أضف صورتك وبياناتك الأساسية</string>
+    <string name="welcome_point_interests">اختر اهتماماتك لنقترح لك الأنسب</string>
+    <string name="welcome_point_privacy">بياناتك محمية ولن تُنشر إلا ما تختاره</string>
+    <string name="welcome_continue">لنُكمل ملفك</string>
+
     <!-- Profile completion -->
     <string name="profile_title">أكمل ملفك الشخصي</string>
-    <string name="profile_subtitle">ساعدنا لنعرفك أكثر</string>
+    <string name="profile_subtitle">خطوة أخيرة لتبدأ التعارف</string>
+    <string name="profile_prefill_hint">راجعنا صورتك من حسابك — يمكنك تغييرها أو الإبقاء عليها.</string>
     <string name="field_birthdate">تاريخ الميلاد</string>
     <string name="field_gender">الجنس</string>
     <string name="gender_male">ذكر</string>

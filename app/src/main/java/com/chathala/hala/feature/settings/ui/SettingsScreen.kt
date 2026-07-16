@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Support
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,6 +73,7 @@ fun SettingsScreen(
     onOpenContact: () -> Unit,
     onOpenAccountSettings: () -> Unit,
     onOpenContentSettings: () -> Unit,
+    onOpenPremium: () -> Unit,
     onLoggedOut: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 ) {
@@ -92,6 +94,16 @@ fun SettingsScreen(
         ) {
             SettingsHeader(onBack = onBack)
             Spacer(Modifier.height(8.dp))
+
+            SettingsSection(title = "الاشتراك") {
+                SettingsItem(
+                    icon = Icons.Filled.Star,
+                    iconTint = Color(0xFFFFC107),
+                    label = "هلا بريميوم",
+                    value = "ترقية",
+                    onClick = onOpenPremium
+                )
+            }
 
             SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
                 SettingsItem(

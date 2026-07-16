@@ -18,6 +18,7 @@ import com.chathala.hala.feature.auth.ui.ForgotPasswordScreen
 import com.chathala.hala.feature.auth.ui.LoginScreen
 import com.chathala.hala.feature.auth.ui.RegisterScreen
 import com.chathala.hala.feature.auth.ui.ResetPasswordScreen
+import com.chathala.hala.feature.auth.ui.WelcomeScreen
 import com.chathala.hala.feature.blocking.ui.BlockedUsersScreen
 import com.chathala.hala.feature.verification.ui.VerificationScreen
 import com.chathala.hala.feature.chats.ui.chat.ChatScreen
@@ -137,7 +138,8 @@ fun HalaNavGraph() {
                 onOpenTerms = { nav.navigate(Routes.LEGAL_TERMS) },
                 onOpenPrivacy = { nav.navigate(Routes.LEGAL_PRIVACY) },
                 onBanned = { mode -> nav.navigate(Routes.suspended(mode.routeArg)) },
-                onSuccess = { goTo(Routes.HOME, clearBackstack = true) }
+                onSuccess = { goTo(Routes.HOME, clearBackstack = true) },
+                onNewUser = { goTo(Routes.WELCOME, clearBackstack = true) }
             )
         }
 
@@ -147,7 +149,13 @@ fun HalaNavGraph() {
                 onOpenTerms = { nav.navigate(Routes.LEGAL_TERMS) },
                 onOpenPrivacy = { nav.navigate(Routes.LEGAL_PRIVACY) },
                 onBanned = { mode -> nav.navigate(Routes.suspended(mode.routeArg)) },
-                onSuccess = { goTo(Routes.PROFILE_COMPLETE, clearBackstack = true) }
+                onSuccess = { goTo(Routes.WELCOME, clearBackstack = true) }
+            )
+        }
+
+        composable(Routes.WELCOME) {
+            WelcomeScreen(
+                onContinue = { goTo(Routes.PROFILE_COMPLETE, clearBackstack = true) }
             )
         }
 
@@ -198,7 +206,6 @@ fun HalaNavGraph() {
 
         composable(Routes.PROFILE_COMPLETE) {
             ProfileCompletionScreen(
-                onSkip = { goTo(Routes.CONTENT_POLICY, clearBackstack = true) },
                 onDone = { goTo(Routes.CONTENT_POLICY, clearBackstack = true) }
             )
         }
@@ -222,6 +229,7 @@ fun HalaNavGraph() {
                 onOpenRequestPreview = { id -> nav.navigate(Routes.requestPreview(id)) },
                 onOpenChatRequests = { nav.navigate(Routes.CHAT_REQUESTS) },
                 onOpenVerification = { nav.navigate(Routes.VERIFICATION) },
+                onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) },
                 onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
                 onOpenUserSearch = { nav.navigate(Routes.USER_SEARCH) },
                 onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) }
@@ -301,6 +309,12 @@ fun HalaNavGraph() {
             VerificationScreen(onBack = { nav.popBackStack() })
         }
 
+        composable(Routes.SUBSCRIPTION) {
+            com.chathala.hala.feature.premium.ui.SubscriptionScreen(
+                onBack = { nav.popBackStack() }
+            )
+        }
+
         composable(Routes.EDIT_PROFILE) {
             EditProfileScreen(
                 onBack = { nav.popBackStack() },
@@ -321,6 +335,7 @@ fun HalaNavGraph() {
                 onOpenContact = { nav.navigate(Routes.SETTINGS_CONTACT) },
                 onOpenAccountSettings = { nav.navigate(Routes.SETTINGS_ACCOUNT) },
                 onOpenContentSettings = { nav.navigate(Routes.SETTINGS_CONTENT) },
+                onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) },
                 onLoggedOut = { goTo(Routes.LOGIN, clearBackstack = true) }
             )
         }

@@ -1,9 +1,7 @@
 package com.chathala.hala.feature.profile.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,17 +34,19 @@ import com.chathala.hala.feature.profile.ui.components.InterestsChipGrid
 import com.chathala.hala.ui.components.AuthScaffold
 import com.chathala.hala.ui.components.FormError
 import com.chathala.hala.ui.components.HalaPrimaryButton
-import com.chathala.hala.ui.components.TextLink
 import java.util.Date
 
 @Composable
 fun ProfileCompletionScreen(
-    onSkip: () -> Unit,
     onDone: () -> Unit,
     viewModel: ProfileCompletionViewModel = viewModel(factory = ProfileCompletionViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val app = context.applicationContext as com.chathala.hala.HalaApp
+    val currentUser by app.userRepository.currentUser.collectAsStateWithLifecycle(initialValue = null)
+    // صورة قادمة من مزوّد الدخول (Google/Apple) — تُعرض مسبقاً حتى يغيّرها المستخدم.
+    val existingImageUrl = currentUser?.profileImage?.takeIf { it.isNotBlank() }
 
     var selectedAvatar by remember { mutableStateOf<String?>(null) }
     var uploadedUri by remember { mutableStateOf<android.net.Uri?>(null) }
@@ -86,8 +86,17 @@ fun ProfileCompletionScreen(
             selectedAvatar = selectedAvatar,
             uploadedUri = uploadedUri,
             onSelectAvatar = { selectedAvatar = it; uploadedUri = null },
-            onUploadImage = { uploadedUri = it; selectedAvatar = null }
+            onUploadImage = { uploadedUri = it; selectedAvatar = null },
+            existingImageUrl = existingImageUrl
         )
+        if (existingImageUrl != null && selectedAvatar == null && uploadedUri == null) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.profile_prefill_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         Spacer(Modifier.height(18.dp))
         SectionLabel(stringResource(R.string.field_birthdate))
@@ -182,17 +191,7 @@ fun ProfileCompletionScreen(
             }
         )
 
-        Spacer(Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            TextLink(
-                text = stringResource(R.string.btn_skip),
-                onClick = onSkip
-            )
-        }
+        Spacer(Modifier.height(8.dp))
     }
 }
 

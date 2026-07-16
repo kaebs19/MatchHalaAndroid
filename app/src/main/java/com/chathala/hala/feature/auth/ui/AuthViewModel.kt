@@ -7,6 +7,7 @@ import com.chathala.hala.HalaApp
 import com.chathala.hala.core.network.ErrorMessages
 import com.chathala.hala.core.network.NetworkResult
 import com.chathala.hala.feature.auth.data.AuthRepository
+import com.chathala.hala.feature.auth.data.AuthResponse
 import com.chathala.hala.feature.auth.data.ErrorBody
 import com.chathala.hala.feature.suspension.data.AccountSuspensionInfo
 import com.chathala.hala.feature.suspension.data.SuspensionGate
@@ -25,6 +26,8 @@ data class AuthUiState(
     val error: String? = null,
     val successMessage: String? = null,
     val done: Boolean = false,
+    /** true عند إنشاء حساب جديد (تسجيل بريد أو أول دخول عبر Google/Apple) → توجيه لشاشة الترحيب. */
+    val isNewUser: Boolean = false,
     /** عند تعيينه → يجب التوجيه لشاشة الحظر بالوضع المحدّد (إيقاف حساب / حظر جهاز). */
     val bannedMode: SuspensionMode? = null
 )
@@ -40,18 +43,23 @@ class AuthViewModel(
     val state: StateFlow<AuthUiState> = _state.asStateFlow()
 
     fun resetFeedback() {
-        _state.update { it.copy(error = null, successMessage = null, done = false, bannedMode = null) }
+        _state.update {
+            it.copy(error = null, successMessage = null, done = false, isNewUser = false, bannedMode = null)
+        }
     }
 
     fun login(email: String, password: String) {
-        runAuth { authRepo.login(email, password) }
+        // الدخول العادي لا يُنشئ حساباً — دائماً مستخدم قائم.
+        runAuth(forceNewUser = false) { authRepo.login(email, password) }
     }
 
     fun register(name: String, email: String, password: String) {
-        runAuth { authRepo.register(name, email, password) }
+        // التسجيل بالبريد يُنشئ حساباً جديداً دائماً.
+        runAuth(forceNewUser = true) { authRepo.register(name, email, password) }
     }
 
     fun googleLogin(idToken: String) {
+        // الجدة تُحدّد من ردّ الخادم (isNewUser) — قد يكون دخولاً لحساب قائم أو إنشاء جديد.
         runAuth { authRepo.googleLogin(idToken) }
     }
 
@@ -59,17 +67,22 @@ class AuthViewModel(
      * Wrapper موحّد لتدفق تسجيل الدخول: يستدعي الـ API، وعند النجاح
      * يحاول جلب بيانات المستخدم الكاملة من /me (best-effort — لا يمنع المتابعة لو فشل).
      */
-    private fun runAuth(block: suspend () -> NetworkResult<*>) {
+    private fun runAuth(
+        forceNewUser: Boolean? = null,
+        block: suspend () -> NetworkResult<AuthResponse>
+    ) {
         _state.update { it.copy(loading = true, error = null) }
         viewModelScope.launch {
             when (val r = block()) {
                 is NetworkResult.Success -> {
+                    // جدة الحساب: إمّا مفروضة (تسجيل بريد) أو من ردّ الخادم (Google/Apple).
+                    val newUser = forceNewUser ?: (r.data.data?.isNewUser == true)
                     userRepo.refresh()   // ← يحدّث بيانات المستخدم من /api/auth/me
                     // سجّل FCM token بـ best-effort — لا يمنع إتمام الدخول إن فشل
                     runCatching { deviceTokenRepo.ensureSynced() }
                     // افتح اتصال Socket.IO
                     socket.connect()
-                    _state.update { it.copy(loading = false, done = true) }
+                    _state.update { it.copy(loading = false, done = true, isNewUser = newUser) }
                 }
                 is NetworkResult.Error -> handleAuthError(r)
             }

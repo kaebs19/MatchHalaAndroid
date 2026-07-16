@@ -67,6 +67,7 @@ fun ProfileScreen(
     onEditProfile: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
+    onOpenPremium: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -160,11 +161,13 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                VerificationCard(
-                    isVerified = currentUser.isVerified,
-                    status = currentUser.verificationStatus,
-                    onClick = onOpenVerification
-                )
+                // بانر الاشتراك الذهبي — لغير المشتركين فقط
+                if (!currentUser.isPremium) {
+                    com.chathala.hala.feature.profile.ui.components.PremiumBanner(
+                        onClick = onOpenPremium
+                    )
+                }
+                // ملاحظة: بطاقة توثيق الحساب (VerificationCard) أُلغيت حالياً من الملف الشخصي
                 IdentityCard(user = currentUser)
                 BasicInfoCard(user = currentUser)
                 if (currentUser.photos.isNotEmpty()) {

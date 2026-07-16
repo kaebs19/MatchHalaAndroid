@@ -19,6 +19,19 @@ data class ConversationsData(
     val totalPages: Int = 1
 )
 
+/** ردّ جلب محادثة واحدة (GET /conversations/:id) — للطرف الآخر عند فتح الشات بسرعة. */
+@JsonClass(generateAdapter = true)
+data class SingleConversationResponse(
+    val success: Boolean,
+    val data: SingleConversationData? = null,
+    val message: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SingleConversationData(
+    val conversation: Conversation? = null
+)
+
 @JsonClass(generateAdapter = true)
 data class Conversation(
     @Json(name = "_id") val id: String,

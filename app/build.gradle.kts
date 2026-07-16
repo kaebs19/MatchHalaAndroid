@@ -21,8 +21,8 @@ android {
         applicationId = "com.chathala.hala"
         minSdk = 32
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 6
+        versionName = "1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -99,6 +99,9 @@ dependencies {
     implementation(libs.zxing.core)
 
     implementation(libs.lottie.compose)
+
+    // Google Play Billing — الاشتراكات (premium)
+    implementation(libs.billing.ktx)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)

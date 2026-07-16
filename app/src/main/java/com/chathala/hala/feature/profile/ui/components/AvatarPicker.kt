@@ -51,7 +51,9 @@ fun AvatarPicker(
     uploadedUri: Uri?,
     onSelectAvatar: (String) -> Unit,
     onUploadImage: (Uri) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** صورة موجودة مسبقاً (مثل صورة حساب Google) تُعرض في المعاينة ما لم يختر المستخدم غيرها. */
+    existingImageUrl: String? = null
 ) {
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -76,6 +78,12 @@ fun AvatarPicker(
                 )
                 selectedAvatar != null -> HalaAsyncImage(
                     model = avatarUrl(selectedAvatar),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(104.dp).clip(CircleShape)
+                )
+                existingImageUrl != null -> HalaAsyncImage(
+                    model = existingImageUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(104.dp).clip(CircleShape)
