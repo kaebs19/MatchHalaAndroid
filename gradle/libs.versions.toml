@@ -28,7 +28,7 @@ playServicesLocation = "21.3.0"
 playServicesAds = "23.6.0"
 socketio = "2.1.0"
 lottie = "6.4.0"
-billing = "7.1.1"
+billing = "8.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
