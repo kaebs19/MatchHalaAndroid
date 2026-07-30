@@ -69,6 +69,7 @@ fun DiscoverScreen(
     onOpenSearch: () -> Unit = {},
     onOpenRequests: () -> Unit = {},
     onOpenPremium: () -> Unit = {},
+    onOpenVisitors: () -> Unit = {},
     viewModel: DiscoverViewModel = viewModel(factory = DiscoverViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -136,13 +137,9 @@ fun DiscoverScreen(
                     if (isPremium) showFilters = true
                     else premiumGate = PremiumGateReason.FILTERS
                 },
-                onVisitorsClick = {
-                    if (isPremium) {
-                        // TODO: ربط شاشة الزوار حين توفّر backend endpoint
-                    } else {
-                        premiumGate = PremiumGateReason.VISITORS
-                    }
-                }
+                // شاشة الزوّار تعرض التمويه وبانر الترقية للمجاني بنفسها،
+                // فنفتحها للجميع بدل حجبها خلف حوار (المجاني يرى العدد ويُغرى بالترقية).
+                onVisitorsClick = onOpenVisitors
             )
 
             // بانر التقييد العام (يظهر فقط عند تقييد/تعليق الحساب)
@@ -532,10 +529,6 @@ private enum class PremiumGateReason(val title: String, val message: String) {
     UNDO(
         title = "التراجع للبريميوم",
         message = "سحبت بالخطأ؟ بإمكان مشتركي البريميوم التراجع عن آخر حركة واستعادة البطاقة."
-    ),
-    VISITORS(
-        title = "شاهد من زار ملفك",
-        message = "قائمة الزوار متاحة لمشتركي البريميوم — اكتشف من اهتم بك حتى لو لم يرسل رسالة."
     ),
     FILTERS(
         title = "الفلترة المتقدّمة للبريميوم",

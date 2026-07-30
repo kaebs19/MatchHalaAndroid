@@ -45,6 +45,7 @@ fun MainScreen(
     onOpenVerification: () -> Unit = {},
     onOpenPremium: () -> Unit = {},
     onOpenFriends: () -> Unit = {},
+    onOpenVisitors: () -> Unit = {},
     onOpenUserProfile: (String) -> Unit = {},
     onOpenUserSearch: () -> Unit = {},
     onOpenRequests: () -> Unit = {}
@@ -90,7 +91,8 @@ fun MainScreen(
                     onOpenUserProfile = onOpenUserProfile,
                     onOpenSearch = onOpenUserSearch,
                     onOpenRequests = onOpenRequests,
-                    onOpenPremium = onOpenPremium
+                    onOpenPremium = onOpenPremium,
+                    onOpenVisitors = onOpenVisitors
                 )
                 MainTab.CHATS -> ChatsScreen(
                     onOpenFriends = onOpenFriends,

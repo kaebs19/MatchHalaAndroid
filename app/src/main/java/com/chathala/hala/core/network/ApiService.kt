@@ -503,6 +503,21 @@ interface ApiService {
         @Header("Authorization") bearer: String
     ): com.chathala.hala.feature.premium.data.SubscriptionStatusResponse
 
+    // ── Profile views / الزوّار ──────────────────────────────────
+
+    @POST("api/mobile/profile-views")
+    suspend fun recordProfileView(
+        @Header("Authorization") bearer: String,
+        @Body body: com.chathala.hala.feature.visitors.data.RecordViewBody
+    ): SimpleResponse
+
+    @GET("api/mobile/profile-views")
+    suspend fun getProfileViews(
+        @Header("Authorization") bearer: String,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): com.chathala.hala.feature.visitors.data.ProfileViewsResponse
+
     // ── Friends / الأصدقاء ───────────────────────────────────────
 
     @GET("api/mobile/friends/status/{userId}")

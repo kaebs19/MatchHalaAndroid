@@ -40,6 +40,7 @@ object Routes {
     const val SUSPENDED = "suspended/{mode}"
     const val SUBSCRIPTION = "subscription"
     const val FRIENDS = "friends"
+    const val VISITORS = "visitors"
 
     fun reset(email: String) = "reset/$email"
     fun chat(conversationId: String) = "chat/$conversationId"
@@ -62,5 +63,6 @@ internal val PROTECTED_ROUTES = setOf(
     Routes.SETTINGS_ACCOUNT,
     Routes.SETTINGS_CHANGE_PASSWORD,
     Routes.SUBSCRIPTION,
-    Routes.FRIENDS
+    Routes.FRIENDS,
+    Routes.VISITORS
 )

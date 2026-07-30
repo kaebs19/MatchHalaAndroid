@@ -231,6 +231,7 @@ fun HalaNavGraph() {
                 onOpenVerification = { nav.navigate(Routes.VERIFICATION) },
                 onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) },
                 onOpenFriends = { nav.navigate(Routes.FRIENDS) },
+                onOpenVisitors = { nav.navigate(Routes.VISITORS) },
                 onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
                 onOpenUserSearch = { nav.navigate(Routes.USER_SEARCH) },
                 onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) }
@@ -317,6 +318,14 @@ fun HalaNavGraph() {
                 onOpenTerms = { nav.navigate(Routes.LEGAL_TERMS) },
                 onOpenPrivacy = { nav.navigate(Routes.LEGAL_PRIVACY) },
                 onOpenContact = { nav.navigate(Routes.SETTINGS_CONTACT) }
+            )
+        }
+
+        composable(Routes.VISITORS) {
+            com.chathala.hala.feature.visitors.ui.VisitorsScreen(
+                onBack = { nav.popBackStack() },
+                onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
+                onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) }
             )
         }
 

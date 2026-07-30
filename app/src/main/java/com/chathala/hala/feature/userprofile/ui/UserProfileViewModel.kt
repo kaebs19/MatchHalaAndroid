@@ -49,7 +49,8 @@ class UserProfileViewModel(
     private val blocking: BlockingRepository,
     private val reporting: ReportRepository,
     private val userRepo: UserRepository,
-    private val friends: FriendsRepository
+    private val friends: FriendsRepository,
+    private val visitors: com.chathala.hala.feature.visitors.data.VisitorsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UserProfileState())
@@ -64,10 +65,22 @@ class UserProfileViewModel(
     init {
         load()
         loadFriendStatus()
+        recordVisit()
         viewModelScope.launch {
             userRepo.currentUser.collect { u ->
                 _state.update { it.copy(currentUserPremium = u?.isPremium == true) }
             }
+        }
+    }
+
+    /**
+     * يسجّل زيارة هذا الملف — best-effort (لا يُظهر خطأً ولا يعطّل الشاشة).
+     * الخادم يتجاهل التكرار خلال 24 ساعة، ولا يسجّل زيارة الشخص لنفسه،
+     * ويخفي الزيارة تلقائياً لمن يفعّل الوضع المخفي (stealthMode).
+     */
+    private fun recordVisit() {
+        viewModelScope.launch {
+            runCatching { visitors.recordView(userId) }
         }
     }
 
@@ -282,7 +295,8 @@ class UserProfileViewModel(
                     blocking = app.blockingRepository,
                     reporting = app.reportRepository,
                     userRepo = app.userRepository,
-                    friends = app.friendsRepository
+                    friends = app.friendsRepository,
+                    visitors = app.visitorsRepository
                 ) as T
             }
         }
