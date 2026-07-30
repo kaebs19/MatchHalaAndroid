@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -40,6 +41,7 @@ fun ChatsFilterChips(
     premiumCount: Int,
     onSelect: (ChatsFilter) -> Unit,
     onOpenRequests: () -> Unit,
+    onOpenFriends: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scroll = rememberScrollState()
@@ -68,6 +70,14 @@ fun ChatsFilterChips(
             isAccent = true,
             selected = false,
             onClick = onOpenRequests
+        )
+        // ينتقل لشاشة الأصدقاء (ليس فلتراً للقائمة)
+        FilterChip(
+            label = "أصدقائي",
+            icon = Icons.Filled.People,
+            iconTint = Color(0xFFAB47BC),
+            selected = false,
+            onClick = onOpenFriends
         )
         FilterChip(
             label = "مقربون",

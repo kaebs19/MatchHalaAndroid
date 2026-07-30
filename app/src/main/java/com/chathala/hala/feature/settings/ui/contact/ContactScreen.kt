@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Facebook
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Icon
@@ -90,6 +91,16 @@ fun ContactScreen(onBack: () -> Unit) {
                 value = "@hala.chat",
                 onClick = {
                     open(Intent(Intent.ACTION_VIEW, OfficialContacts.INSTAGRAM.toUri()))
+                }
+            )
+
+            ContactRow(
+                icon = Icons.Filled.Facebook,
+                iconColor = Color(0xFF1877F2),
+                label = "فيسبوك",
+                value = "Halachatapp",
+                onClick = {
+                    open(Intent(Intent.ACTION_VIEW, OfficialContacts.FACEBOOK.toUri()))
                 }
             )
         }

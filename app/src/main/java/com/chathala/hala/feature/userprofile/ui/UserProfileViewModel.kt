@@ -8,6 +8,8 @@ import com.chathala.hala.core.network.ErrorMessages
 import com.chathala.hala.core.network.NetworkResult
 import com.chathala.hala.feature.blocking.data.BlockingRepository
 import com.chathala.hala.feature.discover.data.DiscoverRepository
+import com.chathala.hala.feature.friends.data.FriendStatus
+import com.chathala.hala.feature.friends.data.FriendsRepository
 import com.chathala.hala.feature.reporting.data.ReportReason
 import com.chathala.hala.feature.reporting.data.ReportRepository
 import com.chathala.hala.feature.user.data.UserRepository
@@ -33,7 +35,11 @@ data class UserProfileState(
     val blocked: Boolean = false,
     val reporting: Boolean = false,
     val reported: Boolean = false,
-    val currentUserPremium: Boolean = false
+    val currentUserPremium: Boolean = false,
+    // ── الصداقة ──
+    val friendStatus: FriendStatus = FriendStatus.NONE,
+    val friendshipId: String? = null,
+    val friendWorking: Boolean = false
 )
 
 class UserProfileViewModel(
@@ -42,7 +48,8 @@ class UserProfileViewModel(
     private val discover: DiscoverRepository,
     private val blocking: BlockingRepository,
     private val reporting: ReportRepository,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val friends: FriendsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UserProfileState())
@@ -56,9 +63,89 @@ class UserProfileViewModel(
 
     init {
         load()
+        loadFriendStatus()
         viewModelScope.launch {
             userRepo.currentUser.collect { u ->
                 _state.update { it.copy(currentUserPremium = u?.isPremium == true) }
+            }
+        }
+    }
+
+    private fun loadFriendStatus() {
+        viewModelScope.launch {
+            when (val r = friends.status(userId)) {
+                is NetworkResult.Success -> _state.update {
+                    it.copy(
+                        friendStatus = FriendStatus.fromApi(r.data.status),
+                        friendshipId = r.data.friendshipId
+                    )
+                }
+                is NetworkResult.Error -> { /* تجاهل — الزر يبقى "إضافة" */ }
+            }
+        }
+    }
+
+    /** إرسال طلب صداقة (أو قبول تلقائي إن كان الطرف الآخر أرسل لي). */
+    fun addFriend() {
+        if (_state.value.friendWorking) return
+        _state.update { it.copy(friendWorking = true) }
+        viewModelScope.launch {
+            when (val r = friends.sendRequest(userId)) {
+                is NetworkResult.Success -> {
+                    val status = FriendStatus.fromApi(r.data.status)
+                    _state.update {
+                        it.copy(
+                            friendWorking = false,
+                            friendStatus = if (status == FriendStatus.NONE) FriendStatus.PENDING_SENT else status,
+                            friendshipId = r.data.friendshipId ?: it.friendshipId
+                        )
+                    }
+                    _message.tryEmit(
+                        if (status == FriendStatus.FRIENDS) "أصبحتما صديقين 🎉" else "تم إرسال طلب الصداقة"
+                    )
+                }
+                is NetworkResult.Error -> {
+                    _state.update { it.copy(friendWorking = false) }
+                    _message.tryEmit(ErrorMessages.friendly(r))
+                }
+            }
+        }
+    }
+
+    /** قبول طلب صداقة وارد من هذا المستخدم. */
+    fun acceptFriend() {
+        val fid = _state.value.friendshipId ?: return
+        if (_state.value.friendWorking) return
+        _state.update { it.copy(friendWorking = true) }
+        viewModelScope.launch {
+            when (val r = friends.accept(fid)) {
+                is NetworkResult.Success -> {
+                    _state.update { it.copy(friendWorking = false, friendStatus = FriendStatus.FRIENDS) }
+                    _message.tryEmit("أصبحتما صديقين 🎉")
+                }
+                is NetworkResult.Error -> {
+                    _state.update { it.copy(friendWorking = false) }
+                    _message.tryEmit(ErrorMessages.friendly(r))
+                }
+            }
+        }
+    }
+
+    /** إزالة صديق أو إلغاء طلب مرسل/رفض طلب وارد. */
+    fun removeFriend() {
+        if (_state.value.friendWorking) return
+        _state.update { it.copy(friendWorking = true) }
+        val fid = _state.value.friendshipId
+        val wasReceived = _state.value.friendStatus == FriendStatus.PENDING_RECEIVED
+        viewModelScope.launch {
+            val r = if (wasReceived && fid != null) friends.decline(fid) else friends.remove(userId)
+            _state.update { it.copy(friendWorking = false) }
+            when (r) {
+                is NetworkResult.Success -> {
+                    _state.update { it.copy(friendStatus = FriendStatus.NONE, friendshipId = null) }
+                    _message.tryEmit(r.data)
+                }
+                is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
             }
         }
     }
@@ -194,7 +281,8 @@ class UserProfileViewModel(
                     discover = app.discoverRepository,
                     blocking = app.blockingRepository,
                     reporting = app.reportRepository,
-                    userRepo = app.userRepository
+                    userRepo = app.userRepository,
+                    friends = app.friendsRepository
                 ) as T
             }
         }

@@ -32,6 +32,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.LocationOn
+import com.chathala.hala.feature.friends.data.FriendStatus
+import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.HowToReg
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.CircularProgressIndicator
@@ -84,6 +89,7 @@ fun UserProfileScreen(
     var showMessageSheet by remember { mutableStateOf(false) }
     var showReport by remember { mutableStateOf(false) }
     var showBlockConfirm by remember { mutableStateOf(false) }
+    var showFriendRemoveConfirm by remember { mutableStateOf(false) }
     var viewerIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(Unit) {
@@ -119,7 +125,13 @@ fun UserProfileScreen(
                 onOpenPhoto = { viewerIndex = it },
                 liked = state.liked,
                 blocked = state.blocked,
-                reported = state.reported
+                reported = state.reported,
+                friendStatus = state.friendStatus,
+                friendWorking = state.friendWorking,
+                onAddFriend = viewModel::addFriend,
+                onAcceptFriend = viewModel::acceptFriend,
+                // إلغاء طلب / إزالة صديق / رفض طلب → تأكيد أولاً
+                onRemoveFriend = { showFriendRemoveConfirm = true }
             )
         }
 
@@ -173,6 +185,82 @@ fun UserProfileScreen(
             onDismiss = { showBlockConfirm = false }
         )
     }
+
+    if (showFriendRemoveConfirm && state.user != null) {
+        FriendRemoveConfirmDialog(
+            userName = state.user?.name,
+            status = state.friendStatus,
+            working = state.friendWorking,
+            onConfirm = {
+                viewModel.removeFriend()
+                showFriendRemoveConfirm = false
+            },
+            onDismiss = { showFriendRemoveConfirm = false }
+        )
+    }
+}
+
+/** تأكيد إلغاء طلب الصداقة / إزالة صديق / رفض طلب وارد. */
+@Composable
+private fun FriendRemoveConfirmDialog(
+    userName: String?,
+    status: FriendStatus,
+    working: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val name = userName ?: "هذا المستخدم"
+    val (title, message, confirmLabel) = when (status) {
+        FriendStatus.PENDING_SENT -> Triple(
+            "إلغاء طلب الصداقة",
+            "هل أنت متأكد من إلغاء طلب الصداقة المُرسل إلى $name؟",
+            "إلغاء الطلب"
+        )
+        FriendStatus.PENDING_RECEIVED -> Triple(
+            "رفض طلب الصداقة",
+            "هل أنت متأكد من رفض طلب الصداقة من $name؟",
+            "رفض"
+        )
+        else -> Triple(
+            "إزالة صديق",
+            "هل أنت متأكد من إزالة $name من قائمة أصدقائك؟",
+            "إزالة"
+        )
+    }
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(20.dp),
+        icon = {
+            Icon(
+                imageVector = Icons.Filled.PersonRemove,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        text = {
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onConfirm, enabled = !working) {
+                Text(confirmLabel, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("تراجع") }
+        }
+    )
 }
 
 @Composable
@@ -232,9 +320,14 @@ private fun ProfileContent(
     onOpenPhoto: (Int) -> Unit,
     liked: Boolean,
     blocked: Boolean,
-    reported: Boolean
+    reported: Boolean,
+    friendStatus: FriendStatus,
+    friendWorking: Boolean,
+    onAddFriend: () -> Unit,
+    onAcceptFriend: () -> Unit,
+    onRemoveFriend: () -> Unit
 ) {
-    // حساب موقوف بالكامل → بيانات مقنّعة، نخفي كل أزرار التفاعل والأمان
+    // حساب موقوف بالكامل → بيانات مقنّعة, نخفي كل أزرار التفاعل والأمان
     val suspended = user.isSuspendedAccount == true
 
     // بوابة زر الرسالة حسب إعدادات الطرف الآخر
@@ -298,6 +391,15 @@ private fun ProfileContent(
                 onMessage = onMessage,
                 liked = liked,
                 messageEnabled = messageBlockedReason == null,
+                friendStatus = friendStatus,
+                friendWorking = friendWorking,
+                onFriendClick = {
+                    when (friendStatus) {
+                        FriendStatus.NONE -> onAddFriend()
+                        FriendStatus.PENDING_RECEIVED -> onAcceptFriend()
+                        else -> onRemoveFriend()
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 20.dp, vertical = 24.dp)
@@ -366,6 +468,7 @@ private fun InfoLine(label: String, value: String, valueColor: Color = MaterialT
         Text(text = value, color = valueColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }
+
 
 /** نصوص الأمان (حظر/إلغاء حظر/إبلاغ) أسفل الملف. */
 @Composable
@@ -815,6 +918,9 @@ private fun FloatingActionBar(
     onMessage: () -> Unit,
     liked: Boolean,
     messageEnabled: Boolean,
+    friendStatus: FriendStatus,
+    friendWorking: Boolean,
+    onFriendClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -827,37 +933,66 @@ private fun FloatingActionBar(
         ),
         label = "likeScale"
     )
+    // مظهر زر الصداقة حسب الحالة
+    val (friendLabel, friendIcon) = when (friendStatus) {
+        FriendStatus.FRIENDS -> "صديق" to Icons.Filled.HowToReg
+        FriendStatus.PENDING_SENT -> "مُرسل" to Icons.Filled.HourglassTop
+        FriendStatus.PENDING_RECEIVED -> "قبول" to Icons.Filled.PersonAdd
+        FriendStatus.NONE -> "إضافة" to Icons.Filled.PersonAdd
+    }
+    val friendColor = Color(0xFFAB47BC)   // بنفسجي — يميّزه عن بقية الأزرار
+    // مملوء عند وجود علاقة قائمة (صديق) أو طلب ينتظر ردّي (لفت الانتباه)
+    val friendFilled = friendStatus == FriendStatus.FRIENDS ||
+        friendStatus == FriendStatus.PENDING_RECEIVED
+
     Row(
         modifier = modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(32.dp))
             .background(Color.Black.copy(alpha = 0.55f))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+            .padding(horizontal = 6.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ProfileActionButton("تخطي", Icons.Filled.Close, Color(0xFFFF5A5F)) {
-            HapticHelper.medium(haptic); onSkip()
-        }
-        ProfileActionButton("مميز", Icons.Filled.Star, Color(0xFF2EA9FF)) {
-            HapticHelper.medium(haptic); onSuperLike()
-        }
+        ProfileActionButton(
+            label = "تخطي",
+            icon = Icons.Filled.Close,
+            color = Color(0xFFFF5A5F),
+            modifier = Modifier.weight(1f)
+        ) { HapticHelper.medium(haptic); onSkip() }
+
+        ProfileActionButton(
+            label = "مميز",
+            icon = Icons.Filled.Star,
+            color = Color(0xFF2EA9FF),
+            modifier = Modifier.weight(1f)
+        ) { HapticHelper.medium(haptic); onSuperLike() }
+
         ProfileActionButton(
             label = "إعجاب",
             icon = Icons.Filled.Favorite,
             color = if (liked) Color(0xFFE91E63) else Color(0xFF4CAF50),
             filled = liked,
-            scale = likeScale
-        ) {
-            HapticHelper.medium(haptic); onLike()
-        }
+            scale = likeScale,
+            modifier = Modifier.weight(1f)
+        ) { HapticHelper.medium(haptic); onLike() }
+
         ProfileActionButton(
             label = "رسالة",
             icon = Icons.AutoMirrored.Filled.Chat,
             color = Color(0xFFE91E8C),
-            enabled = messageEnabled
-        ) {
-            HapticHelper.light(haptic); onMessage()
-        }
+            enabled = messageEnabled,
+            modifier = Modifier.weight(1f)
+        ) { HapticHelper.light(haptic); onMessage() }
+
+        ProfileActionButton(
+            label = friendLabel,
+            icon = friendIcon,
+            color = friendColor,
+            filled = friendFilled,
+            loading = friendWorking,
+            modifier = Modifier.weight(1f)
+        ) { HapticHelper.medium(haptic); onFriendClick() }
     }
 }
 
@@ -869,21 +1004,23 @@ private fun ProfileActionButton(
     filled: Boolean = false,
     scale: Float = 1f,
     enabled: Boolean = true,
+    loading: Boolean = false,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier
+        modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale; alpha = if (enabled) 1f else 0.45f }
             .clip(RoundedCornerShape(20.dp))
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .clickable(enabled = enabled && !loading, onClick = onClick)
+            .padding(horizontal = 2.dp, vertical = 4.dp)
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(46.dp)
+                .size(44.dp)
                 .clip(CircleShape)
                 .background(
                     brush = if (filled) Brush.linearGradient(listOf(color, color.copy(alpha = 0.7f)))
@@ -891,18 +1028,29 @@ private fun ProfileActionButton(
                 )
                 .border(1.5.dp, color.copy(alpha = if (filled) 0f else 0.6f), CircleShape)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = if (filled) Color.White else color,
-                modifier = Modifier.size(20.dp)
-            )
+            if (loading) {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    color = if (filled) Color.White else color,
+                    modifier = Modifier.size(18.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = if (filled) Color.White else color,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         Text(
             text = label,
             color = Color.White.copy(alpha = 0.9f),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
+            softWrap = false
         )
     }
 }

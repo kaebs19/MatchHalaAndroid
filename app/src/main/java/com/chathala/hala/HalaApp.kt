@@ -121,6 +121,9 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var userProfileRepository: UserProfileRepository
         private set
 
+    lateinit var friendsRepository: com.chathala.hala.feature.friends.data.FriendsRepository
+        private set
+
     lateinit var billingManager: com.chathala.hala.feature.premium.data.BillingManager
         private set
 
@@ -176,6 +179,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         verificationRepository = VerificationRepository(tokenStorage = tokenStorage)
         reportRepository = ReportRepository(tokenStorage = tokenStorage)
         userProfileRepository = UserProfileRepository(tokenStorage = tokenStorage)
+        friendsRepository = com.chathala.hala.feature.friends.data.FriendsRepository(tokenStorage = tokenStorage)
 
         // ── Premium / الاشتراكات ──
         subscriptionRepository = com.chathala.hala.feature.premium.data.SubscriptionRepository(

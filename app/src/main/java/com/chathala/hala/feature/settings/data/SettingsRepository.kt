@@ -54,6 +54,15 @@ class SettingsRepository(
         resp.message ?: "تم التحديث"
     }
 
+    /** من يستطيع إرسال طلب صداقة لي: everyone | contacts | nobody. */
+    suspend fun setFriendRequests(value: String): NetworkResult<String> = safeApiCall {
+        val resp = api.updateFriendRequestsPrivacy(
+            bearer(),
+            com.chathala.hala.feature.friends.data.UpdateFriendRequestsPrivacyBody(value)
+        )
+        resp.message ?: "تم التحديث"
+    }
+
     suspend fun setDoNotDisturb(
         enabled: Boolean,
         startHour: Int? = null,

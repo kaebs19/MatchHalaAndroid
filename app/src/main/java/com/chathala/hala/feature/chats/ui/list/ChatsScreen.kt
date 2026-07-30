@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -64,6 +65,7 @@ fun ChatsScreen(
     onOpenConversation: (String) -> Unit,
     onOpenRequestPreview: (String) -> Unit = {},
     onOpenRequests: () -> Unit = {},
+    onOpenFriends: () -> Unit = {},
     viewModel: ChatsViewModel = viewModel(factory = ChatsViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -90,7 +92,8 @@ fun ChatsScreen(
                 searchQuery = state.searchQuery,
                 onToggleSearch = viewModel::toggleSearch,
                 onSearchChange = viewModel::setSearchQuery,
-                socketConnected = state.socketConnected
+                socketConnected = state.socketConnected,
+                onOpenFriends = onOpenFriends
             )
 
             if (!state.searchOpen) {
@@ -103,7 +106,8 @@ fun ChatsScreen(
                         conv.participants.any { it.id != state.currentUserId && it.isPremium == true }
                     },
                     onSelect = viewModel::setFilter,
-                    onOpenRequests = onOpenRequests
+                    onOpenRequests = onOpenRequests,
+                    onOpenFriends = onOpenFriends
                 )
             }
 
@@ -242,7 +246,8 @@ private fun ChatsTopBar(
     searchQuery: String,
     onToggleSearch: () -> Unit,
     onSearchChange: (String) -> Unit,
-    socketConnected: Boolean
+    socketConnected: Boolean,
+    onOpenFriends: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -285,6 +290,21 @@ private fun ChatsTopBar(
                 )
                 Spacer(Modifier.size(8.dp))
             }
+            // مدخل قائمة الأصدقاء
+            IconButton(
+                onClick = onOpenFriends,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.People,
+                    contentDescription = "الأصدقاء",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Spacer(Modifier.size(8.dp))
             IconButton(
                 onClick = onToggleSearch,
                 modifier = Modifier

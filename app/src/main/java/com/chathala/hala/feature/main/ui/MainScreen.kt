@@ -44,6 +44,7 @@ fun MainScreen(
     onOpenChatRequests: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
     onOpenPremium: () -> Unit = {},
+    onOpenFriends: () -> Unit = {},
     onOpenUserProfile: (String) -> Unit = {},
     onOpenUserSearch: () -> Unit = {},
     onOpenRequests: () -> Unit = {}
@@ -88,9 +89,11 @@ fun MainScreen(
                     onOpenConversation = onOpenConversation,
                     onOpenUserProfile = onOpenUserProfile,
                     onOpenSearch = onOpenUserSearch,
-                    onOpenRequests = onOpenRequests
+                    onOpenRequests = onOpenRequests,
+                    onOpenPremium = onOpenPremium
                 )
                 MainTab.CHATS -> ChatsScreen(
+                    onOpenFriends = onOpenFriends,
                     onOpenConversation = onOpenConversation,
                     onOpenRequestPreview = onOpenRequestPreview,
                     onOpenRequests = onOpenChatRequests
@@ -105,7 +108,8 @@ fun MainScreen(
                     onEditProfile = onEditProfile,
                     onOpenSettings = onOpenSettings,
                     onOpenVerification = onOpenVerification,
-                    onOpenPremium = onOpenPremium
+                    onOpenPremium = onOpenPremium,
+                    onOpenFriends = onOpenFriends
                 )
             }
         }

@@ -503,6 +503,54 @@ interface ApiService {
         @Header("Authorization") bearer: String
     ): com.chathala.hala.feature.premium.data.SubscriptionStatusResponse
 
+    // ── Friends / الأصدقاء ───────────────────────────────────────
+
+    @GET("api/mobile/friends/status/{userId}")
+    suspend fun getFriendStatus(
+        @Header("Authorization") bearer: String,
+        @Path("userId") userId: String
+    ): com.chathala.hala.feature.friends.data.FriendStatusResponse
+
+    @POST("api/mobile/friends/request")
+    suspend fun sendFriendRequest(
+        @Header("Authorization") bearer: String,
+        @Body body: com.chathala.hala.feature.friends.data.FriendRequestBody
+    ): com.chathala.hala.feature.friends.data.FriendActionResponse
+
+    @POST("api/mobile/friends/requests/{id}/accept")
+    suspend fun acceptFriendRequest(
+        @Header("Authorization") bearer: String,
+        @Path("id") friendshipId: String
+    ): com.chathala.hala.feature.friends.data.FriendActionResponse
+
+    @POST("api/mobile/friends/requests/{id}/decline")
+    suspend fun declineFriendRequest(
+        @Header("Authorization") bearer: String,
+        @Path("id") friendshipId: String
+    ): SimpleResponse
+
+    @retrofit2.http.DELETE("api/mobile/friends/{userId}")
+    suspend fun removeFriend(
+        @Header("Authorization") bearer: String,
+        @Path("userId") userId: String
+    ): SimpleResponse
+
+    @GET("api/mobile/friends")
+    suspend fun getFriends(
+        @Header("Authorization") bearer: String
+    ): com.chathala.hala.feature.friends.data.FriendsListResponse
+
+    @GET("api/mobile/friends/requests")
+    suspend fun getFriendRequests(
+        @Header("Authorization") bearer: String
+    ): com.chathala.hala.feature.friends.data.FriendRequestsResponse
+
+    @retrofit2.http.PATCH("api/mobile/privacy/friend-requests")
+    suspend fun updateFriendRequestsPrivacy(
+        @Header("Authorization") bearer: String,
+        @Body body: com.chathala.hala.feature.friends.data.UpdateFriendRequestsPrivacyBody
+    ): SimpleResponse
+
     // ── Discover ─────────────────────────────────────────────────
 
     @GET("api/swipes/cards")

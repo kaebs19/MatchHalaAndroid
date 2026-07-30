@@ -41,6 +41,8 @@ data class EditProfileState(
     val country: String? = null,
     val interests: Set<String> = emptySet(),
     val hasImage: Boolean = false,
+    /** رابط صورة الملف الحالية — للمعاينة داخل شاشة التعديل. */
+    val imageUrl: String? = null,
     val hydrated: Boolean = false,
 
     val initialName: String = "",
@@ -105,6 +107,7 @@ class EditProfileViewModel(
                         country = user.country,
                         interests = interests,
                         hasImage = !user.profileImage.isNullOrBlank(),
+                        imageUrl = user.profileImage,
                         initialName = user.name,
                         initialBio = user.bio.orEmpty(),
                         initialGender = user.gender,
@@ -115,7 +118,12 @@ class EditProfileViewModel(
                     ) }
                 } else if (user != null) {
                     // مراقبة تغيير الصورة فقط بعد الـ hydration الأولي
-                    _state.update { it.copy(hasImage = !user.profileImage.isNullOrBlank()) }
+                    _state.update {
+                        it.copy(
+                            hasImage = !user.profileImage.isNullOrBlank(),
+                            imageUrl = user.profileImage
+                        )
+                    }
                 }
             }
         }

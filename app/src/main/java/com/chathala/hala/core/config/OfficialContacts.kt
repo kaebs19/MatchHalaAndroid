@@ -9,5 +9,6 @@ object OfficialContacts {
     const val EMAIL = "kaebs19@gmail.com"
     const val WEBSITE = "https://www.chathala.com/"
     const val INSTAGRAM = "https://www.instagram.com/hala.chat/"
+    const val FACEBOOK = "https://www.facebook.com/Halachatapp"
     const val DELETE_ACCOUNT_URL = "https://www.chathala.com/delete-account"
 }

@@ -20,7 +20,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
@@ -300,6 +302,8 @@ private fun typeBadge(type: String?): Pair<ImageVector, Color>? = when (type) {
     "match", "new_match" -> Icons.Filled.Favorite to MaterialTheme.colorScheme.primary
     "profile_view" -> Icons.Filled.Visibility to MaterialTheme.colorScheme.secondary
     "new_follower" -> Icons.Filled.Person to MaterialTheme.colorScheme.primary
+    "friend_request" -> Icons.Filled.PersonAdd to MaterialTheme.colorScheme.primary
+    "friend_accepted" -> Icons.Filled.People to Color(0xFF4CAF50)
     "verification" -> Icons.Filled.Shield to MaterialTheme.colorScheme.primary
     "warning", "official_warning", "account_suspended",
     "account_restricted", "restriction", "security_alert" ->
@@ -315,6 +319,8 @@ private fun typeTitle(type: String?): String = when (type) {
     "match", "new_match" -> "مطابقة جديدة"
     "profile_view" -> "زيارة لبروفايلك"
     "new_follower" -> "متابع جديد"
+    "friend_request" -> "طلب صداقة"
+    "friend_accepted" -> "تمت إضافتك صديقاً"
     "verification" -> "تحقق من الحساب"
     "warning", "official_warning" -> "تنبيه من الإدارة"
     "account_suspended" -> "تعليق الحساب"

@@ -24,6 +24,8 @@ data class PrivacySettingsData(
     val stealthMode: Boolean? = null,
     val acceptingRequests: Boolean? = null,
     val premiumOnlyRequests: Boolean? = null,
+    // من يستطيع إرسال طلب صداقة لي: everyone | contacts | nobody
+    val friendRequests: String? = null,
     val doNotDisturb: DoNotDisturbData? = null,
     val discoveryPaused: DiscoveryPausedData? = null
 )

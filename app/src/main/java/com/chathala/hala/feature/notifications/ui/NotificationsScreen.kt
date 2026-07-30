@@ -155,7 +155,10 @@ fun NotificationsScreen(
                                 "new_match",
                                 "new_like", "like",
                                 "profile_view",
-                                "new_follower" -> {
+                                "new_follower",
+                                // طلب صداقة/قبول → ملف المُرسِل (زر الصداقة هناك يتيح القبول)
+                                "friend_request",
+                                "friend_accepted" -> {
                                     if (!senderId.isNullOrBlank()) onOpenUserProfile(senderId)
                                 }
                                 else -> Unit

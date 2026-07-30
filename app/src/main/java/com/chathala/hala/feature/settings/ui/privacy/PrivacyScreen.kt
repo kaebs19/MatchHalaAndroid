@@ -1,6 +1,7 @@
 package com.chathala.hala.feature.settings.ui.privacy
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +82,11 @@ fun PrivacyScreen(
                             enabled = !state.updating,
                             onChange = viewModel::toggleStealth
                         )
+                        FriendRequestsSelector(
+                            selected = d.friendRequests ?: "everyone",
+                            enabled = !state.updating,
+                            onSelect = viewModel::setFriendRequests
+                        )
                         ReadOnlyRow(
                             title = stringResource(R.string.privacy_profile_visibility),
                             value = when (d.profileVisibility) {
@@ -150,6 +156,58 @@ private fun ToggleRow(
             onCheckedChange = onChange,
             enabled = enabled
         )
+    }
+}
+
+/** محدّد "من يستطيع إضافتي صديقاً" — 3 خيارات. */
+@Composable
+private fun FriendRequestsSelector(
+    selected: String,
+    enabled: Boolean,
+    onSelect: (String) -> Unit
+) {
+    val options = listOf(
+        "everyone" to "الجميع",
+        "contacts" to "من حادثتهم فقط",
+        "nobody" to "لا أحد"
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "من يستطيع إضافتي صديقاً؟",
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { (value, label) ->
+                val isSel = selected == value
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(
+                            if (isSel) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                        )
+                        .clickable(enabled = enabled) { onSelect(value) }
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
     }
 }
 

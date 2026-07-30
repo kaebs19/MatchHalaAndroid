@@ -1,7 +1,21 @@
 package com.chathala.hala.feature.profile.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.chathala.hala.core.util.showToast
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +29,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Warning
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,6 +72,32 @@ fun EditProfileScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDiscardDialog by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+    // اختيار صورة جديدة للملف الشخصي
+    val photoPicker = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val part = com.chathala.hala.core.util.MediaUploadHelper.uriToImagePart(
+                    context = context,
+                    uri = uri,
+                    fieldName = "profileImage"
+                )
+                if (part != null) viewModel.uploadPhoto(part)
+                else context.showToast("تعذّرت قراءة الصورة")
+            }
+        }
+    }
+    val pickPhoto: () -> Unit = {
+        photoPicker.launch(
+            androidx.activity.result.PickVisualMediaRequest(
+                androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+            )
+        )
+    }
 
     LaunchedEffect(state.saved) {
         if (state.saved) {
@@ -128,13 +170,8 @@ fun EditProfileScreen(
         }
 
         LaunchedEffect(Unit) {
-            viewModel.message.collect { msg ->
-                // يُعرض Toast بسيط عند تحديث/حذف الصورة
-                android.widget.Toast.makeText(
-                    /* NOTE: using plain Toast here since EditProfile doesn't host a snackbar */
-                    null, msg, android.widget.Toast.LENGTH_SHORT
-                )
-            }
+            // رسائل تحديث/حذف الصورة — Toast بسياق صحيح (الشاشة لا تستضيف snackbar)
+            viewModel.message.collect { msg -> context.showToast(msg) }
         }
 
         Column(
@@ -143,6 +180,16 @@ fun EditProfileScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // صورة الملف الشخصي — تغيير مباشر من هنا
+            EditablePhoto(
+                imageUrl = state.imageUrl,
+                uploading = state.uploading,
+                onPick = pickPhoto
+            )
+
+            // تحذير المحتوى — بارز قبل الحقول
+            ContentWarningCard()
+
             HalaTextField(
                 value = state.name,
                 onValueChange = viewModel::setName,
@@ -217,4 +264,119 @@ private fun SectionLabel(text: String) {
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
         color = MaterialTheme.colorScheme.onBackground
     )
+}
+
+/** صورة الملف الشخصي مع إمكانية تغييرها بالنقر. */
+@Composable
+private fun EditablePhoto(
+    imageUrl: String?,
+    uploading: Boolean,
+    onPick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(110.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                    .clickable(enabled = !uploading, onClick = onPick),
+                contentAlignment = Alignment.Center
+            ) {
+                when {
+                    uploading -> CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    !imageUrl.isNullOrBlank() -> AsyncImage(
+                        model = imageUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    else -> Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+            }
+            // شارة الكاميرا
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
+                    .clickable(enabled = !uploading, onClick = onPick),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PhotoCamera,
+                    contentDescription = "تغيير الصورة",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "اضغط لتغيير الصورة",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+/** تحذير بارز بشأن المحتوى المخالف (صور/أسماء/نبذة). */
+@Composable
+private fun ContentWarningCard() {
+    val warn = Color(0xFFE53935)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(warn.copy(alpha = 0.10f))
+            .border(1.dp, warn.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(warn.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Warning,
+                contentDescription = null,
+                tint = warn,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "تحذير هام",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = warn
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "أي صورة جنسية أو إباحية، أو اسم أو نبذة تحتوي ألفاظاً أو تلميحات جنسية — " +
+                    "يُعرّض حسابك للحظر النهائي دون إنذار.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 18.sp
+            )
+        }
+    }
 }

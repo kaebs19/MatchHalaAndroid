@@ -79,6 +79,23 @@ class PrivacyViewModel(private val repo: SettingsRepository) : ViewModel() {
         }
     }
 
+    /** من يستطيع إضافتي صديقاً: everyone | contacts | nobody. */
+    fun setFriendRequests(value: String) {
+        val current = _state.value.data ?: return
+        val previous = current.friendRequests
+        _state.update { it.copy(updating = true, data = current.copy(friendRequests = value)) }
+        viewModelScope.launch {
+            when (val r = repo.setFriendRequests(value)) {
+                is NetworkResult.Success -> _message.tryEmit(r.data)
+                is NetworkResult.Error -> {
+                    _state.update { it.copy(data = current.copy(friendRequests = previous)) }
+                    _message.tryEmit(ErrorMessages.friendly(r))
+                }
+            }
+            _state.update { it.copy(updating = false) }
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

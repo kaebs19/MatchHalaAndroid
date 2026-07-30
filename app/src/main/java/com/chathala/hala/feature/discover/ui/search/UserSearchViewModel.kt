@@ -214,7 +214,8 @@ class UserSearchViewModel(
                 _state.update {
                     val merged = if (reset) incoming else it.results + incoming
                     it.copy(
-                        loading = false, loadingMore = false, results = merged, page = nextPage,
+                        loading = false, loadingMore = false, results = merged.byPriority(),
+                        page = nextPage,
                         canLoadMore = merged.size < r.data.total && incoming.size >= pageSize,
                         searched = true, error = null
                     )
@@ -239,3 +240,12 @@ class UserSearchViewModel(
         }
     }
 }
+
+/**
+ * أولوية عرض نتائج البحث: المميّزون أولاً، ثم المتصلون، ثم البقية.
+ * sortedWith ثابت (stable) فيحافظ على ترتيب الخادم داخل كل مجموعة.
+ */
+private fun List<SearchUser>.byPriority(): List<SearchUser> = sortedWith(
+    compareByDescending<SearchUser> { it.isPremium == true }
+        .thenByDescending { it.isOnline == true }
+)

@@ -68,6 +68,7 @@ fun DiscoverScreen(
     onOpenUserProfile: (String) -> Unit = {},
     onOpenSearch: () -> Unit = {},
     onOpenRequests: () -> Unit = {},
+    onOpenPremium: () -> Unit = {},
     viewModel: DiscoverViewModel = viewModel(factory = DiscoverViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -131,7 +132,10 @@ fun DiscoverScreen(
                 hasActiveFilters = hasActiveFilters(state.filters),
                 isPremium = isPremium,
                 onSearchClick = onOpenSearch,
-                onFiltersClick = { showFilters = true },
+                onFiltersClick = {
+                    if (isPremium) showFilters = true
+                    else premiumGate = PremiumGateReason.FILTERS
+                },
                 onVisitorsClick = {
                     if (isPremium) {
                         // TODO: ربط شاشة الزوار حين توفّر backend endpoint
@@ -241,7 +245,11 @@ fun DiscoverScreen(
         PremiumGateDialog(
             title = reason.title,
             message = reason.message,
-            onDismiss = { premiumGate = null }
+            onDismiss = { premiumGate = null },
+            onUpgrade = {
+                premiumGate = null
+                onOpenPremium()
+            }
         )
     }
 
@@ -528,5 +536,9 @@ private enum class PremiumGateReason(val title: String, val message: String) {
     VISITORS(
         title = "شاهد من زار ملفك",
         message = "قائمة الزوار متاحة لمشتركي البريميوم — اكتشف من اهتم بك حتى لو لم يرسل رسالة."
+    ),
+    FILTERS(
+        title = "الفلترة المتقدّمة للبريميوم",
+        message = "صفِّ نتائج التعارف حسب العمر والدولة والأكثر نشاطاً — الفلترة متاحة لمشتركي البريميوم."
     )
 }

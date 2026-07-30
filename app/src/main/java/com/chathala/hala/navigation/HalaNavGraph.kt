@@ -230,6 +230,7 @@ fun HalaNavGraph() {
                 onOpenChatRequests = { nav.navigate(Routes.CHAT_REQUESTS) },
                 onOpenVerification = { nav.navigate(Routes.VERIFICATION) },
                 onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) },
+                onOpenFriends = { nav.navigate(Routes.FRIENDS) },
                 onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
                 onOpenUserSearch = { nav.navigate(Routes.USER_SEARCH) },
                 onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) }
@@ -239,7 +240,8 @@ fun HalaNavGraph() {
         composable(Routes.USER_SEARCH) {
             UserSearchScreen(
                 onBack = { nav.popBackStack() },
-                onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) }
+                onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
+                onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) }
             )
         }
 
@@ -311,7 +313,18 @@ fun HalaNavGraph() {
 
         composable(Routes.SUBSCRIPTION) {
             com.chathala.hala.feature.premium.ui.SubscriptionScreen(
-                onBack = { nav.popBackStack() }
+                onBack = { nav.popBackStack() },
+                onOpenTerms = { nav.navigate(Routes.LEGAL_TERMS) },
+                onOpenPrivacy = { nav.navigate(Routes.LEGAL_PRIVACY) },
+                onOpenContact = { nav.navigate(Routes.SETTINGS_CONTACT) }
+            )
+        }
+
+        composable(Routes.FRIENDS) {
+            com.chathala.hala.feature.friends.ui.FriendsScreen(
+                onBack = { nav.popBackStack() },
+                onOpenConversation = { id -> nav.navigate(Routes.chat(id)) },
+                onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) }
             )
         }
 

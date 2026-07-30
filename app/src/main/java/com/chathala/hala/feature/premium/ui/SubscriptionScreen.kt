@@ -53,17 +53,20 @@ private val GoldDark = Color(0xFFFFA726)
 
 /** مزايا الاشتراك المميّز المعروضة في الشاشة. */
 private val premiumBenefits = listOf(
-    "5 إعجابات مميّزة (Super Like) يومياً",
-    "الظهور في مقدّمة نتائج التعارف",
+    "5 إعجابات مميّزة يومياً",
+    "الظهور في المقدّمة",
     "معرفة من أعجب بك",
-    "الوضع المخفي (تصفّح دون أن تظهر)",
-    "لون اسم مميّز وشارة ذهبية",
+    "التصفّح المخفي",
+    "شارة ذهبية مميّزة",
     "بدون إعلانات"
 )
 
 @Composable
 fun SubscriptionScreen(
     onBack: () -> Unit,
+    onOpenTerms: () -> Unit = {},
+    onOpenPrivacy: () -> Unit = {},
+    onOpenContact: () -> Unit = {},
     viewModel: SubscriptionViewModel = viewModel(factory = SubscriptionViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -131,10 +134,10 @@ fun SubscriptionScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // المزايا
+            // المزايا (مبسّطة وأكثر تراصّاً)
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 premiumBenefits.forEach { benefit ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -142,19 +145,19 @@ fun SubscriptionScreen(
                             Icons.Filled.CheckCircle,
                             contentDescription = null,
                             tint = Gold,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(20.dp)
                         )
-                        Spacer(Modifier.size(12.dp))
+                        Spacer(Modifier.size(10.dp))
                         Text(
                             text = benefit,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(24.dp))
 
             // الباقات
             Column(
@@ -201,6 +204,20 @@ fun SubscriptionScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
             )
+
+            Spacer(Modifier.height(16.dp))
+            // روابط قانونية + اتصل بنا
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LinkText("شروط الاستخدام", onOpenTerms)
+                LinkDot()
+                LinkText("سياسة الخصوصية", onOpenPrivacy)
+                LinkDot()
+                LinkText("اتصل بنا", onOpenContact)
+            }
         }
 
         HalaSnackbarHost(
@@ -208,6 +225,29 @@ fun SubscriptionScreen(
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 90.dp)
         )
     }
+}
+
+@Composable
+private fun LinkText(text: String, onClick: () -> Unit) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+    )
+}
+
+@Composable
+private fun LinkDot() {
+    Box(
+        modifier = Modifier
+            .size(3.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+    )
 }
 
 @Composable

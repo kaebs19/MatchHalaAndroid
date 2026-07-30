@@ -86,6 +86,7 @@ private val OnlineColor = Color(0xFF4CAF50)
 fun UserSearchScreen(
     onBack: () -> Unit,
     onOpenUserProfile: (String) -> Unit,
+    onOpenPremium: () -> Unit = {},
     viewModel: UserSearchViewModel = viewModel(factory = UserSearchViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -122,7 +123,11 @@ fun UserSearchScreen(
         PremiumGateDialog(
             title = stringResource(R.string.premium_filter_gate_title),
             message = stringResource(R.string.premium_filter_gate_msg),
-            onDismiss = { showGate = false }
+            onDismiss = { showGate = false },
+            onUpgrade = {
+                showGate = false
+                onOpenPremium()
+            }
         )
     }
 
@@ -228,7 +233,8 @@ fun UserSearchScreen(
                     onApplyRecent = viewModel::applyRecent,
                     onRemoveRecent = viewModel::removeRecent,
                     onClearRecent = viewModel::clearRecent,
-                    onPromoClick = { showGate = true },
+                    // بطاقة الترقية → صفحة المشتريات مباشرة
+                    onPromoClick = onOpenPremium,
                     onScroll = dismissKeyboard
                 )
             }
