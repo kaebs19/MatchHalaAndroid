@@ -49,15 +49,26 @@ class GoogleSignInHelper(private val context: Context) {
                 GoogleSignInResult.Error("نوع بيانات الاعتماد غير متوقع")
             }
         } catch (e: GetCredentialCancellationException) {
+            // ملاحظة: خدمات Google تُبلّغ أحياناً عن "إلغاء" حتى حين يكون السبب الحقيقي
+            // عدم تطابق SHA-1/معرّف العميل — لذا نُسجّل التفاصيل لتشخيصها من logcat.
+            android.util.Log.w(TAG, "Google sign-in cancelled/aborted: ${e.type} — ${e.message}", e)
             GoogleSignInResult.Cancelled
         } catch (e: NoCredentialException) {
+            android.util.Log.w(TAG, "No Google credential: ${e.message}", e)
             GoogleSignInResult.Error("لا توجد حسابات Google على الجهاز. أضف حساباً من الإعدادات وحاول مجدداً.")
         } catch (e: GoogleIdTokenParsingException) {
+            android.util.Log.e(TAG, "ID token parsing failed", e)
             GoogleSignInResult.Error("فشل قراءة بيانات Google")
         } catch (e: GetCredentialException) {
-            GoogleSignInResult.Error(e.message ?: "فشل الدخول بـ Google")
+            android.util.Log.e(TAG, "GetCredentialException: type=${e.type} msg=${e.message}", e)
+            GoogleSignInResult.Error(e.message ?: "تعذّر الدخول بـ Google — حاول مجدداً")
         } catch (e: Exception) {
+            android.util.Log.e(TAG, "Unexpected Google sign-in error", e)
             GoogleSignInResult.Error(e.message ?: "خطأ غير متوقع")
         }
+    }
+
+    private companion object {
+        const val TAG = "GoogleSignIn"
     }
 }

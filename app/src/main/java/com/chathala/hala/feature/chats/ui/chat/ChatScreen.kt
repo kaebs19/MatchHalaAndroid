@@ -479,6 +479,10 @@ fun ChatScreen(
             }
 
             when {
+                // حظرت الطرف الآخر → لا مراسلة حتى إلغاء الحظر
+                state.blocked -> {
+                    BlockedUserInputBar()
+                }
                 // الطرف الآخر موقوف → لا يمكن إرسال رسائل جديدة
                 state.otherUserSuspended -> {
                     SuspendedUserInputBar()
@@ -1079,6 +1083,32 @@ private fun MessagingRestrictionBanner(
                 )
             }
         }
+    }
+}
+
+/** شريط بديل عن الإدخال حين تكون أنت حاظراً للطرف الآخر — لا مراسلة حتى إلغاء الحظر. */
+@Composable
+private fun BlockedUserInputBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Block,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.size(8.dp))
+        Text(
+            text = "قمت بحظر هذا المستخدم — ألغِ الحظر للمراسلة",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
