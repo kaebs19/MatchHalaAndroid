@@ -14,6 +14,9 @@ import com.chathala.hala.core.storage.AppPreferences
 import com.chathala.hala.feature.chats.audio.AudioPlayer
 import com.chathala.hala.feature.chats.audio.AudioRecorder
 import com.chathala.hala.feature.chats.data.ChatsCacheStorage
+import com.chathala.hala.feature.chats.data.DELETED_ACCOUNT_NAME
+import com.chathala.hala.feature.chats.data.isOtherAccountDeleted
+import com.chathala.hala.feature.chats.data.otherParticipant
 import com.chathala.hala.feature.chats.data.ExternalPromoBlockedInfo
 import com.chathala.hala.feature.chats.data.ConversationsRepository
 import com.chathala.hala.feature.chats.data.Message
@@ -80,6 +83,8 @@ data class ChatUiState(
     val otherUserVerified: Boolean = false,
     // الطرف الآخر موقوف بالكامل → نمنع إرسال رسائل جديدة
     val otherUserSuspended: Boolean = false,
+    // الطرف الآخر حذف حسابه (اختفى من مشاركي المحادثة) → عرض "حساب محذوف" ومنع المراسلة
+    val otherUserDeleted: Boolean = false,
     val reporting: Boolean = false,
     val deleting: Boolean = false,
     val reopening: Boolean = false,
@@ -127,7 +132,7 @@ data class ChatUiState(
     val editSubmitting: Boolean = false
 ) {
     val canSend: Boolean
-        get() = !blocked && !blockedByThem &&
+        get() = !blocked && !blockedByThem && !otherUserDeleted &&
             (conversationStatus == null || conversationStatus == "accepted")
 
     val hasMore: Boolean get() = currentPage < totalPages
@@ -258,9 +263,27 @@ class ChatViewModel(
         selfId: String?
     ) {
         conv ?: return
-        val other = conv.participants.firstOrNull { it.id != selfId } ?: return
+        val other = conv.otherParticipant(selfId)
+        if (other == null) {
+            // لا طرف آخر في المحادثة → حسابه محذوف (الخادم يحذف الوثيقة ويُبقي الرسائل)
+            if (conv.isOtherAccountDeleted(selfId)) {
+                _state.update {
+                    it.copy(
+                        otherUserDeleted = true,
+                        otherUserName = DELETED_ACCOUNT_NAME,
+                        otherUserAvatar = null,
+                        otherUserOnline = false,
+                        otherUserVerified = false,
+                        conversationStatus = conv.status,
+                        isCreator = conv.creator == selfId
+                    )
+                }
+            }
+            return
+        }
         _state.update {
             it.copy(
+                otherUserDeleted = false,
                 otherUserId = other.id,
                 otherUserName = other.name,
                 otherUserAvatar = other.profileImage,
@@ -271,6 +294,11 @@ class ChatViewModel(
                 isCreator = conv.creator == selfId
             )
         }
+    }
+
+    /** الضغط على أفاتار/اسم حساب محذوف — لا ملف شخصي يُفتح. */
+    fun notifyOtherAccountDeleted() {
+        _message.tryEmit("حساب محذوف — لم يعد لهذا المستخدم ملف شخصي")
     }
 
     // ── Report ────────────────────────────────────────────────────
@@ -662,6 +690,11 @@ class ChatViewModel(
     fun send() {
         val content = _state.value.input.trim()
         if (content.isBlank() || _state.value.sending) return
+        // الطرف الآخر حذف حسابه → لا مراسلة
+        if (_state.value.otherUserDeleted) {
+            _message.tryEmit("لا يمكن مراسلة حساب محذوف")
+            return
+        }
         // الطرف الآخر موقوف → منع الإرسال نهائياً
         if (_state.value.otherUserSuspended) {
             _message.tryEmit("لا يمكن مراسلة مستخدم موقوف")

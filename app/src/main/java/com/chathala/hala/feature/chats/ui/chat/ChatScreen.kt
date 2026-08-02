@@ -252,9 +252,10 @@ fun ChatScreen(
                 title = state.otherUserName ?: "محادثة",
                 avatarUrl = state.otherUserAvatar,
                 // الموقوف دائماً غير متصل بغضّ النظر عن الكاش
-                isOnline = state.otherUserOnline && !state.otherUserSuspended,
+                isOnline = state.otherUserOnline && !state.otherUserSuspended && !state.otherUserDeleted,
                 isVerified = state.otherUserVerified,
                 subtitle = when {
+                    state.otherUserDeleted -> "هذا الحساب لم يعد موجوداً"
                     state.otherUserSuspended -> "غير متصل"
                     state.typingUser != null -> "يكتب"
                     state.otherUserOnline -> "متصل الآن"
@@ -262,6 +263,7 @@ fun ChatScreen(
                     else -> "…"
                 },
                 subtitleTint = when {
+                    state.otherUserDeleted -> MaterialTheme.colorScheme.onSurfaceVariant
                     state.otherUserSuspended -> MaterialTheme.colorScheme.onSurfaceVariant
                     state.typingUser != null -> MaterialTheme.colorScheme.primary
                     state.otherUserOnline -> MaterialTheme.colorScheme.primary
@@ -273,7 +275,11 @@ fun ChatScreen(
                 onBack = onBack,
                 isTrusted = state.isTrustedConversation,
                 onAvatarClick = {
-                    state.otherUserId?.let { onOpenUserProfile(it) }
+                    if (state.otherUserDeleted) {
+                        viewModel.notifyOtherAccountDeleted()
+                    } else {
+                        state.otherUserId?.let { onOpenUserProfile(it) }
+                    }
                 },
                 onChatModeClick = { showChatModeDialog = true },
                 menuExpanded = menuExpanded,
@@ -501,6 +507,10 @@ fun ChatScreen(
                 // الطرف الآخر حظرني → لا مراسلة (الخادم يرفض بـ USER_BLOCKED)
                 state.blockedByThem -> {
                     BlockedByThemInputBar()
+                }
+                // الطرف الآخر حذف حسابه → المحادثة للقراءة فقط
+                state.otherUserDeleted -> {
+                    DeletedUserInputBar()
                 }
                 // الطرف الآخر موقوف → لا يمكن إرسال رسائل جديدة
                 state.otherUserSuspended -> {
@@ -1198,6 +1208,32 @@ private fun SuspendedUserInputBar() {
         Spacer(Modifier.size(8.dp))
         Text(
             text = "لا يمكن مراسلة مستخدم موقوف",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/** شريط بديل عن الإدخال حين يحذف الطرف الآخر حسابه — المحادثة تبقى للقراءة فقط. */
+@Composable
+private fun DeletedUserInputBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Block,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.size(8.dp))
+        Text(
+            text = "حساب محذوف — لا يمكن إرسال رسائل",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

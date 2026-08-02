@@ -36,6 +36,7 @@ import com.chathala.hala.feature.friends.data.FriendStatus
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PersonOff
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
@@ -105,6 +106,9 @@ fun UserProfileScreen(
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when {
             state.loading -> ProfileSkeleton(onBack = onBack)
+
+            // الحساب محذوف → لا زر إعادة محاولة (لن يعود أبداً)
+            state.accountDeleted -> DeletedAccountState(onBack = onBack)
 
             state.error != null && state.user == null -> ErrorState(
                 message = state.error ?: "",
@@ -1127,6 +1131,46 @@ private fun MessageBottomSheet(
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/**
+ * حالة "حساب محذوف" — يظهر عند فتح ملف مستخدم حذف حسابه (ردّ الخادم 404).
+ * بلا زر إعادة محاولة: الوثيقة محذوفة نهائياً من الخادم.
+ */
+@Composable
+private fun DeletedAccountState(onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.PersonOff,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(56.dp)
+        )
+        Spacer(Modifier.height(14.dp))
+        Text(
+            text = "حساب محذوف",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = "قام هذا المستخدم بحذف حسابه، ولم تعد بياناته متاحة",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Spacer(Modifier.height(18.dp))
+        androidx.compose.material3.OutlinedButton(onClick = onBack) {
+            Text("رجوع")
         }
     }
 }

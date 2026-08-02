@@ -10,6 +10,7 @@ import com.chathala.hala.feature.blocking.data.BlockingRepository
 import com.chathala.hala.feature.chats.data.ChatsCacheStorage
 import com.chathala.hala.feature.chats.data.Conversation
 import com.chathala.hala.feature.chats.data.ConversationsRepository
+import com.chathala.hala.feature.chats.data.otherParticipant
 import com.chathala.hala.feature.chats.socket.HalaSocket
 import com.chathala.hala.feature.chats.socket.SocketEvent
 import com.chathala.hala.feature.reporting.data.ReportReason
@@ -308,8 +309,12 @@ class ChatsViewModel(
     // ── Block ─────────────────────────────────────────────────────
 
     fun blockOther(conversation: Conversation) {
-        val other = conversation.participants.firstOrNull { it.id != _state.value.currentUserId }
-            ?: return
+        val other = conversation.otherParticipant(_state.value.currentUserId)
+        if (other == null) {
+            _state.update { it.copy(actionTarget = null) }
+            _message.tryEmit("حساب محذوف — لا حاجة للحظر")
+            return
+        }
         _state.update { it.copy(actionTarget = null, processingIds = it.processingIds + conversation.id) }
         viewModelScope.launch {
             val r = blocking.block(other.id)
@@ -329,8 +334,11 @@ class ChatsViewModel(
     // ── Report ────────────────────────────────────────────────────
 
     fun reportOther(conversation: Conversation, reason: ReportReason, description: String?) {
-        val other = conversation.participants.firstOrNull { it.id != _state.value.currentUserId }
-            ?: return
+        val other = conversation.otherParticipant(_state.value.currentUserId)
+        if (other == null) {
+            _message.tryEmit("حساب محذوف — لا يمكن الإبلاغ عنه")
+            return
+        }
         viewModelScope.launch {
             val r = reporting.reportUser(other.id, reason, description)
             when (r) {

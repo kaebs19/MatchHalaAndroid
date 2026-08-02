@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.chathala.hala.feature.chats.data.Conversation
+import com.chathala.hala.feature.chats.data.DELETED_ACCOUNT_NAME
+import com.chathala.hala.feature.chats.data.isOtherAccountDeleted
+import com.chathala.hala.feature.chats.data.otherParticipant
 import com.chathala.hala.feature.notifications.util.NotificationFormat
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
@@ -48,14 +51,15 @@ fun ConversationRow(
     onLongPress: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val other = conversation.participants.firstOrNull { it.id != currentUserId }
-        ?: conversation.participants.firstOrNull()
+    val other = conversation.otherParticipant(currentUserId)
+    // الطرف الآخر حذف حسابه → لا نعرض بياناتي أنا بدلاً منه
+    val isDeletedAccount = conversation.isOtherAccountDeleted(currentUserId)
     val lastMessage = conversation.lastMessage
     val unread = conversation.unreadCount
-    val isOnline = other?.isOnline == true
-    val isRecentlyActive = !isOnline && isRecentLogin(other?.lastLogin)
-    val isPremium = other?.isPremium == true
-    val isVerified = other?.verification?.isVerified == true
+    val isOnline = !isDeletedAccount && other?.isOnline == true
+    val isRecentlyActive = !isOnline && !isDeletedAccount && isRecentLogin(other?.lastLogin)
+    val isPremium = !isDeletedAccount && other?.isPremium == true
+    val isVerified = !isDeletedAccount && other?.verification?.isVerified == true
 
     Row(
         modifier = modifier
@@ -83,8 +87,8 @@ fun ConversationRow(
         }
 
         RingAvatar(
-            imageUrl = other?.profileImage,
-            name = other?.name,
+            imageUrl = if (isDeletedAccount) null else other?.profileImage,
+            name = if (isDeletedAccount) null else other?.name,
             isOnline = isOnline,
             isRecentlyActive = isRecentlyActive,
             isPremium = isPremium
@@ -102,9 +106,12 @@ fun ConversationRow(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = other?.name ?: "مستخدم",
+                        text = if (isDeletedAccount) DELETED_ACCOUNT_NAME else (other?.name ?: "مستخدم"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = if (isDeletedAccount)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.onBackground,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false)

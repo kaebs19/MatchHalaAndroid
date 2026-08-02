@@ -50,6 +50,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chathala.hala.feature.chats.data.DELETED_ACCOUNT_NAME
+import com.chathala.hala.feature.chats.data.isOtherAccountDeleted
+import com.chathala.hala.feature.chats.data.otherParticipant
 import com.chathala.hala.feature.chats.ui.list.components.ChatsFilterChips
 import com.chathala.hala.feature.chats.ui.list.components.ConversationActionsSheet
 import com.chathala.hala.feature.chats.ui.list.components.ConversationRow
@@ -180,9 +183,10 @@ fun ChatsScreen(
 
     // ── Long-press actions ──
     state.actionTarget?.let { target ->
-        val other = target.participants.firstOrNull { it.id != state.currentUserId }
+        val other = target.otherParticipant(state.currentUserId)
         ConversationActionsSheet(
-            targetName = other?.name,
+            targetName = other?.name
+                ?: DELETED_ACCOUNT_NAME.takeIf { target.isOtherAccountDeleted(state.currentUserId) },
             isPinned = target.id in state.pinnedIds,
             isMuted = target.id in state.mutedConversationIds,
             onPin = { viewModel.togglePin(target.id) },
@@ -227,7 +231,7 @@ fun ChatsScreen(
     // ── Report sheet ──
     if (showReport) {
         val target = state.actionTarget ?: state.visible.firstOrNull()
-        val other = target?.participants?.firstOrNull { it.id != state.currentUserId }
+        val other = target?.otherParticipant(state.currentUserId)
         ReportUserSheet(
             targetUserName = other?.name,
             submitting = false,

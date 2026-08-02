@@ -12,12 +12,17 @@ sealed class NetworkResult<out T> {
     /**
      * @param payload جسم الخطأ المُحلَّل (ErrorBody) — يحمل تفاصيل إضافية مثل بيانات الإيقاف
      *                عند code = ACCOUNT_SUSPENDED. يبقى null لأخطاء الشبكة/التحليل.
+     * @param httpCode رمز HTTP (404 مثلاً) — يبقى null لأخطاء الشبكة/التحليل.
      */
     data class Error(
         val message: String,
         val code: String? = null,
-        val payload: Any? = null
-    ) : NetworkResult<Nothing>()
+        val payload: Any? = null,
+        val httpCode: Int? = null
+    ) : NetworkResult<Nothing>() {
+        /** المورد غير موجود — عملياً: حساب محذوف (الخادم يحذف الوثيقة نهائياً). */
+        val isNotFound: Boolean get() = httpCode == 404
+    }
 }
 
 /**
@@ -34,7 +39,8 @@ internal inline fun <T> safeApiCall(block: () -> T): NetworkResult<T> = try {
     NetworkResult.Error(
         message = parsed?.message ?: "حدث خطأ (${e.code()})",
         code = parsed?.code,
-        payload = parsed
+        payload = parsed,
+        httpCode = e.code()
     )
 } catch (e: IOException) {
     NetworkResult.Error("تحقق من اتصالك بالإنترنت")

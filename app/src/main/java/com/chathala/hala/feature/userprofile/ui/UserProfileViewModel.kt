@@ -27,6 +27,8 @@ import kotlinx.coroutines.launch
 data class UserProfileState(
     val loading: Boolean = true,
     val error: String? = null,
+    /** الحساب محذوف (الخادم ردّ 404) → نعرض حالة "حساب محذوف" بلا زر إعادة محاولة. */
+    val accountDeleted: Boolean = false,
     val user: UserProfile? = null,
     val requesting: Boolean = false,
     val requestSent: Boolean = false,
@@ -164,14 +166,19 @@ class UserProfileViewModel(
     }
 
     fun load() {
-        _state.update { it.copy(loading = true, error = null) }
+        _state.update { it.copy(loading = true, error = null, accountDeleted = false) }
         viewModelScope.launch {
             when (val r = repo.fetch(userId)) {
                 is NetworkResult.Success -> _state.update {
                     it.copy(loading = false, user = r.data, error = null)
                 }
+                // 404 = الوثيقة غير موجودة → الحساب محذوف نهائياً (لا فائدة من إعادة المحاولة)
                 is NetworkResult.Error -> _state.update {
-                    it.copy(loading = false, error = ErrorMessages.friendly(r))
+                    it.copy(
+                        loading = false,
+                        error = if (r.isNotFound) "حساب محذوف" else ErrorMessages.friendly(r),
+                        accountDeleted = r.isNotFound
+                    )
                 }
             }
         }
