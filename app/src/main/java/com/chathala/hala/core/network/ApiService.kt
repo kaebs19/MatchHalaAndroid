@@ -433,6 +433,14 @@ interface ApiService {
         @Body body: com.chathala.hala.feature.settings.data.UpdateAllowSensitiveContentRequest
     ): com.chathala.hala.feature.settings.data.SimpleSettingsResponse
 
+    /** تعديل نصّ رسالة — المرسل فقط، نصّية فقط، خلال 15 دقيقة، وللمشتركين. */
+    @retrofit2.http.PUT("api/mobile/messages/{messageId}")
+    suspend fun editMessage(
+        @Header("Authorization") bearer: String,
+        @Path("messageId") messageId: String,
+        @Body body: com.chathala.hala.feature.chats.data.EditMessageRequest
+    ): com.chathala.hala.feature.chats.data.EditMessageResponse
+
     @POST("api/mobile/messages/{messageId}/view-photo")
     suspend fun viewDisappearingPhoto(
         @Header("Authorization") bearer: String,
@@ -611,6 +619,13 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Path("userId") userId: String
     ): SimpleResponse
+
+    /** حالة الحظر بالاتجاهين (isBlocked / blockedByThem / cannotContact). */
+    @GET("api/privacy/is-blocked/{userId}")
+    suspend fun getBlockStatus(
+        @Header("Authorization") bearer: String,
+        @Path("userId") userId: String
+    ): com.chathala.hala.feature.blocking.data.BlockStatusResponse
 
     // ── Reporting ────────────────────────────────────────────────
 

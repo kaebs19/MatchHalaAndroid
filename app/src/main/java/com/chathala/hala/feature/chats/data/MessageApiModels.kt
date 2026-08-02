@@ -46,6 +46,9 @@ data class Message(
     val isExternalPromoBlocked: Boolean? = null,  // blocked due to external account sharing
     val externalPromoCategories: List<String>? = null,
     val replyTo: MessageReply? = null,
+    // ── تعديل (بريميوم) ──
+    val isEdited: Boolean? = null,
+    val editedAt: String? = null,
     val createdAt: String? = null,
     // ── audio ──
     val audioDuration: Int? = null,    // بالثواني
@@ -55,6 +58,26 @@ data class Message(
     val disappearing: DisappearingInfo? = null,
     // ── reactions ──
     val reactions: List<Reaction>? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class EditMessageRequest(val content: String)
+
+@JsonClass(generateAdapter = true)
+data class EditMessageResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val code: String? = null,
+    val data: EditedMessageData? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class EditedMessageData(
+    val messageId: String? = null,
+    val conversationId: String? = null,
+    val content: String? = null,
+    val isEdited: Boolean? = null,
+    val editedAt: String? = null
 )
 
 @JsonClass(generateAdapter = true)

@@ -91,6 +91,12 @@ class MessagesRepository(
         resp.data?.reactions ?: emptyList()
     }
 
+    /** يعدّل نصّ رسالة ويُرجع النصّ بعد فلاتر الخادم (قد يُكتَم جزء منه). */
+    suspend fun editMessage(messageId: String, content: String): NetworkResult<String> = safeApiCall {
+        val resp = api.editMessage(bearer(), messageId, EditMessageRequest(content))
+        resp.data?.content ?: throw IllegalStateException(resp.message ?: "فشل تعديل الرسالة")
+    }
+
     suspend fun deleteMessage(messageId: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteMessage(bearer(), messageId)
         resp.message ?: "تم الحذف"

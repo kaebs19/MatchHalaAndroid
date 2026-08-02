@@ -100,14 +100,23 @@ class HalaSocket(
         if (payload != null) s.emit(event, payload) else s.emit(event)
     }
 
+    /** إرسال حمولة نصّية خام — بعض أحداث الخادم تتوقّع نصاً لا كائناً. */
+    private fun emitRaw(event: String, payload: String) {
+        socket?.emit(event, payload)
+    }
+
     // ── Convenience emitters ──────────────────────────────────────
 
     fun joinConversation(conversationId: String) {
         emit("join-conversation", JSONObject().put("conversationId", conversationId))
     }
 
+    /**
+     * الخادم يتوقّع **نصّاً** هنا: `socket.on('leave-conversation', (conversationId) => …)`.
+     * إرسال كائن JSON كان يجعل `socket.leave()` يفشل فتبقى العضوية في غرفة المحادثة.
+     */
     fun leaveConversation(conversationId: String) {
-        emit("leave-conversation", conversationId.let { JSONObject().put("id", it) })
+        emitRaw("leave-conversation", conversationId)
     }
 
     fun sendTyping(conversationId: String, userName: String?) {
@@ -171,8 +180,10 @@ class HalaSocket(
         s.on("user:offline") { args -> args.firstJson()?.let { emit(SocketEvent.UserOffline(it)) } }
         s.on("message-reaction") { args -> args.firstJson()?.let { emit(SocketEvent.MessageReaction(it)) } }
         s.on("message-deleted") { args -> args.firstJson()?.let { emit(SocketEvent.MessageDeleted(it)) } }
+        s.on("message-edited") { args -> args.firstJson()?.let { emit(SocketEvent.MessageEdited(it)) } }
         s.on("chat-mode-changed") { args -> args.firstJson()?.let { emit(SocketEvent.ChatModeChanged(it)) } }
         s.on("photo-viewed") { args -> args.firstJson()?.let { emit(SocketEvent.PhotoViewed(it)) } }
+        s.on("photo-expired") { args -> args.firstJson()?.let { emit(SocketEvent.PhotoExpired(it)) } }
         s.on("messaging-restriction-lifted") { args ->
             emit(SocketEvent.RestrictionLifted(args.firstJson() ?: JSONObject()))
         }

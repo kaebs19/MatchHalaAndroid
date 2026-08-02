@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.material3.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -79,7 +81,8 @@ import com.chathala.hala.feature.chats.ui.chat.components.ImagePreviewScreen
 import com.chathala.hala.feature.chats.ui.chat.components.ForwardSheet
 import com.chathala.hala.feature.chats.ui.chat.components.MessageBubble
 import com.chathala.hala.feature.chats.ui.chat.components.MuteDialog
-import com.chathala.hala.feature.chats.ui.chat.components.ReactionSheet
+import com.chathala.hala.feature.chats.ui.chat.components.EditMessageDialog
+import com.chathala.hala.feature.chats.ui.chat.components.MessageContextMenu
 import com.chathala.hala.feature.chats.ui.chat.components.ReplyPreviewBar
 import com.chathala.hala.feature.chats.ui.chat.components.ChatListItem
 import com.chathala.hala.feature.chats.ui.chat.components.buildChatList
@@ -102,6 +105,7 @@ fun ChatScreen(
     onOpenUserProfile: (String) -> Unit = {},
     onOpenContentSettings: () -> Unit = {},
     onOpenRequests: () -> Unit = {},
+    onOpenSubscription: () -> Unit = {},
     viewModel: ChatViewModel = viewModel(factory = ChatViewModel.factory(conversationId))
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -119,6 +123,8 @@ fun ChatScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
     var showBlockDialog by remember { mutableStateOf(false) }
+    // حدود كل فقاعة في جذر الشاشة — تُثبَّت عندها قائمة الضغط المطوّل بنمط iOS
+    val bubbleBounds = remember { androidx.compose.runtime.mutableStateMapOf<String, androidx.compose.ui.geometry.Rect>() }
 
     LaunchedEffect(state.conversationDeleted) {
         if (state.conversationDeleted) onBack()
@@ -358,7 +364,14 @@ fun ChatScreen(
                                     val isPending = msg.id.startsWith("tmp-")
                                     // تجميع: مسافة أكبر فوق أول رسالة في المجموعة، أضيق داخلها
                                     val topPad = if (item.isFirstInGroup) 6.dp else 0.dp
-                                    Box(Modifier.animateItem().padding(top = topPad)) {
+                                    Box(
+                                        Modifier
+                                            .animateItem()
+                                            .padding(top = topPad)
+                                            .onGloballyPositioned {
+                                                bubbleBounds[msg.id] = it.boundsInRoot()
+                                            }
+                                    ) {
                                     com.chathala.hala.feature.chats.ui.chat.components.SwipeToReply(
                                         onReply = { viewModel.startReply(msg) },
                                         enabled = !isPending,
@@ -372,6 +385,8 @@ fun ChatScreen(
                                                 audioPositionMs = playback.positionMs,
                                                 audioDurationMs = playback.durationMs,
                                                 disappearingExpiresAtMs = state.viewedDisappearing[msg.id],
+                                                disappearingLoading = msg.id in state.loadingDisappearing,
+                                                disappearingExpired = msg.id in state.expiredDisappearing,
                                                 onToggleAudio = { m ->
                                                     m.mediaUrl?.let { url ->
                                                         viewModel.audioPlayer.toggle(m.id, url)
@@ -483,6 +498,10 @@ fun ChatScreen(
                 state.blocked -> {
                     BlockedUserInputBar()
                 }
+                // الطرف الآخر حظرني → لا مراسلة (الخادم يرفض بـ USER_BLOCKED)
+                state.blockedByThem -> {
+                    BlockedByThemInputBar()
+                }
                 // الطرف الآخر موقوف → لا يمكن إرسال رسائل جديدة
                 state.otherUserSuspended -> {
                     SuspendedUserInputBar()
@@ -525,33 +544,51 @@ fun ChatScreen(
             hostState = snackbarHost,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+
+        // قائمة الضغط المطوّل بنمط iOS — داخل نافذة الشاشة لتغطّي كل شيء
+        state.reactionTarget?.let { target ->
+            val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
+            val copyText = target.content?.takeIf { it.isNotBlank() }
+            val isMine = target.sender?.id == state.currentUserId
+            MessageContextMenu(
+                anchor = bubbleBounds[target.id],
+                canCopy = copyText != null,
+                canEdit = viewModel.canEdit(target),
+                canDelete = isMine,
+                isPremium = state.isPremium,
+                onPick = { emoji -> viewModel.react(target, emoji) },
+                onReply = {
+                    viewModel.dismissReactionSheet()
+                    viewModel.startReply(target)
+                },
+                onCopy = {
+                    copyText?.let {
+                        clipboard.setText(androidx.compose.ui.text.AnnotatedString(it))
+                    }
+                    viewModel.dismissReactionSheet()
+                },
+                onForward = { viewModel.openForward(target) },
+                onEdit = { viewModel.startEdit(target) },
+                onDelete = { viewModel.deleteMessage(target) },
+                onReport = {
+                    viewModel.dismissReactionSheet()
+                    showReportSheet = true
+                },
+                onPremiumRequired = {
+                    viewModel.dismissReactionSheet()
+                    onOpenSubscription()
+                },
+                onDismiss = viewModel::dismissReactionSheet
+            )
+        }
     }
 
-    state.reactionTarget?.let { target ->
-        val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
-        val copyText = target.content?.takeIf { it.isNotBlank() }
-        ReactionSheet(
-            messagePreview = when (target.type) {
-                "image" -> "📷 صورة"
-                "audio" -> "🎙️ رسالة صوتية"
-                else -> target.content?.take(80) ?: ""
-            },
-            canDelete = target.sender?.id == state.currentUserId,
-            canCopy = copyText != null,
-            onPick = { emoji -> viewModel.react(target, emoji) },
-            onReply = {
-                viewModel.dismissReactionSheet()
-                viewModel.startReply(target)
-            },
-            onCopy = {
-                copyText?.let {
-                    clipboard.setText(androidx.compose.ui.text.AnnotatedString(it))
-                }
-                viewModel.dismissReactionSheet()
-            },
-            onForward = { viewModel.openForward(target) },
-            onDelete = { viewModel.deleteMessage(target) },
-            onDismiss = viewModel::dismissReactionSheet
+    state.editingMessage?.let { target ->
+        EditMessageDialog(
+            initialContent = target.content.orEmpty(),
+            submitting = state.editSubmitting,
+            onConfirm = { viewModel.confirmEdit(it) },
+            onDismiss = viewModel::cancelEdit
         )
     }
 
@@ -1106,6 +1143,35 @@ private fun BlockedUserInputBar() {
         Spacer(Modifier.size(8.dp))
         Text(
             text = "قمت بحظر هذا المستخدم — ألغِ الحظر للمراسلة",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/**
+ * شريط بديل عن الإدخال حين يكون الطرف الآخر قد حظرك — الخادم يرفض الإرسال بـ USER_BLOCKED،
+ * فنُخفي حقل الإدخال بدل ترك المستخدم يكتب ثم يُرفض.
+ */
+@Composable
+private fun BlockedByThemInputBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Block,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.size(8.dp))
+        Text(
+            text = "لا يمكنك مراسلة هذا المستخدم",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

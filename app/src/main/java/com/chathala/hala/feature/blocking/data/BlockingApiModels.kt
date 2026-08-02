@@ -27,3 +27,20 @@ data class BlockedUser(
 
 @JsonClass(generateAdapter = true)
 data class VerificationFlag(val isVerified: Boolean? = null)
+
+@JsonClass(generateAdapter = true)
+data class BlockStatusResponse(
+    val success: Boolean,
+    val data: BlockStatusData? = null
+)
+
+/** حالة الحظر بين الطرفين — الخادم يُرجع الاتجاهين. */
+@JsonClass(generateAdapter = true)
+data class BlockStatusData(
+    /** أنا حظرته */
+    val isBlocked: Boolean = false,
+    /** هو حظرني */
+    val blockedByThem: Boolean = false,
+    /** لا مراسلة بأي اتجاه */
+    val cannotContact: Boolean = false
+)

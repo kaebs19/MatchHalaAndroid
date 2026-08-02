@@ -33,7 +33,13 @@ sealed class SocketEvent {
 
     data class MessageReaction(val json: JSONObject) : SocketEvent()
     data class MessageDeleted(val json: JSONObject) : SocketEvent()
+
+    /** عُدِّل نصّ رسالة (ميزة بريميوم) */
+    data class MessageEdited(val json: JSONObject) : SocketEvent()
     data class PhotoViewed(val json: JSONObject) : SocketEvent()
+
+    /** انتهت صلاحية صورة مؤقتة ودُمِّرت على الخادم (mediaUrl لم يعد صالحاً). */
+    data class PhotoExpired(val json: JSONObject) : SocketEvent()
 
     /** رُفِع تقييد المراسلة عن المستخدم (فوري) */
     data class RestrictionLifted(val json: JSONObject) : SocketEvent()

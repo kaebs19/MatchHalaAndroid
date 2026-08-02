@@ -72,6 +72,10 @@ fun MessageBubble(
     audioPositionMs: Int = 0,
     audioDurationMs: Int = 0,
     disappearingExpiresAtMs: Long? = null,
+    /** الصورة المؤقتة قيد التنزيل — المؤقّت لم يبدأ بعد */
+    disappearingLoading: Boolean = false,
+    /** الصورة المؤقتة انتهت/دُمِّرت */
+    disappearingExpired: Boolean = false,
     onToggleAudio: (Message) -> Unit = {},
     onLongPress: (Message) -> Unit = {},
     onViewDisappearing: (Message) -> Unit = {},
@@ -180,7 +184,16 @@ fun MessageBubble(
                         DisappearingImageContent(
                             message = message,
                             expiresAtMs = disappearingExpiresAtMs,
+                            isLoading = disappearingLoading,
+                            isDestroyed = disappearingExpired,
                             onView = { onViewDisappearing(message) }
+                        )
+                    } else if (message.disappearing?.enabled == true) {
+                        // عند المرسِل: لا تُعرض الصورة نفسها — حالة فقط
+                        SenderDisappearingContent(
+                            durationSec = message.disappearing.duration ?: 10,
+                            expiresAtMs = disappearingExpiresAtMs,
+                            isDestroyed = disappearingExpired
                         )
                     } else {
                         ImageContent(
@@ -233,6 +246,14 @@ fun MessageBubble(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    if (message.isEdited == true) {
+                        Text(
+                            text = "مُعدَّلة",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor.copy(alpha = 0.6f)
+                        )
+                        Spacer(Modifier.size(4.dp))
+                    }
                     Text(
                         text = NotificationFormat.timeAgoArabic(message.createdAt),
                         style = MaterialTheme.typography.labelSmall,
@@ -243,6 +264,7 @@ fun MessageBubble(
                         MineStatusIcon(
                             isPending = isPending,
                             isRead = message.isRead == true,
+                            isDelivered = message.isDelivered == true,
                             tint = textColor.copy(alpha = 0.85f)
                         )
                     }
@@ -390,32 +412,7 @@ private fun ImageContent(
             }
         }
 
-        // شارة الاختفاء (للمُرسِل) أعلى النهاية
-        if (isMine && message.disappearing?.enabled == true) {
-            val dur = message.disappearing.duration ?: 0
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.Black.copy(alpha = 0.45f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Timer,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(13.dp)
-                )
-                Spacer(Modifier.size(4.dp))
-                Text(
-                    text = "${dur}ث",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White
-                )
-            }
-        }
+        // ملاحظة: الصور المؤقتة لا تمرّ من هنا عند المُرسِل — تُعرض عبر SenderDisappearingContent.
 
         // طبقة الوقت + الحالة أسفل الصورة مع تدرّج داكن
         Box(
@@ -443,6 +440,7 @@ private fun ImageContent(
                     MineStatusIcon(
                         isPending = isPending,
                         isRead = message.isRead == true,
+                        isDelivered = message.isDelivered == true,
                         tint = Color.White
                     )
                 }
@@ -469,6 +467,8 @@ private fun FullscreenImageViewer(url: String, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        com.chathala.hala.ui.components.FullScreenDialogWindow()
+
         var scale by remember { mutableStateOf(1f) }
         var offsetX by remember { mutableStateOf(0f) }
         var offsetY by remember { mutableStateOf(0f) }
@@ -519,23 +519,78 @@ private fun FullscreenImageViewer(url: String, onDismiss: () -> Unit) {
     }
 }
 
+/**
+ * حالة الصورة المؤقتة عند **المُرسِل** — لا تُعرض الصورة نفسها ولا يمكنه فتحها،
+ * فقط حالة: «لم تُفتح بعد» ← «فُتحت — تختفي بعد N ثانية» ← «انتهت».
+ */
+@Composable
+private fun SenderDisappearingContent(
+    durationSec: Int,
+    expiresAtMs: Long?,
+    isDestroyed: Boolean
+) {
+    val nowMs by produceNow()
+    val isViewing = !isDestroyed && expiresAtMs != null && nowMs < expiresAtMs
+    val expired = isDestroyed || (expiresAtMs != null && nowMs >= expiresAtMs)
+    val remainingSec = if (isViewing)
+        ((expiresAtMs!! - nowMs) / 1000).toInt().coerceAtLeast(0)
+    else 0
+
+    Row(
+        modifier = Modifier
+            .width(240.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = when {
+                expired -> "🔒"
+                isViewing -> "⏱"
+                else -> "🕓"
+            },
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(Modifier.size(8.dp))
+        Column {
+            Text(
+                text = "صورة مؤقتة",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Text(
+                text = when {
+                    expired -> "انتهت"
+                    isViewing -> "فُتحت — تختفي بعد $remainingSec ثانية"
+                    else -> "لم تُفتح بعد · ${durationSec}ث"
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+            )
+        }
+    }
+}
+
 @Composable
 private fun DisappearingImageContent(
     message: Message,
     expiresAtMs: Long?,
+    isLoading: Boolean,
+    isDestroyed: Boolean,
     onView: () -> Unit
 ) {
     val durationSec = message.disappearing?.duration ?: 10
     val nowMs by produceNow()
-    val isViewing = expiresAtMs != null && nowMs < expiresAtMs
-    val isExpired = expiresAtMs != null && nowMs >= expiresAtMs
-    val remainingSec = if (isViewing && expiresAtMs != null)
-        ((expiresAtMs - nowMs) / 1000).toInt().coerceAtLeast(0)
+    val isViewing = !isDestroyed && expiresAtMs != null && nowMs < expiresAtMs
+    val isExpired = isDestroyed || (expiresAtMs != null && nowMs >= expiresAtMs)
+    val remainingSec = if (isViewing)
+        ((expiresAtMs!! - nowMs) / 1000).toInt().coerceAtLeast(0)
     else durationSec
 
     val phase = when {
         isExpired -> "expired"
         isViewing -> "viewing"
+        isLoading -> "loading"
         else -> "locked"
     }
     Box(
@@ -594,6 +649,25 @@ private fun DisappearingImageContent(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
+                }
+            }
+            "loading" -> {
+                // تُنزَّل الآن — المؤقّت لا يبدأ قبل اكتمال التحميل
+                Column(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(Modifier.size(10.dp))
+                    Text(
+                        text = "جارٍ تحميل الصورة…",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
             else -> {
@@ -811,20 +885,31 @@ internal object ChatInputBarFormatter {
     }
 }
 
+/**
+ * حالة رسالتي كواتساب:
+ * ⏱ قيد الإرسال · ✓ أُرسلت · ✓✓ باهتان = سُلِّمت · ✓✓ ملوّنان = قُرئت.
+ */
 @Composable
 private fun MineStatusIcon(
     isPending: Boolean,
     isRead: Boolean,
+    isDelivered: Boolean = false,
     tint: androidx.compose.ui.graphics.Color
 ) {
+    val readTint = Color(0xFF34B7F1)
     Icon(
         imageVector = when {
             isPending -> Icons.Filled.Schedule
-            isRead -> Icons.Filled.DoneAll
+            isRead || isDelivered -> Icons.Filled.DoneAll
             else -> Icons.Filled.Done
         },
-        contentDescription = null,
-        tint = tint,
+        contentDescription = when {
+            isPending -> "قيد الإرسال"
+            isRead -> "تمت القراءة"
+            isDelivered -> "تم التسليم"
+            else -> "أُرسلت"
+        },
+        tint = if (isRead) readTint else tint,
         modifier = Modifier.size(14.dp)
     )
 }

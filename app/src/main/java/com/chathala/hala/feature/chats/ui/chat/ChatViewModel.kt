@@ -85,7 +85,14 @@ data class ChatUiState(
     val reopening: Boolean = false,
     val conversationDeleted: Boolean = false,
     val blocking: Boolean = false,
+    /** أنا حظرت الطرف الآخر */
     val blocked: Boolean = false,
+    /** الطرف الآخر حظرني — يُفحص عند كل فتح للمحادثة */
+    val blockedByThem: Boolean = false,
+    /** المشاهدة جارية لكن الصورة لم تُحمَّل بعد (لا يبدأ المؤقّت قبل التحميل) */
+    val loadingDisappearing: Set<String> = emptySet(),
+    /** صور مؤقتة دُمِّرت على الخادم — تُعرض «انتهت» */
+    val expiredDisappearing: Set<String> = emptySet(),
     // حالة المحادثة (pending/accepted/rejected/expired) — لمنع الردّ قبل القبول
     val conversationStatus: String? = null,
     val isCreator: Boolean = false,
@@ -112,10 +119,16 @@ data class ChatUiState(
     // إرسال طلب المراجعة للمشرف قيد التنفيذ
     val reviewSubmitting: Boolean = false,
     // أُرسل طلب المراجعة في هذه الجلسة (لعرض "قيد المراجعة")
-    val reviewRequested: Boolean = false
+    val reviewRequested: Boolean = false,
+    // اشتراك مدفوع — يفتح التعديل والحذف
+    val isPremium: Boolean = false,
+    // الرسالة قيد التعديل حالياً (تفتح نافذة التحرير)
+    val editingMessage: Message? = null,
+    val editSubmitting: Boolean = false
 ) {
     val canSend: Boolean
-        get() = conversationStatus == null || conversationStatus == "accepted"
+        get() = !blocked && !blockedByThem &&
+            (conversationStatus == null || conversationStatus == "accepted")
 
     val hasMore: Boolean get() = currentPage < totalPages
 }
@@ -129,7 +142,8 @@ class ChatViewModel(
     private val cache: ChatsCacheStorage,
     private val reportRepo: ReportRepository,
     private val blockingRepo: BlockingRepository,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val appContext: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ChatUiState())
@@ -139,6 +153,8 @@ class ChatViewModel(
     val message: SharedFlow<String> = _message.asSharedFlow()
 
     private var typingEmitJob: Job? = null
+    // هل أعلنّا للطرف الآخر أننا نكتب حالياً؟ (لمنع إرسال typing مع كل حرف)
+    private var isTypingNotified = false
     private var typingClearJob: Job? = null
     private var recordTimerJob: Job? = null
     // مهام حذف الصور المؤقتة بعد انتهاء وقتها (messageId → Job)
@@ -148,27 +164,38 @@ class ChatViewModel(
 
     init {
         viewModelScope.launch {
-            val u: User? = userRepo.currentUser.first()
-            _state.update { it.copy(currentUserId = u?.id, currentUserName = u?.name) }
+            userRepo.currentUser.collect { u ->
+                _state.update {
+                    it.copy(
+                        currentUserId = u?.id,
+                        currentUserName = u?.name,
+                        isPremium = u?.isPremium == true
+                    )
+                }
+            }
         }
 
         socket.connected
-            .onEach { c -> _state.update { it.copy(socketConnected = c) } }
+            .onEach { c ->
+                _state.update { it.copy(socketConnected = c) }
+                // ادخل غرفة المحادثة عند **كل** اتصال: عند فتح الشاشة قبل اكتمال الاتصال
+                // كان الانضمام يُهمَل بصمت، فلا تصل أحداث الغرفة (يكتب / رسالة جديدة).
+                if (c) {
+                    socket.joinConversation(conversationId)
+                    socket.markRead(conversationId)
+                }
+            }
             .launchIn(viewModelScope)
 
         socket.incoming
             .onEach(::onSocketEvent)
             .launchIn(viewModelScope)
 
-        // دخول غرفة المحادثة
-        socket.joinConversation(conversationId)
-
         loadMessages()
 
-        // تعليم كمقروء — عبر السوكِت أولاً (فوري + يُشعِر الطرف الآخر).
-        // HTTP كـ fallback فقط لو السوكِت غير متصل بعد، لضمان حفظ الحالة.
+        // تعليم كمقروء — يتكفّل به مراقب الاتصال أعلاه عبر السوكِت.
+        // HTTP كـ fallback فقط لو السوكِت غير متصل، لضمان حفظ الحالة.
         viewModelScope.launch {
-            socket.markRead(conversationId)
             if (!socket.connected.value) {
                 runCatching { conversationsRepo.markRead(conversationId) }
             }
@@ -211,6 +238,18 @@ class ChatViewModel(
         val r = conversationsRepo.fetchConversation(conversationId)
         if (r is NetworkResult.Success) {
             applyOtherFrom(r.data, selfId)
+        }
+        // الحظر متبادل الأثر — نفحص الاتجاهين عند كل فتح للمحادثة، لا عند الحالة المغلقة فقط
+        _state.value.otherUserId?.let { refreshBlockStatus(it) }
+    }
+
+    /** يجلب حالة الحظر بالاتجاهين ويقفل الإدخال إن وُجد حظر في أي اتجاه. */
+    private suspend fun refreshBlockStatus(otherId: String) {
+        val r = blockingRepo.checkBlockStatus(otherId)
+        if (r is NetworkResult.Success) {
+            _state.update {
+                it.copy(blocked = r.data.isBlocked, blockedByThem = r.data.blockedByThem)
+            }
         }
     }
 
@@ -343,9 +382,30 @@ class ChatViewModel(
                         newIncomingCount = it.newIncomingCount + 1
                     )
                 }
+                // أبلغ المرسِل بالتسليم أولاً (سهمان باهتان عنده) ثم بالقراءة
+                socket.markDelivered(msg.id, conversationId)
                 // علّم مقروء عبر السوكِت فقط — متصل بالتأكيد (وصلتنا رسالة منه للتو)،
                 // والخادم يحدّث readBy + status ويُشعِر الطرف الآخر. لا حاجة لطلب HTTP زائد.
                 socket.markRead(conversationId)
+            }
+            is SocketEvent.MessageDelivered -> {
+                val json = evt.json
+                val convId = json.optString("conversationId")
+                if (convId.isNotBlank() && convId != conversationId) return
+                val selfId = _state.value.currentUserId ?: return
+                val messageId = json.optString("messageId").takeIf { it.isNotBlank() }
+                _state.update { s ->
+                    s.copy(
+                        messages = s.messages.map { m ->
+                            val target = messageId == null || m.id == messageId
+                            if (target && m.sender?.id == selfId && m.isRead != true &&
+                                m.isDelivered != true
+                            ) {
+                                m.copy(isDelivered = true, status = "delivered")
+                            } else m
+                        }
+                    )
+                }
             }
             is SocketEvent.UserTyping -> {
                 val json = evt.json
@@ -408,6 +468,22 @@ class ChatViewModel(
                     )
                 }
             }
+            is SocketEvent.MessageEdited -> {
+                val json = evt.json
+                val convId = json.optString("conversationId")
+                if (convId.isNotBlank() && convId != conversationId) return
+                val messageId = json.optString("messageId").takeIf { it.isNotBlank() } ?: return
+                val newContent = json.optString("content")
+                _state.update { st ->
+                    st.copy(
+                        messages = st.messages.map {
+                            if (it.id == messageId)
+                                it.copy(content = newContent, isEdited = true)
+                            else it
+                        }
+                    )
+                }
+            }
             is SocketEvent.ChatModeChanged -> {
                 val convId = evt.json.optString("conversationId")
                 if (convId != conversationId) return
@@ -427,7 +503,29 @@ class ChatViewModel(
                     ?: return
                 val msg = _state.value.messages.firstOrNull { it.id == msgId } ?: return
                 val duration = msg.disappearing?.duration ?: return
+                // أظهر للمرسِل أنها فُتحت وتختفي بعد N ثانية
+                _state.update {
+                    it.copy(
+                        viewedDisappearing = it.viewedDisappearing +
+                            (msgId to System.currentTimeMillis() + duration * 1000L)
+                    )
+                }
                 scheduleDisappearingRemoval(msgId, duration)
+            }
+            is SocketEvent.PhotoExpired -> {
+                // الخادم دمّر الصورة — امسحها من الكاش والواجهة فوراً عند الطرفين
+                val msgId = evt.json.optString("messageId").takeIf { it.isNotBlank() } ?: return
+                disappearingRemovalJobs.remove(msgId)?.cancel()
+                _state.update { s ->
+                    s.copy(
+                        messages = s.messages.map {
+                            if (it.id == msgId) it.copy(mediaUrl = null) else it
+                        },
+                        expiredDisappearing = s.expiredDisappearing + msgId,
+                        viewedDisappearing = s.viewedDisappearing - msgId,
+                        loadingDisappearing = s.loadingDisappearing - msgId
+                    )
+                }
             }
             is SocketEvent.RestrictionLifted -> {
                 // رُفِع تقييد المراسلة فوراً → ألغِ القفل وأبلغ المستخدم
@@ -538,11 +636,25 @@ class ChatViewModel(
     fun onInputChange(text: String) {
         val category = PromoKeywordDetector.getMatchedCategory(text)
         _state.update { it.copy(input = text, promoWarningCategory = category) }
-        // أرسل typing مع throttling خفيف
+        // أعلِن «يكتب» مرة واحدة عند بدء الكتابة فقط — لا مع كل حرف —
+        // وأعِد ضبط مؤقّت التوقّف بعد 3 ثوانٍ من آخر ضغطة.
+        if (!isTypingNotified) {
+            isTypingNotified = true
+            socket.sendTyping(conversationId, _state.value.currentUserName)
+        }
         typingEmitJob?.cancel()
         typingEmitJob = viewModelScope.launch {
-            socket.sendTyping(conversationId, _state.value.currentUserName)
             delay(3_000)
+            isTypingNotified = false
+            socket.sendStopTyping(conversationId)
+        }
+    }
+
+    /** يوقف إعلان «يكتب» فوراً (بعد الإرسال أو الخروج). */
+    private fun stopTypingNow() {
+        typingEmitJob?.cancel()
+        if (isTypingNotified) {
+            isTypingNotified = false
             socket.sendStopTyping(conversationId)
         }
     }
@@ -600,7 +712,7 @@ class ChatViewModel(
                 replyingTo = null
             )
         }
-        socket.sendStopTyping(conversationId)
+        stopTypingNow()
 
         viewModelScope.launch {
             when (val r = messagesRepo.sendText(conversationId, content, replyTo = replyTarget?.id)) {
@@ -633,13 +745,29 @@ class ChatViewModel(
                     }
                 }
                 is NetworkResult.Error -> {
+                    // رفض نهائي من الخادم → لا إعادة إرسال إطلاقاً، ونُعيد النص للمستخدم
                     _state.update { s ->
                         s.copy(
                             messages = s.messages.filterNot { it.id == tempId },
-                            sending = false
+                            sending = false,
+                            // أعِد النص فقط إن لم يكن المستخدم قد كتب شيئاً جديداً
+                            input = if (s.input.isBlank()) content else s.input,
+                            replyingTo = replyTarget ?: s.replyingTo,
+                            // حدّث الحالة المحلية لتقفل الواجهة فوراً حسب سبب الرفض
+                            conversationStatus = when (r.code) {
+                                "CONVERSATION_CANCELLED" -> "cancelled"
+                                "CONVERSATION_INACTIVE" -> "expired"
+                                else -> s.conversationStatus
+                            },
+                            otherUserSuspended =
+                                if (r.code == "RECIPIENT_SUSPENDED") true else s.otherUserSuspended
                         )
                     }
                     _message.tryEmit(ErrorMessages.friendly(r))
+                    // حظر بأي اتجاه → أعِد فحص الحالة لإظهار الشريط الصحيح
+                    if (r.code == "USER_BLOCKED") {
+                        _state.value.otherUserId?.let { refreshBlockStatus(it) }
+                    }
                 }
             }
         }
@@ -696,6 +824,67 @@ class ChatViewModel(
         _state.update { s ->
             s.copy(messages = s.messages.map { if (it.id == messageId) it.copy(reactions = reactions) else it })
         }
+    }
+
+    // ── Edit (بريميوم) ────────────────────────────────────────────
+
+    /** نافذة التعديل المسموحة — تطابق الخادم (15 دقيقة من الإرسال). */
+    private val editWindowMs = 15 * 60 * 1000L
+
+    /** هل يمكن تعديل هذه الرسالة؟ (نصّية، لي، غير محذوفة، وضمن المهلة) */
+    fun canEdit(message: Message): Boolean {
+        if (message.id.startsWith("tmp-")) return false
+        if (message.sender?.id != _state.value.currentUserId) return false
+        if (message.type != null && message.type != "text") return false
+        if (message.isDeleted == true) return false
+        val sentAt = parseIsoMillis(message.createdAt) ?: return true
+        return System.currentTimeMillis() - sentAt <= editWindowMs
+    }
+
+    fun startEdit(message: Message) {
+        if (!canEdit(message)) return
+        _state.update { it.copy(editingMessage = message, reactionTarget = null) }
+    }
+
+    fun cancelEdit() {
+        _state.update { it.copy(editingMessage = null) }
+    }
+
+    fun confirmEdit(newContent: String) {
+        val target = _state.value.editingMessage ?: return
+        val text = newContent.trim()
+        if (text.isBlank() || text == target.content || _state.value.editSubmitting) return
+        _state.update { it.copy(editSubmitting = true) }
+        viewModelScope.launch {
+            when (val r = messagesRepo.editMessage(target.id, text)) {
+                is NetworkResult.Success -> {
+                    // نعتمد نصّ الخادم لا نصّ المستخدم — قد يكون مكتوماً بفلتر الكلمات
+                    _state.update { s ->
+                        s.copy(
+                            messages = s.messages.map {
+                                if (it.id == target.id) it.copy(content = r.data, isEdited = true)
+                                else it
+                            },
+                            editingMessage = null,
+                            editSubmitting = false
+                        )
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _state.update { it.copy(editSubmitting = false) }
+                    _message.tryEmit(ErrorMessages.friendly(r))
+                }
+            }
+        }
+    }
+
+    private fun parseIsoMillis(iso: String?): Long? {
+        iso ?: return null
+        return runCatching {
+            java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US).apply {
+                timeZone = java.util.TimeZone.getTimeZone("UTC")
+            }.parse(iso.take(19))?.time
+        }.getOrNull()
     }
 
     // ── Delete ────────────────────────────────────────────────────
@@ -861,19 +1050,54 @@ class ChatViewModel(
         }
     }
 
+    /**
+     * فتح صورة مؤقتة عند المستقبِل.
+     *
+     * المؤقّت **لا** يبدأ عند الضغط، بل بعد تحميل الصورة فعلياً إلى كاش Coil —
+     * وإلا احتُسبت ثواني العرض على شاشة سوداء عند بطء الشبكة.
+     */
     fun viewDisappearingPhoto(message: Message) {
         val duration = message.disappearing?.duration ?: return
-        val expiresAt = System.currentTimeMillis() + duration * 1000L
-        _state.update { it.copy(viewedDisappearing = it.viewedDisappearing + (message.id to expiresAt)) }
+        val url = message.mediaUrl ?: return
+        if (message.id in _state.value.viewedDisappearing ||
+            message.id in _state.value.loadingDisappearing
+        ) return
+
+        _state.update { it.copy(loadingDisappearing = it.loadingDisappearing + message.id) }
         viewModelScope.launch {
+            // 1) نزّل الصورة قبل فتح العرض
+            val ready = preloadImage(url)
+            // 2) بلّغ الخادم (يبدأ expiresAt عنده) — بعد أن صارت جاهزة للعرض
             messagesRepo.viewDisappearingPhoto(message.id)
+            if (!ready) {
+                _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
+                _message.tryEmit("تعذّر تحميل الصورة — حاول مجدداً")
+                return@launch
+            }
+            // 3) الآن فقط يبدأ العدّ التنازلي
+            val expiresAt = System.currentTimeMillis() + duration * 1000L
+            _state.update {
+                it.copy(
+                    loadingDisappearing = it.loadingDisappearing - message.id,
+                    viewedDisappearing = it.viewedDisappearing + (message.id to expiresAt)
+                )
+            }
+            scheduleDisappearingRemoval(message.id, duration)
         }
-        // احذف الصورة عند المستقبِل بعد انتهاء العدّاد
-        scheduleDisappearingRemoval(message.id, duration)
+    }
+
+    /** ينزّل الصورة إلى كاش Coil ويُرجع true عند النجاح. */
+    private suspend fun preloadImage(url: String): Boolean {
+        val request = coil.request.ImageRequest.Builder(appContext)
+            .data(url)
+            .build()
+        val result = coil.Coil.imageLoader(appContext).execute(request)
+        return result is coil.request.SuccessResult
     }
 
     /**
-     * يحذف الصورة المؤقتة من المحادثة بعد [durationSeconds] ثانية.
+     * ينهي صلاحية الصورة المؤقتة بعد [durationSeconds] ثانية:
+     * تبقى الفقاعة بحالة «انتهت»، ويُمسح الرابط وكاش الصورة فوراً.
      * يُضاف +600ms ليكتمل تأثير التلاشي قبل الإزالة الفعلية.
      * يُستخدم لكلا الطرفين (المستقبِل عند المشاهدة، والمرسِل عند وصول photo-viewed).
      */
@@ -881,13 +1105,28 @@ class ChatViewModel(
         if (disappearingRemovalJobs.containsKey(messageId)) return
         disappearingRemovalJobs[messageId] = viewModelScope.launch {
             delay(durationSeconds * 1000L + 600L)
+            val url = _state.value.messages.firstOrNull { it.id == messageId }?.mediaUrl
             _state.update { s ->
                 s.copy(
-                    messages = s.messages.filterNot { it.id == messageId },
-                    viewedDisappearing = s.viewedDisappearing - messageId
+                    messages = s.messages.map {
+                        if (it.id == messageId) it.copy(mediaUrl = null) else it
+                    },
+                    viewedDisappearing = s.viewedDisappearing - messageId,
+                    expiredDisappearing = s.expiredDisappearing + messageId
                 )
             }
+            // امسح الصورة من الكاش فوراً — لا تبقى نسخة على الجهاز بعد الانتهاء
+            url?.let { evictImageCache(it) }
             disappearingRemovalJobs.remove(messageId)
+        }
+    }
+
+    @OptIn(coil.annotation.ExperimentalCoilApi::class)
+    private fun evictImageCache(url: String) {
+        runCatching {
+            val loader = coil.Coil.imageLoader(appContext)
+            loader.memoryCache?.remove(coil.memory.MemoryCache.Key(url))
+            loader.diskCache?.remove(url)
         }
     }
 
@@ -1125,8 +1364,8 @@ class ChatViewModel(
         recordTimerJob?.cancel()
         recorder.cancel()
         audioPlayer.stop()
+        stopTypingNow()
         socket.leaveConversation(conversationId)
-        socket.sendStopTyping(conversationId)
         // احفظ آخر نسخة من الرسائل في الكاش (استبعد الرسائل المؤقتة)
         val snapshot = _state.value.messages.filterNot { it.id.startsWith("tmp-") }
         if (snapshot.isNotEmpty()) {
@@ -1169,7 +1408,8 @@ class ChatViewModel(
                     cache = app.chatsCacheStorage,
                     reportRepo = app.reportRepository,
                     blockingRepo = app.blockingRepository,
-                    appPreferences = AppPreferences(app)
+                    appPreferences = AppPreferences(app),
+                    appContext = app.applicationContext
                 )
             }
         }

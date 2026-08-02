@@ -26,6 +26,12 @@ class BlockingRepository(
         resp.message ?: "تم إلغاء الحظر"
     }
 
+    /** حالة الحظر بالاتجاهين مع مستخدم محدّد — تُفحص عند كل فتح للمحادثة. */
+    suspend fun checkBlockStatus(userId: String): NetworkResult<BlockStatusData> = safeApiCall {
+        val resp = api.getBlockStatus(bearer(), userId)
+        resp.data ?: BlockStatusData()
+    }
+
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
             ?: throw IllegalStateException("لا يوجد جلسة نشطة")

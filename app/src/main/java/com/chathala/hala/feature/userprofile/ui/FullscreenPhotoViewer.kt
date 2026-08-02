@@ -4,8 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +52,8 @@ fun FullscreenPhotoViewer(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        com.chathala.hala.ui.components.FullScreenDialogWindow()
+
         val pagerState = rememberPagerState(
             initialPage = initialIndex.coerceIn(0, urls.lastIndex)
         ) { urls.size }
@@ -60,6 +67,7 @@ fun FullscreenPhotoViewer(
                 onClick = onDismiss,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
                     .padding(12.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.4f))
@@ -75,6 +83,7 @@ fun FullscreenPhotoViewer(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
                         .padding(bottom = 28.dp)
                         .clip(CircleShape)
                         .background(Color.Black.copy(alpha = 0.4f))

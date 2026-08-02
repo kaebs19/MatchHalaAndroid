@@ -273,7 +273,8 @@ fun HalaNavGraph() {
                     nav.navigate(Routes.userProfile(userId))
                 },
                 onOpenContentSettings = { nav.navigate(Routes.SETTINGS_CONTENT) },
-                onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) }
+                onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) },
+                onOpenSubscription = { nav.navigate(Routes.SUBSCRIPTION) }
             )
         }
 
