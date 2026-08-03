@@ -34,14 +34,22 @@ import com.google.android.gms.ads.nativead.NativeAdView
 @Composable
 fun rememberNativeAd(): NativeAd? {
     val context = LocalContext.current
+    val adsEnabled = AdGate.rememberEnabled()
     var ad by remember { mutableStateOf<NativeAd?>(null) }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(adsEnabled) {
+        // لا إعلانات للمشتركين
+        if (!adsEnabled) return@DisposableEffect onDispose { ad?.destroy() }
         val loader = com.google.android.gms.ads.AdLoader.Builder(context, AdConfig.nativeUnitId)
             .forNativeAd { loaded ->
                 ad?.destroy()
                 ad = loaded
+                AdLog.loaded("مدمج")
             }
+            .withAdListener(object : com.google.android.gms.ads.AdListener() {
+                override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) =
+                    AdLog.failure("مدمج", error)
+            })
             .build()
         loader.loadAd(AdRequest.Builder().build())
         onDispose { ad?.destroy() }

@@ -123,7 +123,10 @@ fun DiscoverScreen(
     }
     // إعلان مدمج بين البطاقات (كل 8)
     LaunchedEffect(Unit) {
-        viewModel.showNativeAd.collect { showNativeOverlay = true }
+        // لا إعلانات للمشتركين — وإلا بقيت النافذة تدور بلا إعلان
+        viewModel.showNativeAd.collect {
+            if (com.chathala.hala.core.ads.AdGate.enabled) showNativeOverlay = true
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

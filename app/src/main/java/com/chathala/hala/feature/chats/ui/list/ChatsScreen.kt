@@ -72,6 +72,7 @@ fun ChatsScreen(
     viewModel: ChatsViewModel = viewModel(factory = ChatsViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val adsEnabled = com.chathala.hala.core.ads.AdGate.rememberEnabled()
     val snackbarHost = rememberHalaSnackbarHost()
     var pendingDelete by remember { mutableStateOf<String?>(null) }
     var showReport by remember { mutableStateOf(false) }
@@ -158,8 +159,8 @@ fun ChatsScreen(
                                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.06f),
                                 modifier = Modifier.padding(horizontal = 14.dp)
                             )
-                            // بانر بعد كل N محادثة
-                            if ((index + 1) % AdConfig.CHAT_LIST_BANNER_EVERY == 0) {
+                            // بانر بعد كل N محادثة (لا يظهر للمشتركين)
+                            if (adsEnabled && (index + 1) % AdConfig.CHAT_LIST_BANNER_EVERY == 0) {
                                 BannerAd(
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                                 )

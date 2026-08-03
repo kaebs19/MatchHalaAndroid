@@ -26,6 +26,7 @@ object InterstitialAdManager {
 
     /** يبدأ تحميل إعلان جاهز للعرض لاحقاً (آمن للاستدعاء المتكرر). */
     fun preload(context: Context) {
+        if (!AdGate.enabled) return          // لا إعلانات للمشتركين
         if (ad != null || loading) return
         loading = true
         val appCtx = context.applicationContext
@@ -37,11 +38,13 @@ object InterstitialAdManager {
                 override fun onAdLoaded(loaded: InterstitialAd) {
                     ad = loaded
                     loading = false
+                    AdLog.loaded("بيني")
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     ad = null
                     loading = false
+                    AdLog.failure("بيني", error)
                 }
             }
         )
@@ -61,6 +64,7 @@ object InterstitialAdManager {
     }
 
     private fun showIfReady(activity: Activity): Boolean {
+        if (!AdGate.enabled) return false    // لا إعلانات للمشتركين
         val current = ad
         if (current == null) {
             preload(activity.applicationContext)

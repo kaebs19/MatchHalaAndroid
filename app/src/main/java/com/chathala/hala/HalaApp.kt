@@ -201,6 +201,11 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
             } else false
         }
 
+        // بوابة الإعلانات تتبع حالة الاشتراك — لا إعلانات للمشتركين
+        userRepository.currentUser
+            .onEach { com.chathala.hala.core.ads.AdGate.update(it) }
+            .launchIn(appScope)
+
         HalaNotificationChannels.registerAll(this)
 
         // الاستجابة لطلب السيرفر بتحديث FCM token (عند connect لـ Socket)
