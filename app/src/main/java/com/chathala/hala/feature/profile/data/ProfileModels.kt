@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.profile.data
 
+import com.chathala.hala.core.i18n.S
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -12,7 +13,15 @@ data class Interest(
     val category: String?,
     val isActive: Boolean? = true,
     val order: Int? = 0
-)
+) {
+    /**
+     * الاسم المعروض حسب لغة الواجهة.
+     *
+     * يُقرأ وقت العرض لا وقت فكّ الترميز، فتتبدّل الاهتمامات مع بقية النصوص فوراً.
+     * `nameEn` اختياري في الاستجابة: نعود للعربية عند غيابه بدل إظهار فراغ.
+     */
+    val name: String get() = S.pick(nameAr, nameEn?.takeIf { it.isNotBlank() } ?: nameAr)
+}
 
 @JsonClass(generateAdapter = true)
 data class InterestsResponse(

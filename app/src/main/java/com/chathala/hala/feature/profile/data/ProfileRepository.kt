@@ -17,7 +17,9 @@ class ProfileRepository(
 ) {
 
     suspend fun fetchInterests(): NetworkResult<List<Interest>> =
-        safeApiCall { api.getInterests().data }
+        safeApiCall {
+            api.getInterests().data.also { InterestsCatalog.update(it) }
+        }
 
     suspend fun updateProfile(request: UpdateProfileRequest): NetworkResult<String> =
         safeApiCall {

@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.feature.profile.data.InterestsCatalog
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +36,7 @@ fun ReadOnlyInterestsChips(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         interestKeys.forEach { key ->
-            InterestPill(text = interestLabelAr(key))
+            InterestPill(text = InterestsCatalog.label(key))
         }
     }
 }
@@ -57,5 +59,3 @@ private fun InterestPill(text: String) {
     )
 }
 
-/** ترجمة مؤقتة لمفاتيح الاهتمامات — لاحقاً نستخدم القاموس من /api/interests. */
-private fun interestLabelAr(key: String): String = key

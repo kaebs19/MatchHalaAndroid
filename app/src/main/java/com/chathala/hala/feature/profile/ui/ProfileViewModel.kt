@@ -56,6 +56,8 @@ class ProfileViewModel(
 
     init {
         refresh()
+        // شرائح الاهتمامات تعرض مفاتيح خاماً حتى يُملأ الفهرس — نجلبه صامتاً عند فتح الشاشة
+        viewModelScope.launch { profileRepo.fetchInterests() }
     }
 
     /** تحميل صامت بدون مؤشر — يُستدعى تلقائياً عند دخول الشاشة. */

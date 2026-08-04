@@ -71,14 +71,14 @@ private fun InterestChip(
         if (!interest.emoji.isNullOrBlank()) {
             Text(text = interest.emoji, fontSize = 16.sp)
             Text(
-                text = interest.nameAr,
+                text = interest.name,
                 color = content,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.padding(start = 6.dp)
             )
         } else {
             Text(
-                text = interest.nameAr,
+                text = interest.name,
                 color = content,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
             )
