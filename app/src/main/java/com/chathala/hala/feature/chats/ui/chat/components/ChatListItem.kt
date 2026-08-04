@@ -1,5 +1,10 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.LocaleManager
+
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.feature.chats.data.Message
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -105,24 +110,24 @@ private fun labelFor(day: String): String {
     }
     val diffDays = ((today.timeInMillis - cal.timeInMillis) / (24L * 60 * 60 * 1000)).toInt()
     return when (diffDays) {
-        0 -> "اليوم"
-        1 -> "الأمس"
+        0 -> S.get(R.string.day_today)
+        1 -> S.get(R.string.day_yesterday)
         in 2..6 -> arabicDayOfWeek(cal.get(Calendar.DAY_OF_WEEK))
         else -> {
-            val fmt = SimpleDateFormat("d MMMM yyyy", Locale("ar"))
+            val fmt = SimpleDateFormat("d MMMM yyyy", LocaleManager.locale)
             fmt.format(cal.time)
         }
     }
 }
 
 private fun arabicDayOfWeek(d: Int): String = when (d) {
-    Calendar.SATURDAY -> "السبت"
-    Calendar.SUNDAY -> "الأحد"
-    Calendar.MONDAY -> "الإثنين"
-    Calendar.TUESDAY -> "الثلاثاء"
-    Calendar.WEDNESDAY -> "الأربعاء"
-    Calendar.THURSDAY -> "الخميس"
-    Calendar.FRIDAY -> "الجمعة"
+    Calendar.SATURDAY -> S.get(R.string.day_saturday)
+    Calendar.SUNDAY -> S.get(R.string.day_sunday)
+    Calendar.MONDAY -> S.get(R.string.day_monday)
+    Calendar.TUESDAY -> S.get(R.string.day_tuesday)
+    Calendar.WEDNESDAY -> S.get(R.string.day_wednesday)
+    Calendar.THURSDAY -> S.get(R.string.day_thursday)
+    Calendar.FRIDAY -> S.get(R.string.day_friday)
     else -> ""
 }
 

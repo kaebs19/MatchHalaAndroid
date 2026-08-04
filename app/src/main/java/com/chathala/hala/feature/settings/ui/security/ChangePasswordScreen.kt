@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.security
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,7 +42,7 @@ fun ChangePasswordScreen(
     }
 
     SettingsScaffold(
-        title = stringResource(R.string.change_password_title),
+        title = S.get(R.string.change_password_title),
         onBack = onBack
     ) {
         Column(
@@ -52,7 +53,7 @@ fun ChangePasswordScreen(
             HalaTextField(
                 value = state.current,
                 onValueChange = viewModel::setCurrent,
-                label = stringResource(R.string.change_password_current),
+                label = S.get(R.string.change_password_current),
                 isPassword = true,
                 keyboardType = KeyboardType.Password,
                 leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -63,7 +64,7 @@ fun ChangePasswordScreen(
             HalaTextField(
                 value = state.new,
                 onValueChange = viewModel::setNew,
-                label = stringResource(R.string.change_password_new),
+                label = S.get(R.string.change_password_new),
                 isPassword = true,
                 keyboardType = KeyboardType.Password,
                 leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -72,7 +73,7 @@ fun ChangePasswordScreen(
             )
             if (state.newError == null) {
                 Text(
-                    text = stringResource(R.string.password_hint),
+                    text = S.get(R.string.password_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp)
@@ -82,7 +83,7 @@ fun ChangePasswordScreen(
             HalaTextField(
                 value = state.confirm,
                 onValueChange = viewModel::setConfirm,
-                label = stringResource(R.string.change_password_confirm),
+                label = S.get(R.string.change_password_confirm),
                 isPassword = true,
                 keyboardType = KeyboardType.Password,
                 leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -95,7 +96,7 @@ fun ChangePasswordScreen(
             Spacer(Modifier.height(8.dp))
 
             HalaPrimaryButton(
-                text = stringResource(R.string.change_password_submit),
+                text = S.get(R.string.change_password_submit),
                 loading = state.loading,
                 onClick = { viewModel.submit() }
             )

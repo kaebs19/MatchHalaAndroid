@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.user.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -45,16 +48,16 @@ class UserRepository(
     @Suppress("UNCHECKED_CAST")
     suspend fun refresh(): NetworkResult<User> = safeApiCall {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
 
         val raw = api.getMe("Bearer $token")
         val data = raw["data"] as? Map<String, Any?>
-            ?: throw IllegalStateException("استجابة غير متوقّعة (data مفقود)")
+            ?: throw IllegalStateException(S.get(R.string.err_unexpected_data_missing))
         val userMap = data["user"] as? Map<String, Any?>
-            ?: throw IllegalStateException("استجابة غير متوقّعة (user مفقود)")
+            ?: throw IllegalStateException(S.get(R.string.err_unexpected_user_missing))
 
         val user = userMap.toUserDomain()
-            ?: throw IllegalStateException("بيانات المستخدم غير مكتملة")
+            ?: throw IllegalStateException(S.get(R.string.err_user_data_incomplete))
         userStorage.save(user)
         user
     }

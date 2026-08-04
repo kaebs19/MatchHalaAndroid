@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,14 +71,14 @@ fun CountryField(
             if (selected != null) {
                 Text(text = selected.flag, fontSize = 24.sp)
                 Text(
-                    text = selected.nameAr,
+                    text = selected.name,
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 10.dp)
                 )
             } else {
                 Text(
-                    text = stringResource(R.string.choose_country),
+                    text = S.get(R.string.choose_country),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -121,7 +122,7 @@ private fun CountryPickerSheet(
 
     val filtered = remember(query) {
         if (query.isBlank()) Countries.list
-        else Countries.list.filter { it.nameAr.contains(query.trim(), ignoreCase = true) }
+        else Countries.list.filter { it.name.contains(query.trim(), ignoreCase = true) }
     }
 
     ModalBottomSheet(
@@ -136,7 +137,7 @@ private fun CountryPickerSheet(
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text = stringResource(R.string.choose_country),
+                text = S.get(R.string.choose_country),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -145,7 +146,7 @@ private fun CountryPickerSheet(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("بحث…") },
+                placeholder = { Text(S.get(R.string.action_search_hint)) },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
@@ -174,7 +175,7 @@ private fun CountryPickerSheet(
                     ) {
                         Text(text = country.flag, fontSize = 24.sp)
                         Text(
-                            text = country.nameAr,
+                            text = country.name,
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(start = 12.dp)

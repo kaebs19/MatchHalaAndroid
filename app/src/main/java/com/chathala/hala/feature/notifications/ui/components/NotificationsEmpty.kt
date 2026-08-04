@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.notifications.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -39,7 +41,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,10 +52,10 @@ fun NotificationsEmpty(filter: NotificationFilter) {
     val isDone = filter == NotificationFilter.UNREAD
     val icon: ImageVector = if (isDone) Icons.Filled.CheckCircle else Icons.Outlined.NotificationsNone
     val title = if (isDone)
-        stringResource(R.string.notifications_empty_unread)
+        S.get(R.string.notifications_empty_unread)
     else
-        stringResource(R.string.notifications_empty_title)
-    val subtitle = stringResource(R.string.notifications_empty_subtitle)
+        S.get(R.string.notifications_empty_title)
+    val subtitle = S.get(R.string.notifications_empty_subtitle)
 
     // Entry animation
     var entered by remember { mutableStateOf(false) }

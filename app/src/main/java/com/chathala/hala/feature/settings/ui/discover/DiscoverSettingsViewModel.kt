@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.discover
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -76,7 +79,7 @@ class DiscoverSettingsViewModel(
         // بوابة المشتركين — التفعيل فقط يتطلب اشتراكاً
         val premiumGated = pref == DiscoverPref.STEALTH || pref == DiscoverPref.PREMIUM_ONLY_REQUESTS
         if (premiumGated && serverValue && !_state.value.isPremium) {
-            _message.tryEmit("هذه الميزة للمشتركين فقط 👑")
+            _message.tryEmit(S.get(R.string.premium_members_only))
             return
         }
 
@@ -110,7 +113,7 @@ class DiscoverSettingsViewModel(
         val current = _state.value.data ?: return
 
         if (enabled && !_state.value.isPremium) {
-            _message.tryEmit("هذه الميزة للمشتركين فقط 👑")
+            _message.tryEmit(S.get(R.string.premium_members_only))
             return
         }
 

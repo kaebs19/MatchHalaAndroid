@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.visitors.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -27,7 +30,7 @@ class VisitorsRepository(
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

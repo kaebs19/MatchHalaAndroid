@@ -1,5 +1,8 @@
 package com.chathala.hala.core.network
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -37,13 +40,13 @@ internal inline fun <T> safeApiCall(block: () -> T): NetworkResult<T> = try {
         try { ApiClient.errorParser.fromJson(it) } catch (_: Exception) { null }
     }
     NetworkResult.Error(
-        message = parsed?.message ?: "حدث خطأ (${e.code()})",
+        message = parsed?.message ?: S.get(R.string.err_generic_code, e.code().toString()),
         code = parsed?.code,
         payload = parsed,
         httpCode = e.code()
     )
 } catch (e: IOException) {
-    NetworkResult.Error("تحقق من اتصالك بالإنترنت")
+    NetworkResult.Error(S.get(R.string.err_check_connection))
 } catch (e: Exception) {
-    NetworkResult.Error(e.message ?: "خطأ غير متوقع")
+    NetworkResult.Error(e.message ?: S.get(R.string.err_unexpected))
 }

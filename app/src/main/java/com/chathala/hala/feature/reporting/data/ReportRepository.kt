@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.reporting.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -24,12 +27,12 @@ class ReportRepository(
                 description = description?.takeIf { it.isNotBlank() }
             )
         )
-        resp.message ?: "تم إرسال البلاغ"
+        resp.message ?: S.get(R.string.report_sent)
     }
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

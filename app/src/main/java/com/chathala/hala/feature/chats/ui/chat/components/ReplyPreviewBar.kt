@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,7 +64,7 @@ fun ReplyPreviewBar(
         Spacer(Modifier.size(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "الرد على ${replyingTo.sender?.name ?: ""}",
+                text = S.get(R.string.reply_to_named, replyingTo.sender?.name ?: ""),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -75,7 +78,7 @@ fun ReplyPreviewBar(
         IconButton(onClick = onCancel, modifier = Modifier.size(32.dp)) {
             Icon(
                 imageVector = Icons.Filled.Close,
-                contentDescription = "إلغاء",
+                contentDescription = S.get(R.string.action_cancel),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
             )
@@ -84,8 +87,8 @@ fun ReplyPreviewBar(
 }
 
 private fun preview(msg: Message): String = when (msg.type) {
-    "image" -> "📷 صورة"
-    "audio" -> "🎙️ رسالة صوتية"
-    "video" -> "🎥 فيديو"
+    "image" -> S.get(R.string.msg_type_photo)
+    "audio" -> S.get(R.string.msg_type_voice)
+    "video" -> S.get(R.string.msg_type_video)
     else -> msg.content?.takeIf { it.isNotBlank() } ?: "…"
 }

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.account
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -112,12 +115,12 @@ class MyRequestsViewModel(private val tokenStorage: TokenStorage) : ViewModel() 
                 _state.update {
                     it.copy(
                         submitting = false,
-                        message = resp.message ?: "تم إرسال طلبك، سيراجعه المشرف"
+                        message = resp.message ?: S.get(R.string.request_sent_moderator)
                     )
                 }
                 load() // أعد تحميل القائمة لإظهار الطلب الجديد
             } catch (e: Exception) {
-                _state.update { it.copy(submitting = false, message = "تعذّر الإرسال، حاول لاحقاً") }
+                _state.update { it.copy(submitting = false, message = S.get(R.string.err_send_failed_try_later)) }
             }
         }
     }
@@ -134,20 +137,20 @@ class MyRequestsViewModel(private val tokenStorage: TokenStorage) : ViewModel() 
 
 /** ترجمة الحالة + اللون. */
 internal fun appealStatusLabel(status: String?): Pair<String, Color> = when (status) {
-    "pending" -> "قيد الانتظار" to Color(0xFFFFB300)
-    "forwarded" -> "محوّل" to Color(0xFF42A5F5)
-    "under_review" -> "قيد المراجعة" to Color(0xFFFF8C00)
-    "approved" -> "مقبول" to Color(0xFF43A047)
-    "rejected" -> "مرفوض" to Color(0xFFE53935)
+    "pending" -> S.get(R.string.status_pending) to Color(0xFFFFB300)
+    "forwarded" -> S.get(R.string.status_transferred) to Color(0xFF42A5F5)
+    "under_review" -> S.get(R.string.verify_pending) to Color(0xFFFF8C00)
+    "approved" -> S.get(R.string.status_accepted) to Color(0xFF43A047)
+    "rejected" -> S.get(R.string.verify_rejected) to Color(0xFFE53935)
     else -> "—" to Color.Gray
 }
 
 internal fun appealTypeLabel(actionType: String?): String = when (actionType) {
-    "restriction" -> "تقييد المراسلة"
-    "suspension" -> "تعليق الحساب"
-    "ban" -> "حظر الحساب"
-    "device_ban" -> "حظر الجهاز"
-    else -> "مراجعة"
+    "restriction" -> S.get(R.string.action_messaging_restriction)
+    "suspension" -> S.get(R.string.notif_account_suspended)
+    "ban" -> S.get(R.string.action_account_ban)
+    "device_ban" -> S.get(R.string.action_device_ban)
+    else -> S.get(R.string.action_review)
 }
 
 @Composable
@@ -172,7 +175,7 @@ fun MyRequestsScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        SettingsScaffold(title = "طلباتي", onBack = onBack, scrollable = false) {
+        SettingsScaffold(title = S.get(R.string.my_requests_title), onBack = onBack, scrollable = false) {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state.loading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -213,7 +216,7 @@ fun MyRequestsScreen(
                         if (state.appeals.isNotEmpty()) {
                             item {
                                 Text(
-                                    "الطلبات السابقة",
+                                    S.get(R.string.requests_previous),
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(top = 4.dp)
@@ -223,7 +226,7 @@ fun MyRequestsScreen(
                         } else {
                             item {
                                 Text(
-                                    "لا توجد طلبات سابقة",
+                                    S.get(R.string.requests_empty),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(8.dp)
@@ -255,11 +258,11 @@ private fun QuickLinksRow(
             .horizontalScroll(androidx.compose.foundation.rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        QuickLinkChip("⚠️ سجل المخالفات", Color(0xFFFF8C00), onOpenViolations)
-        QuickLinkChip("📄 الشروط", Color(0xFF42A5F5), onOpenTerms)
-        QuickLinkChip("🔒 الخصوصية", Color(0xFF43A047), onOpenPrivacy)
-        QuickLinkChip("✉️ اتصل بنا", Color(0xFF7E57C2), onOpenContact)
-        QuickLinkChip("📷 إنستا", Color(0xFFE1306C), onOpenInstagram)
+        QuickLinkChip(S.get(R.string.link_violations_history), Color(0xFFFF8C00), onOpenViolations)
+        QuickLinkChip(S.get(R.string.link_terms), Color(0xFF42A5F5), onOpenTerms)
+        QuickLinkChip(S.get(R.string.link_privacy), Color(0xFF43A047), onOpenPrivacy)
+        QuickLinkChip(S.get(R.string.link_contact_us), Color(0xFF7E57C2), onOpenContact)
+        QuickLinkChip(S.get(R.string.link_instagram), Color(0xFFE1306C), onOpenInstagram)
     }
 }
 
@@ -291,7 +294,7 @@ private fun NonReviewableCard(note: String?) {
             Text("🚫", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.size(10.dp))
             Text(
-                "هذه المخالفة غير قابلة للمراجعة",
+                S.get(R.string.violation_not_reviewable),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = red
             )
@@ -299,7 +302,7 @@ private fun NonReviewableCard(note: String?) {
         Spacer(Modifier.size(8.dp))
         Text(
             text = note
-                ?: "مخالفات الصور الإباحية أو الجنسية والأسماء المخالفة غير قابلة للمراجعة.",
+                ?: S.get(R.string.restriction_not_reviewable_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -317,12 +320,12 @@ private fun SubmitRequestCard(submitting: Boolean, onSubmit: (String) -> Unit) {
             .padding(16.dp)
     ) {
         Text(
-            "قدّم طلب مراجعة",
+            S.get(R.string.submit_review_request),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
         )
         Spacer(Modifier.size(4.dp))
         Text(
-            "ابدأ محادثة مع فريق الإدارة لإعادة النظر في الإجراء المتخذ ضد حسابك.",
+            S.get(R.string.submit_review_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -330,7 +333,7 @@ private fun SubmitRequestCard(submitting: Boolean, onSubmit: (String) -> Unit) {
         androidx.compose.material3.OutlinedTextField(
             value = reason,
             onValueChange = { if (it.length <= 1000) reason = it },
-            placeholder = { Text("اكتب أول رسالة للإدارة…") },
+            placeholder = { Text(S.get(R.string.submit_review_hint)) },
             modifier = Modifier.fillMaxWidth(),
             minLines = 4,
             supportingText = {
@@ -351,7 +354,7 @@ private fun SubmitRequestCard(submitting: Boolean, onSubmit: (String) -> Unit) {
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("إرسال الطلب", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
+                Text(S.get(R.string.submit_request), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
             }
         }
     }

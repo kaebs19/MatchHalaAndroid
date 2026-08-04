@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.list
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -209,8 +212,8 @@ fun ChatsScreen(
     pendingDelete?.let { id ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("حذف المحادثة") },
-            text = { Text("سيتم حذف المحادثة من قائمتك فقط. هل تريد المتابعة؟") },
+            title = { Text(S.get(R.string.chat_delete_title)) },
+            text = { Text(S.get(R.string.chat_delete_message)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -221,10 +224,10 @@ fun ChatsScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) { Text("حذف") }
+                ) { Text(S.get(R.string.action_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text("إلغاء") }
+                TextButton(onClick = { pendingDelete = null }) { Text(S.get(R.string.action_cancel)) }
             }
         )
     }
@@ -264,14 +267,14 @@ private fun ChatsTopBar(
             IconButton(onClick = onToggleSearch) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "إغلاق البحث",
+                    contentDescription = S.get(R.string.search_close),
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchChange,
-                placeholder = { Text("ابحث في المحادثات…") },
+                placeholder = { Text(S.get(R.string.chats_search_hint)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 shape = RoundedCornerShape(14.dp),
@@ -281,7 +284,7 @@ private fun ChatsTopBar(
             )
         } else {
             Text(
-                text = "المحادثات",
+                text = S.get(R.string.chats_title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
@@ -305,7 +308,7 @@ private fun ChatsTopBar(
             ) {
                 Icon(
                     imageVector = Icons.Filled.People,
-                    contentDescription = "الأصدقاء",
+                    contentDescription = S.get(R.string.friends_title),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -319,7 +322,7 @@ private fun ChatsTopBar(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Search,
-                    contentDescription = "بحث",
+                    contentDescription = S.get(R.string.action_search),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -342,11 +345,11 @@ private fun LoadingPlaceholder() {
 @Composable
 private fun EmptyChats(filter: ChatsFilter, isSearching: Boolean) {
     val (title, body) = when {
-        isSearching -> "لا توجد نتائج" to "حاول البحث بكلمة أخرى."
-        filter == ChatsFilter.UNREAD -> "لا توجد محادثات غير مقروءة" to "قرأتَ كل شيء — أحسنت!"
-        filter == ChatsFilter.PINNED -> "لا توجد محادثات مثبّتة" to "اسحب يميناً على أي محادثة لتثبيتها."
-        filter == ChatsFilter.PREMIUM -> "لا توجد محادثات مع مستخدمين مميزين" to "ستظهر هنا المحادثات مع حاملي 👑."
-        else -> "لا توجد محادثات بعد" to "ابدأ من شاشة الاكتشاف وابعث طلب محادثة جديد."
+        isSearching -> S.get(R.string.empty_no_results) to S.get(R.string.empty_no_results_desc)
+        filter == ChatsFilter.UNREAD -> S.get(R.string.chats_empty_unread) to S.get(R.string.chats_empty_unread_desc)
+        filter == ChatsFilter.PINNED -> S.get(R.string.chats_empty_pinned) to S.get(R.string.chats_empty_pinned_desc)
+        filter == ChatsFilter.PREMIUM -> S.get(R.string.chats_empty_premium) to S.get(R.string.chats_empty_premium_desc)
+        else -> S.get(R.string.chats_empty_all) to S.get(R.string.chats_empty_all_desc)
     }
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),

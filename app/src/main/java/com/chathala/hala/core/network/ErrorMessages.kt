@@ -1,5 +1,8 @@
 package com.chathala.hala.core.network
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 /**
  * يحوّل `error.code` من السيرفر إلى رسالة عربية واضحة للمستخدم.
  * إذا الكود غير معروف، يرجع الرسالة الأصلية كما هي.
@@ -16,36 +19,36 @@ object ErrorMessages {
     fun friendly(result: NetworkResult.Error): String =
         when (result.code) {
             // تسجيل / ملف شخصي
-            "BANNED_NAME" -> "الاسم غير مسموح — اختر اسماً آخر"
-            "NAME_COOLDOWN" -> "يمكنك تغيير الاسم مرة كل 30 يوم فقط"
-            "NAME_BLOCKED" -> "تم منعك من تغيير الاسم من قِبل الإدارة"
-            "PHOTO_BLOCKED" -> "تم منعك من تغيير الصورة من قِبل الإدارة"
-            "PHOTO_COOLDOWN" -> "انتظر دقيقة قبل تغيير الصورة مجدداً"
-            "MAX_PHOTOS" -> "وصلت للحد الأقصى من الصور"
-            "PREMIUM_REQUIRED" -> "هذه الميزة متاحة للمشتركين فقط"
+            "BANNED_NAME" -> S.get(R.string.err_banned_name)
+            "NAME_COOLDOWN" -> S.get(R.string.err_name_cooldown)
+            "NAME_BLOCKED" -> S.get(R.string.err_name_blocked)
+            "PHOTO_BLOCKED" -> S.get(R.string.err_photo_blocked)
+            "PHOTO_COOLDOWN" -> S.get(R.string.err_photo_cooldown)
+            "MAX_PHOTOS" -> S.get(R.string.err_max_photos)
+            "PREMIUM_REQUIRED" -> S.get(R.string.err_premium_required)
 
             // الحساب
-            "ACCOUNT_BANNED" -> "تم حظر حسابك بسبب مخالفات متكررة"
-            "ACCOUNT_SUSPENDED" -> "حسابك معلّق مؤقتاً"
-            "DEVICE_BANNED" -> "هذا الجهاز محظور من استخدام التطبيق"
+            "ACCOUNT_BANNED" -> S.get(R.string.err_account_banned)
+            "ACCOUNT_SUSPENDED" -> S.get(R.string.err_account_suspended)
+            "DEVICE_BANNED" -> S.get(R.string.err_device_banned)
 
             // المحادثات — رفض نهائي من الخادم (لا إعادة إرسال)
-            "USER_BLOCKED" -> "لا يمكن التفاعل مع هذا المستخدم"
+            "USER_BLOCKED" -> S.get(R.string.err_cannot_interact)
             "PENDING_REQUEST_LIMIT" ->
-                "أرسلت طلبك بالفعل — انتظر رد الطرف الآخر قبل إرسال رسالة أخرى"
-            "CONVERSATION_PENDING" -> "لا يمكنك الإرسال حتى تُقبل المحادثة"
-            "CONVERSATION_CANCELLED" -> "انتهت هذه المحادثة — أرسل طلباً جديداً للاستئناف"
-            "CONVERSATION_INACTIVE" -> "المحادثة غير نشطة"
-            "RECIPIENT_SUSPENDED" -> "لا يمكن إرسال رسالة — المستخدم موقوف"
+                S.get(R.string.err_request_already_sent)
+            "CONVERSATION_PENDING" -> S.get(R.string.err_chat_not_accepted)
+            "CONVERSATION_CANCELLED" -> S.get(R.string.err_chat_ended)
+            "CONVERSATION_INACTIVE" -> S.get(R.string.err_chat_inactive)
+            "RECIPIENT_SUSPENDED" -> S.get(R.string.err_user_suspended_send)
 
             // تعديل الرسالة (بريميوم)
-            "EDIT_WINDOW_EXPIRED" -> "انتهت مهلة تعديل هذه الرسالة (١٥ دقيقة)"
-            "NOT_TEXT_MESSAGE" -> "يمكن تعديل الرسائل النصّية فقط"
-            "NOT_SENDER" -> "لا يمكنك تعديل رسالة شخص آخر"
-            "EXTERNAL_PROMO_BLOCKED" -> "تم حجب التعديل — لا يمكن مشاركة حسابات خارجية"
+            "EDIT_WINDOW_EXPIRED" -> S.get(R.string.err_edit_window_expired)
+            "NOT_TEXT_MESSAGE" -> S.get(R.string.err_edit_text_only)
+            "NOT_SENDER" -> S.get(R.string.err_edit_not_owner)
+            "EXTERNAL_PROMO_BLOCKED" -> S.get(R.string.err_edit_blocked_promo)
 
             // رموز عامة
-            "REFRESH_TOKEN_EXPIRED" -> "انتهت جلستك — سجّل الدخول مجدداً"
+            "REFRESH_TOKEN_EXPIRED" -> S.get(R.string.err_session_expired)
 
             else -> result.message
         }

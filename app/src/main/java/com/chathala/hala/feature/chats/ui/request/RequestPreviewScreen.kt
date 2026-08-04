@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.request
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -125,7 +128,7 @@ fun RequestPreviewScreen(
                         onDismissRequest = { menuExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("الإبلاغ عن المستخدم") },
+                            text = { Text(S.get(R.string.chat_report_user)) },
                             onClick = {
                                 menuExpanded = false
                                 showReport = true
@@ -149,7 +152,7 @@ fun RequestPreviewScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "إغلاق",
+                        contentDescription = S.get(R.string.action_close),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -220,20 +223,20 @@ private fun RequestUnavailable(onBack: () -> Unit) {
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = "لم يعد هذا الطلب متاحاً",
+            text = S.get(R.string.request_gone_title),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "ربما تم قبوله أو رفضه أو ألغاه الطرف الآخر.",
+            text = S.get(R.string.request_gone_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
         Spacer(Modifier.height(24.dp))
         Button(onClick = onBack) {
-            Text("رجوع")
+            Text(S.get(R.string.action_back))
         }
     }
 }
@@ -261,7 +264,7 @@ private fun RequestContent(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = creator?.name ?: "مستخدم",
+            text = creator?.name ?: S.get(R.string.label_user),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -275,7 +278,7 @@ private fun RequestContent(
             )
             Spacer(Modifier.size(6.dp))
             Text(
-                text = "يريد التحدث معك",
+                text = S.get(R.string.pending_wants_to_talk),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -293,7 +296,7 @@ private fun RequestContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "رسالته إليك",
+                    text = S.get(R.string.request_their_message),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -343,7 +346,7 @@ private fun RequestContent(
                     )
                 } else {
                     Text(
-                        text = "قبول",
+                        text = S.get(R.string.action_accept),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Spacer(Modifier.size(6.dp))
@@ -368,7 +371,7 @@ private fun RequestContent(
                 )
             ) {
                 Text(
-                    text = "رفض",
+                    text = S.get(R.string.action_decline),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Spacer(Modifier.size(6.dp))
@@ -388,7 +391,7 @@ private fun RequestContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "👋  قبول مع رسالة ترحيب",
+                text = S.get(R.string.request_accept_with_greeting),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )

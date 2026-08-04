@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.userprofile.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -116,7 +119,7 @@ class UserProfileViewModel(
                         )
                     }
                     _message.tryEmit(
-                        if (status == FriendStatus.FRIENDS) "أصبحتما صديقين 🎉" else "تم إرسال طلب الصداقة"
+                        if (status == FriendStatus.FRIENDS) S.get(R.string.friends_now_friends) else S.get(R.string.friend_request_sent)
                     )
                 }
                 is NetworkResult.Error -> {
@@ -136,7 +139,7 @@ class UserProfileViewModel(
             when (val r = friends.accept(fid)) {
                 is NetworkResult.Success -> {
                     _state.update { it.copy(friendWorking = false, friendStatus = FriendStatus.FRIENDS) }
-                    _message.tryEmit("أصبحتما صديقين 🎉")
+                    _message.tryEmit(S.get(R.string.friends_now_friends))
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(friendWorking = false) }
@@ -176,7 +179,7 @@ class UserProfileViewModel(
                 is NetworkResult.Error -> _state.update {
                     it.copy(
                         loading = false,
-                        error = if (r.isNotFound) "حساب محذوف" else ErrorMessages.friendly(r),
+                        error = if (r.isNotFound) S.get(R.string.deleted_account_name) else ErrorMessages.friendly(r),
                         accountDeleted = r.isNotFound
                     )
                 }
@@ -189,11 +192,11 @@ class UserProfileViewModel(
         if (_state.value.liked) return
         _state.update { it.copy(liked = true) }   // تغيّر اللون فوراً
         val name = _state.value.user?.name?.takeIf { it.isNotBlank() }
-        _message.tryEmit(if (name != null) "تم الإعجاب بـ $name ❤️" else "تم الإعجاب ❤️")
+        _message.tryEmit(if (name != null) S.get(R.string.discover_liked_named, name) else S.get(R.string.discover_liked))
         viewModelScope.launch {
             when (val r = discover.recordSwipe(userId, "like")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(r.data.message ?: "تطابق جديد! 🎉")
+                    if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
                 is NetworkResult.Error -> { /* «سبق السوايب» → تجاهل، نُبقي اللون */ }
             }
         }
@@ -206,7 +209,7 @@ class UserProfileViewModel(
         viewModelScope.launch {
             when (val r = discover.recordSwipe(userId, "superlike")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(r.data.message ?: "تطابق جديد! 🎉")
+                    if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
                 is NetworkResult.Error -> {
                     _state.update { it.copy(liked = false) }  // تجاوز الحد → أعِد اللون
                     _message.tryEmit(ErrorMessages.friendly(r))
@@ -223,8 +226,8 @@ class UserProfileViewModel(
                 is NetworkResult.Success -> {
                     _state.update { it.copy(requesting = false, requestSent = true) }
                     val msg = r.data.message
-                        ?: if (r.data.isExisting) "محادثة موجودة — افتحها"
-                        else "تم إرسال الطلب"
+                        ?: if (r.data.isExisting) S.get(R.string.discover_chat_exists)
+                        else S.get(R.string.conv_request_sent)
                     _message.tryEmit(msg)
                     val convId = r.data.conversationId
                     if (r.data.isExisting && convId != null) {

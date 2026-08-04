@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -78,7 +81,7 @@ fun PremiumBanner(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "هلا بريميوم",
+                    text = S.get(R.string.premium_title),
                     fontSize = 17.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF4A2C00)
@@ -87,7 +90,7 @@ fun PremiumBanner(
                 Text(text = "👑", fontSize = 15.sp)
             }
             Text(
-                text = "افتح كل الميزات وابرز بين الأعضاء",
+                text = S.get(R.string.premium_subtitle),
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFF5A3A00)
@@ -103,7 +106,7 @@ fun PremiumBanner(
                 .padding(start = 12.dp, end = 8.dp, top = 7.dp, bottom = 7.dp)
         ) {
             Text(
-                text = "ترقية",
+                text = S.get(R.string.action_upgrade),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFFFE082)

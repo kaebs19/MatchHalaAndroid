@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,13 +53,13 @@ fun WelcomeScreen(
         ?.substringBefore(' ')
 
     AuthScaffold(
-        title = stringResource(R.string.welcome_title),
-        subtitle = stringResource(R.string.welcome_subtitle)
+        title = S.get(R.string.welcome_title),
+        subtitle = S.get(R.string.welcome_subtitle)
     ) {
         Text(
             text = firstName
-                ?.let { stringResource(R.string.welcome_greeting_named, it) }
-                ?: stringResource(R.string.welcome_greeting),
+                ?.let { S.get(R.string.welcome_greeting_named, it) }
+                ?: S.get(R.string.welcome_greeting),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -66,23 +67,23 @@ fun WelcomeScreen(
         Spacer(Modifier.height(10.dp))
 
         Text(
-            text = stringResource(R.string.welcome_body),
+            text = S.get(R.string.welcome_body),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(Modifier.height(28.dp))
 
-        WelcomePoint(Icons.Filled.CheckCircle, stringResource(R.string.welcome_point_profile))
+        WelcomePoint(Icons.Filled.CheckCircle, S.get(R.string.welcome_point_profile))
         Spacer(Modifier.height(16.dp))
-        WelcomePoint(Icons.Rounded.Interests, stringResource(R.string.welcome_point_interests))
+        WelcomePoint(Icons.Rounded.Interests, S.get(R.string.welcome_point_interests))
         Spacer(Modifier.height(16.dp))
-        WelcomePoint(Icons.Rounded.Lock, stringResource(R.string.welcome_point_privacy))
+        WelcomePoint(Icons.Rounded.Lock, S.get(R.string.welcome_point_privacy))
 
         Spacer(Modifier.height(36.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.welcome_continue),
+            text = S.get(R.string.welcome_continue),
             onClick = onContinue
         )
 

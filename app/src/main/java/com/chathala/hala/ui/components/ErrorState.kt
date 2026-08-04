@@ -1,5 +1,9 @@
 package com.chathala.hala.ui.components
 
+import com.chathala.hala.R
+
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +39,7 @@ fun ErrorState(
     message: String,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    retryLabel: String = androidx.compose.ui.res.stringResource(com.chathala.hala.R.string.retry)
+    retryLabel: String = S.get(com.chathala.hala.R.string.retry)
 ) {
     Column(
         modifier = modifier

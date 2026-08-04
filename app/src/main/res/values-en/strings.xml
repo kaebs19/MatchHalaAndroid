@@ -1,0 +1,1246 @@
+<resources>
+    <string name="app_name">Hala Chat</string>
+
+    <!-- Auth -->
+    <string name="login_title">Sign In</string>
+    <string name="login_welcome">Welcome back</string>
+    <string name="login_subtitle">Sign in to keep chatting</string>
+    <string name="register_title">Create a new account</string>
+    <string name="register_subtitle">Start your journey with Hala</string>
+
+    <string name="field_name">Name</string>
+    <string name="field_email">Email</string>
+    <string name="field_password">Password</string>
+    <string name="field_confirm_password">Confirm password</string>
+
+    <string name="btn_login">Sign In</string>
+    <string name="btn_register">Create account</string>
+    <string name="btn_forgot_password">Forgot your password?</string>
+    <string name="btn_send_code">Send verification code</string>
+    <string name="btn_reset_password">Set a new password</string>
+
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="create_account">Create one</string>
+    <string name="have_account">Already have an account?</string>
+    <string name="go_to_login">Sign in</string>
+
+    <string name="forgot_password_title">Password recovery</string>
+    <string name="forgot_password_subtitle">Enter your email to receive a verification code</string>
+    <string name="reset_password_title">New password</string>
+    <string name="reset_password_subtitle">Enter the code and your new password</string>
+    <string name="field_reset_code">Verification code</string>
+    <string name="field_new_password">New password</string>
+
+    <!-- Validation -->
+    <string name="err_name_required">Name is required</string>
+    <string name="err_email_required">Email is required</string>
+    <string name="err_email_invalid">Email is not valid</string>
+    <string name="err_password_required">Password is required</string>
+    <string name="err_password_short">Password must be at least 6 characters</string>
+    <string name="err_password_mismatch">Passwords do not match</string>
+    <string name="password_hint">Must contain an uppercase letter, a lowercase letter, and a number</string>
+
+    <!-- Feedback -->
+    <string name="loading">Processing…</string>
+    <string name="generic_error">Something went wrong, please try again</string>
+    <string name="network_error">Check your internet connection</string>
+
+    <!-- Legal -->
+    <string name="terms_title">Terms of Use</string>
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="terms_footer_prefix">By using the app you agree to the</string>
+    <string name="terms_and">and</string>
+    <string name="terms_agree">I agree to the</string>
+    <string name="err_must_agree">You must accept the Terms and Privacy Policy</string>
+
+    <!-- Google sign in -->
+    <string name="btn_google_signin">Continue with Google</string>
+    <string name="or_divider">or</string>
+
+    <!-- Welcome (after successful sign-up via Google/Apple/email) -->
+    <string name="welcome_title">Welcome to Hala! 🎉</string>
+    <string name="welcome_subtitle">Your account was created successfully</string>
+    <string name="welcome_greeting_named">Hi %1$s,</string>
+    <string name="welcome_greeting">Welcome,</string>
+    <string name="welcome_body">One short step left — complete your profile so the right members can find you and you can start meeting people.</string>
+    <string name="welcome_point_profile">Add your photo and basic details</string>
+    <string name="welcome_point_interests">Pick your interests so we can suggest the best matches</string>
+    <string name="welcome_point_privacy">Your data is protected and only what you choose is shown</string>
+    <string name="welcome_continue">Let\'s complete your profile</string>
+
+    <!-- Profile completion -->
+    <string name="profile_title">Complete your profile</string>
+    <string name="profile_subtitle">One last step before you start</string>
+    <string name="profile_prefill_hint">We pulled your photo from your account — you can change it or keep it.</string>
+    <string name="field_birthdate">Date of birth</string>
+    <string name="field_gender">Gender</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="field_country">Country</string>
+    <string name="choose_country">Choose your country</string>
+    <string name="field_interests">Your interests</string>
+    <string name="interests_hint">Choose what suits you (1 to 10)</string>
+    <string name="btn_save_continue">Save and continue</string>
+    <string name="btn_skip">Skip for now</string>
+    <string name="loading_interests">Loading interests…</string>
+    <string name="err_interests_required">Choose at least one interest</string>
+    <string name="err_country_required">Choose your country</string>
+    <string name="err_gender_required">Choose your gender</string>
+
+    <!-- Main tabs -->
+    <string name="tab_discover">Discover</string>
+    <string name="tab_chats">Chats</string>
+    <string name="tab_notifications">Notifications</string>
+    <string name="tab_profile">Profile</string>
+    <string name="placeholder_coming_soon">Coming soon…</string>
+
+    <!-- Profile screen -->
+    <string name="profile_screen_title">My Profile</string>
+    <string name="profile_label_id">Hala ID</string>
+    <string name="profile_label_joined">Member since</string>
+    <string name="profile_section_basic">Basic information</string>
+    <string name="profile_label_gender">Gender</string>
+    <string name="profile_label_age">Age</string>
+    <string name="profile_label_country">Country</string>
+    <string name="profile_label_subscription">Subscription</string>
+    <string name="profile_section_bio">About me</string>
+    <string name="profile_section_interests">My interests</string>
+    <string name="profile_subscription_premium">Premium</string>
+    <string name="profile_subscription_free">Free</string>
+    <string name="profile_no_bio">No bio added yet</string>
+    <string name="profile_no_interests">No interests added yet</string>
+    <string name="profile_age_years">%1$d years</string>
+    <string name="profile_loading">Loading your data…</string>
+    <string name="profile_section_photos">Photos</string>
+    <string name="profile_label_zodiac">Zodiac sign</string>
+    <string name="profile_label_city">City</string>
+    <string name="profile_not_set">Not set yet</string>
+    <string name="profile_gender_male">Male</string>
+    <string name="profile_gender_female">Female</string>
+
+    <!-- Edit profile -->
+    <string name="edit_profile_title">Edit profile</string>
+    <string name="edit_profile_save">Save changes</string>
+    <string name="edit_profile_discard_title">Unsaved changes</string>
+    <string name="edit_profile_discard_message">You have unsaved edits. Do you want to leave and discard them?</string>
+    <string name="edit_profile_discard_confirm">Discard and leave</string>
+    <string name="edit_profile_discard_cancel">Keep editing</string>
+    <string name="edit_profile_delete_photo">Delete photo</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_appearance_mode">Mode</string>
+    <string name="settings_theme_system">Automatic (system)</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_title">Choose a theme</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_title">Choose a language</string>
+    <string name="settings_section_docs">Documents</string>
+    <string name="settings_section_about">About the app</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_support">Support</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_logout">Sign out</string>
+    <string name="settings_delete_account">Delete account</string>
+
+    <!-- Delete account -->
+    <string name="delete_account_title">Delete account permanently</string>
+    <string name="delete_account_message">Your account, messages, and photos will be permanently deleted. This cannot be undone.</string>
+    <string name="delete_account_password_hint">Enter your password to confirm</string>
+    <string name="delete_account_confirm">Delete account</string>
+    <string name="delete_account_cancel">Cancel</string>
+
+    <!-- QR -->
+    <string name="qr_share_hint">Share this code with your friends so they can find you quickly</string>
+
+    <!-- Offline -->
+    <string name="offline_banner">You are offline</string>
+
+    <!-- Google button -->
+    <string name="btn_google_continue">Continue with Google</string>
+
+    <!-- Common -->
+    <string name="retry">Try again</string>
+    <string name="copied">Copied</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="back">Back</string>
+    <!-- User search -->
+    <string name="user_search_hint">Search by name…</string>
+    <string name="user_search_prompt_title">Find people</string>
+    <string name="user_search_prompt_desc">Type the name of the person you are looking for (at least 2 letters)</string>
+    <string name="user_search_empty_title">No results</string>
+    <string name="user_search_empty_desc">Try a different name or check the spelling</string>
+    <string name="user_search_section_premium">Premium members</string>
+    <string name="user_search_section_online">Online now</string>
+    <string name="user_search_section_recent">Recent searches</string>
+    <string name="user_search_clear_recent">Clear</string>
+    <string name="search_gender_all">All</string>
+    <string name="search_gender_male">Men</string>
+    <string name="search_gender_female">Women</string>
+    <!-- Search filters (premium) -->
+    <string name="search_filters_title">Search filters</string>
+    <string name="search_filter_gender">Gender</string>
+    <string name="search_filter_country">Country</string>
+    <string name="search_filter_age">Age</string>
+    <string name="search_filters_apply">Apply</string>
+    <string name="search_filters_reset">Reset</string>
+    <string name="premium_filter_gate_title">Filters are for members</string>
+    <string name="premium_filter_gate_msg">Filtering by gender, country, and age is a premium feature. Subscribe to unlock it and boost your visibility.</string>
+    <!-- Premium promo card -->
+    <string name="premium_promo_title">Subscribe to Premium</string>
+    <string name="premium_promo_desc">Boost your visibility and unlock advanced filters and more</string>
+    <string name="search">Search…</string>
+    <string name="updated">Updated</string>
+    <string name="enabled">On</string>
+    <string name="disabled">Off</string>
+
+    <!-- Privacy Settings -->
+    <string name="privacy_show_distance">Show distance</string>
+    <string name="privacy_show_distance_desc">Show the distance between you and other users</string>
+    <string name="privacy_stealth">Stealth mode</string>
+    <string name="privacy_stealth_desc">View profiles without leaving a trace (members only)</string>
+    <string name="privacy_profile_visibility">Profile visibility</string>
+    <string name="privacy_visibility_public">Public</string>
+    <string name="privacy_visibility_private">Private</string>
+    <string name="privacy_last_seen">Show last seen</string>
+    <string name="privacy_notification_sound">Notification sound</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+
+    <!-- Contact -->
+    <string name="contact_title">Contact us</string>
+    <string name="contact_email">Email</string>
+    <string name="contact_phone">Phone</string>
+    <string name="contact_website">Website</string>
+    <string name="contact_social">Social media</string>
+
+    <!-- Change Password -->
+    <string name="change_password_title">Change password</string>
+    <string name="change_password_current">Current password</string>
+    <string name="change_password_new">New password</string>
+    <string name="change_password_confirm">Confirm new password</string>
+    <string name="change_password_submit">Update password</string>
+
+    <!-- Settings new sections -->
+    <string name="settings_section_privacy_security">Privacy and security</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_discover">Discover</string>
+    <string name="settings_section_account_settings">Account settings</string>
+    <string name="blocked_users_title">Blocked users</string>
+    <string name="privacy_policy_doc">Privacy Policy</string>
+
+    <!-- Discover settings screen -->
+    <string name="discover_settings_title">Discover settings</string>
+    <string name="discover_premium_badge">Member</string>
+    <string name="discover_section_visibility">My visibility</string>
+    <string name="discover_section_requests">Chat requests</string>
+    <string name="discover_hide_profile_title">Hide my profile</string>
+    <string name="discover_hide_profile_desc">Hide your last seen and online status from others</string>
+    <string name="discover_hide_age_title">Hide age</string>
+    <string name="discover_hide_age_desc">Your age will not appear in Discover or on your profile</string>
+    <string name="discover_hide_country_title">Hide country</string>
+    <string name="discover_hide_country_desc">Your country will not appear in Discover or on your profile</string>
+    <string name="discover_stop_requests_title">Stop new invitations</string>
+    <string name="discover_stop_requests_desc">Stop receiving new chat requests from others</string>
+    <string name="discover_premium_only_title">Invitations from members only</string>
+    <string name="discover_premium_only_desc">Only receive chat requests from premium members</string>
+    <string name="discover_pause_title">Pause my visibility</string>
+    <string name="discover_pause_desc">Your profile will not appear to anyone in Discover while paused</string>
+    <string name="discover_pause_active_desc">Your profile is currently hidden from Discover — turn it back on to appear</string>
+    <string name="discover_pause_dialog_title">Pause duration</string>
+    <string name="discover_pause_24h">24 hours</string>
+    <string name="discover_pause_3d">3 days</string>
+    <string name="discover_pause_1w">1 week</string>
+    <string name="discover_pause_until_resume">Until I turn it back on</string>
+
+    <!-- Notification settings screen -->
+    <string name="notif_settings_title">Notification settings</string>
+    <string name="notif_master_title">Enable notifications</string>
+    <string name="notif_master_desc">Receive app notifications on your device</string>
+    <string name="notif_categories_header">Notification types</string>
+    <string name="notif_invitations_title">Chat invitations</string>
+    <string name="notif_invitations_desc">When you receive an invitation or a chat request is accepted</string>
+    <string name="notif_messages_title">New message</string>
+    <string name="notif_messages_desc">When a new message arrives in your chats</string>
+    <string name="notif_profile_visits_title">Profile visit</string>
+    <string name="notif_profile_visits_desc">When someone new visits your profile</string>
+    <string name="notif_app_alerts_title">App alerts</string>
+    <string name="notif_app_alerts_desc">Announcements, updates, and news from Hala</string>
+    <string name="notif_critical_note">Note: important security and administrative alerts (such as warnings and account status) always reach you and are not affected by these settings.</string>
+    <string name="notif_quiet_header">Quiet hours</string>
+    <string name="notif_quiet_title">Do not disturb</string>
+    <string name="notif_quiet_desc">Mute notifications during a set period of the day</string>
+    <string name="notif_quiet_from">From</string>
+    <string name="notif_quiet_to">To</string>
+
+    <!-- Notifications screen -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_filter_all">All</string>
+    <string name="notifications_filter_unread">Unread</string>
+    <string name="notifications_filter_social">Interactions</string>
+    <string name="notifications_filter_system">System alerts</string>
+    <string name="notifications_mark_all_read">Mark all as read</string>
+    <string name="notifications_delete_all">Delete all</string>
+    <string name="notifications_delete_one">Delete</string>
+    <string name="notifications_more_actions">More</string>
+    <string name="notifications_empty_title">No notifications</string>
+    <string name="notifications_empty_subtitle">Your likes, comments, and alerts will appear here</string>
+    <string name="notifications_empty_unread">Everything is read ✓</string>
+    <string name="notifications_group_badge">+%1$d</string>
+    <string name="notifications_unread_dot">Unread</string>
+    <string name="notifications_delete_all_title">Delete all notifications</string>
+    <string name="notifications_delete_all_message">All current notifications will be deleted. This cannot be undone.</string>
+    <string name="notifications_load_more_error">Could not load more</string>
+
+    <!-- Chat input & attachments -->
+    <string name="chat_input_hint">Type a message…</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_record_audio">Record audio</string>
+    <string name="chat_attach">Attach</string>
+    <string name="chat_attach_gallery">Gallery</string>
+    <string name="chat_attach_camera">Camera</string>
+    <string name="chat_recording">Recording… %1$s</string>
+
+    <!-- Image preview (disappearing) -->
+    <string name="preview_source_camera">From camera</string>
+    <string name="preview_source_gallery">From gallery</string>
+    <string name="preview_self_destruct">Self-destruct timer</string>
+    <string name="preview_duration_normal">Normal</string>
+    <string name="preview_send">Send</string>
+    <string name="preview_send_disappearing">Send (disappears after %1$ds)</string>
+    <string name="preview_close">Close</string>
+
+    <!-- Password strength -->
+    <string name="pwd_strength_weak">Weak</string>
+    <string name="pwd_strength_medium">Medium</string>
+    <string name="pwd_strength_strong">Strong</string>
+    <string name="pwd_strength_label">Password strength: %1$s</string>
+
+    <!-- Avatar picker -->
+    <string name="avatar_section_title">Profile photo</string>
+    <string name="avatar_section_hint">Pick a ready-made avatar or upload your own</string>
+    <string name="avatar_upload">From my device</string>
+
+    <!-- Content policy acknowledgment -->
+    <string name="policy_title">Content and conduct policy</string>
+    <string name="policy_subtitle">To keep this a safe and respectful space for everyone, the following is strictly prohibited:</string>
+    <string name="policy_check">I have read the content policy and agree to fully comply with it</string>
+    <string name="policy_agree">Agree and continue</string>
+    <string name="policy_decline">I do not agree</string>
+    <string name="policy_footer">Violating this policy may result in your account being restricted or permanently banned without prior notice, and the relevant authorities may be notified when necessary.</string>
+    <string name="policy_decline_title">Cancel account creation?</string>
+    <string name="policy_decline_message">The app cannot be used without accepting the content policy. You will be signed out.</string>
+    <string name="policy_decline_confirm">Sign out</string>
+    <string name="policy_back">Back</string>
+
+    <!-- ═══ نصوص مُرحَّلة من الكود (auto-extracted) ═══ -->
+
+    <!-- com/chathala/hala/core/network/ErrorMessages.kt -->
+    <string name="err_banned_name">This name is not allowed — please choose another</string>
+    <string name="err_name_cooldown">You can change your name only once every 30 days</string>
+    <string name="err_name_blocked">Name changes have been disabled for your account by an administrator</string>
+    <string name="err_photo_blocked">Photo changes have been disabled for your account by an administrator</string>
+    <string name="err_photo_cooldown">Please wait a minute before changing your photo again</string>
+    <string name="err_max_photos">You have reached the maximum number of photos</string>
+    <string name="err_premium_required">This feature is available to premium members only</string>
+    <string name="err_account_banned">Your account has been banned due to repeated violations</string>
+    <string name="err_account_suspended">Your account is temporarily suspended</string>
+    <string name="err_device_banned">This device is banned from using the app</string>
+    <string name="err_cannot_interact">You cannot interact with this user</string>
+    <string name="err_request_already_sent">You already sent your request — wait for a reply before sending another message</string>
+    <string name="err_chat_not_accepted">You cannot send messages until the chat is accepted</string>
+    <string name="err_chat_ended">This chat has ended — send a new request to resume</string>
+    <string name="err_chat_inactive">The chat is not active</string>
+    <string name="err_user_suspended_send">Cannot send message — the user is suspended</string>
+    <string name="err_edit_window_expired">The edit window for this message has expired (15 minutes)</string>
+    <string name="err_edit_text_only">Only text messages can be edited</string>
+    <string name="err_edit_not_owner">You cannot edit someone else\'s message</string>
+    <string name="err_edit_blocked_promo">Edit blocked — sharing external accounts is not allowed</string>
+    <string name="err_session_expired">Your session has expired — please sign in again</string>
+
+    <!-- com/chathala/hala/core/network/NetworkResult.kt -->
+    <string name="err_check_connection">Check your internet connection</string>
+    <string name="err_unexpected">Unexpected error</string>
+
+    <!-- com/chathala/hala/core/util/Validators.kt -->
+    <string name="valid_email_required">Email is required</string>
+    <string name="valid_email_invalid">Email is not valid</string>
+    <string name="valid_password_required">Password is required</string>
+    <string name="valid_password_lowercase">Must contain a lowercase English letter</string>
+    <string name="valid_password_uppercase">Must contain an uppercase English letter</string>
+    <string name="valid_password_digit">Must contain a number</string>
+    <string name="valid_password_mismatch">Passwords do not match</string>
+    <string name="valid_name_letters_only">Name must contain letters only (Arabic or English)</string>
+    <string name="valid_birthdate_required">Date of birth is required</string>
+    <string name="valid_birthdate_invalid">Date of birth is not valid</string>
+
+    <!-- com/chathala/hala/core/util/Zodiac.kt -->
+    <string name="zodiac_aries">Aries</string>
+    <string name="zodiac_taurus">Taurus</string>
+    <string name="zodiac_gemini">Gemini</string>
+    <string name="zodiac_cancer">Cancer</string>
+    <string name="zodiac_leo">Leo</string>
+    <string name="zodiac_virgo">Virgo</string>
+    <string name="zodiac_libra">Libra</string>
+    <string name="zodiac_scorpio">Scorpio</string>
+    <string name="zodiac_sagittarius">Sagittarius</string>
+    <string name="zodiac_capricorn">Capricorn</string>
+    <string name="zodiac_aquarius">Aquarius</string>
+    <string name="zodiac_pisces">Pisces</string>
+
+    <!-- com/chathala/hala/feature/auth/data/AuthRepository.kt -->
+    <string name="auth_code_sent">Verification code sent</string>
+    <string name="auth_password_changed">Password changed</string>
+    <string name="auth_no_active_session">No active session</string>
+    <string name="auth_account_deleted">Account deleted</string>
+
+    <!-- com/chathala/hala/feature/auth/data/GoogleSignInHelper.kt -->
+    <string name="google_unexpected_credential">Unexpected credential type</string>
+    <string name="google_no_accounts">No Google accounts on this device. Add one in Settings and try again.</string>
+    <string name="google_read_failed">Failed to read Google data</string>
+    <string name="google_signin_failed">Could not sign in with Google — please try again</string>
+
+    <!-- com/chathala/hala/feature/auth/ui/ContentPolicyScreen.kt -->
+    <string name="policy_item_sexual_title">Sexual and pornographic content</string>
+    <string name="policy_item_sexual_desc">Posting or sending any sexual or pornographic images, video, or text is prohibited.</string>
+    <string name="policy_item_children_title">Child protection</string>
+    <string name="policy_item_children_desc">Any content involving the abuse or exploitation of minors leads to a permanent ban and a report to the relevant authorities.</string>
+    <string name="policy_item_names_title">Offensive names and photos</string>
+    <string name="policy_item_names_desc">A username or profile photo of a sexual or pornographic nature puts the account at risk of a ban.</string>
+    <string name="policy_item_religious_title">Religious and sectarian abuse</string>
+    <string name="policy_item_religious_desc">Contempt for religions, stirring sectarian strife, and insulting beliefs are prohibited.</string>
+    <string name="policy_item_political_title">Inflammatory political content</string>
+    <string name="policy_item_political_desc">Promoting violence or hatred, or stirring unrest for political purposes, is prohibited.</string>
+    <string name="policy_item_violence_title">Violence, hate, and bullying</string>
+    <string name="policy_item_violence_desc">Threats, harassment, hate speech, and bullying of all kinds are prohibited.</string>
+
+    <!-- com/chathala/hala/feature/auth/ui/RegisterScreen.kt -->
+    <string name="err_must_agree_policy">You must accept the Terms and Privacy Policy</string>
+
+    <!-- com/chathala/hala/feature/auth/ui/ResetPasswordScreen.kt -->
+    <string name="valid_reset_code_required">Verification code is required</string>
+    <string name="valid_password_min6">Password must be at least 6 characters</string>
+
+    <!-- com/chathala/hala/feature/blocking/data/BlockingRepository.kt -->
+    <string name="block_user_blocked">User blocked</string>
+    <string name="block_user_unblocked">User unblocked</string>
+
+    <!-- com/chathala/hala/feature/blocking/ui/BlockedUsersScreen.kt -->
+    <string name="block_unblock_message">This user will be able to contact you again.</string>
+    <string name="block_unblock">Unblock</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="blocked_list_title">Blocked</string>
+    <string name="label_user">User</string>
+    <string name="blocked_empty_title">No blocked users</string>
+    <string name="blocked_empty_desc">When you block someone they will appear here so you can unblock them.</string>
+
+    <!-- com/chathala/hala/feature/chats/data/ConversationsRepository.kt -->
+    <string name="err_data_unavailable">Data unavailable</string>
+    <string name="err_conversation_unavailable">Conversation unavailable</string>
+    <string name="conv_accepted">Chat accepted</string>
+    <string name="conv_rejected">Chat declined</string>
+    <string name="conv_updated">Updated</string>
+    <string name="conv_deleted">Chat deleted</string>
+    <string name="conv_ended">Chat ended</string>
+    <string name="conv_request_sent">Request sent</string>
+    <string name="conv_mode_change_failed">Failed to change mode</string>
+
+    <!-- com/chathala/hala/feature/chats/data/DeletedAccount.kt -->
+    <string name="deleted_account_name">Deleted account</string>
+
+    <!-- com/chathala/hala/feature/chats/data/MessagesRepository.kt -->
+    <string name="msg_send_failed">Failed to send message</string>
+    <string name="msg_image_read_failed">Could not read the image</string>
+    <string name="msg_image_send_failed">Failed to send image</string>
+    <string name="msg_audio_send_failed">Failed to send audio</string>
+    <string name="msg_edit_failed">Failed to edit message</string>
+    <string name="msg_deleted">Deleted</string>
+    <string name="msg_forward_failed">Failed to forward</string>
+    <string name="msg_reveal_failed">Failed to reveal</string>
+    <string name="appeal_submitted">Your appeal was submitted and will be reviewed as soon as possible</string>
+    <string name="request_submitted">Your request was sent and a moderator will review it as soon as possible</string>
+
+    <!-- com/chathala/hala/feature/chats/data/PromoKeywordDetector.kt -->
+    <string name="promo_cat_snapchat">Snapchat</string>
+    <string name="promo_cat_instagram">Instagram</string>
+    <string name="promo_cat_whatsapp">WhatsApp</string>
+    <string name="promo_cat_telegram">Telegram</string>
+    <string name="promo_cat_tiktok">TikTok</string>
+    <string name="promo_cat_phone">Phone number</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/ChatScreen.kt -->
+    <string name="chat_title_default">Chat</string>
+    <string name="chat_account_gone">This account no longer exists</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_typing">typing</string>
+    <string name="status_online_now">Online now</string>
+    <string name="status_online">Online</string>
+    <string name="chat_scroll_to_bottom">Scroll to bottom</string>
+    <string name="chat_delete_from_my_list">Delete from my list</string>
+    <string name="chat_delete_from_my_list_msg">The chat will be removed from your list only (the other person is unaffected, and it returns with any new message). Continue?</string>
+    <string name="action_delete">Delete</string>
+    <string name="chat_end_for_both">End chat for both</string>
+    <string name="chat_end_for_both_msg">The chat will end for both sides but messages remain. Sending will only be possible after a new request is accepted by the other person. Continue?</string>
+    <string name="action_end">End</string>
+    <string name="action_undo">Undo</string>
+    <string name="chat_block_user">Block user</string>
+    <string name="action_block">Block</string>
+    <string name="chat_mute_notifications">Mute notifications</string>
+    <string name="chat_report_user">Report user</string>
+    <string name="chat_untrust">Untrust this chat</string>
+    <string name="chat_trust">Trust this chat</string>
+    <string name="chat_unread_messages">Unread messages</string>
+    <string name="chat_request_rejected">This chat request was declined</string>
+    <string name="chat_request_expired">The request has expired</string>
+    <string name="chat_waiting_acceptance">Waiting for the other person to accept…</string>
+    <string name="chat_accept_first">Accept the request first to reply</string>
+    <string name="chat_cannot_reply_now">You cannot reply right now</string>
+    <string name="chat_sending">Sending…</string>
+    <string name="chat_send_new_request">Send a new request</string>
+    <string name="chat_account_restricted">Your account is temporarily restricted</string>
+    <string name="chat_restricted_promo_msg">Messaging was restricted due to repeatedly posting external accounts.</string>
+    <string name="chat_you_blocked_them">You blocked this user — unblock them to send messages</string>
+    <string name="chat_cannot_message_user">You cannot message this user</string>
+    <string name="chat_cannot_message_suspended">You cannot message a suspended user</string>
+    <string name="chat_cannot_message_deleted">Deleted account — messages cannot be sent</string>
+    <string name="chat_messaging_locked">Messaging is temporarily locked</string>
+    <string name="chat_restricted_promo_short">Messaging was restricted for posting external accounts</string>
+    <string name="chat_review_pending">Your review request is being processed by a moderator</string>
+    <string name="chat_request_review">Request a review</string>
+    <string name="chat_secret_title">Your chat is private</string>
+    <string name="chat_secret_desc">It cannot be viewed unless you share it</string>
+    <string name="chat_say_hello">Start the conversation with a hello 👋</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/ChatViewModel.kt -->
+    <string name="chat_deleted_no_profile">Deleted account — this user no longer has a profile</string>
+    <string name="chat_new_request_sent">A new chat request was sent</string>
+    <string name="chat_other_ended">The other person ended the chat</string>
+    <string name="chat_restriction_lifted">✅ Messaging restriction lifted — you can send messages now</string>
+    <string name="chat_cannot_message_deleted_acc">You cannot message a deleted account</string>
+    <string name="chat_locked_promo">Messaging is temporarily locked for posting external accounts</string>
+    <string name="chat_cannot_reply_before_accept">You cannot reply before the request is accepted</string>
+    <string name="msg_forwarded">Message forwarded</string>
+    <string name="img_load_failed_retry">Could not load the image — please try again</string>
+    <string name="msg_blocked_title">Your message was blocked</string>
+    <string name="msg_blocked_desc">Sharing an external account was detected automatically. Platform policy prohibits this, and repeatedly sharing accounts or numbers restricts your account automatically.</string>
+    <string name="feature_unavailable">This feature is unavailable right now</string>
+    <string name="enable_sensitive_first">Turn on sensitive content in Settings first</string>
+    <string name="adults_only_18">This option is for adults only (18+)</string>
+    <string name="trust_enabled_msg">Trust enabled — sensitive content is revealed automatically in this chat</string>
+    <string name="trust_disabled_msg">Trust removed for this chat</string>
+    <string name="chat_muted">Chat muted</string>
+    <string name="chat_unmuted">Chat unmuted</string>
+    <string name="rec_start_failed">Could not start recording</string>
+    <string name="rec_failed">Recording failed</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ChatListItem.kt -->
+    <string name="day_today">Today</string>
+    <string name="day_yesterday">Yesterday</string>
+    <string name="day_saturday">Saturday</string>
+    <string name="day_sunday">Sunday</string>
+    <string name="day_monday">Monday</string>
+    <string name="day_tuesday">Tuesday</string>
+    <string name="day_wednesday">Wednesday</string>
+    <string name="day_thursday">Thursday</string>
+    <string name="day_friday">Friday</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ChatModeDialog.kt -->
+    <string name="chatmode_delete_on_exit">Delete on exit</string>
+    <string name="chatmode_delete_on_exit_desc">Messages are erased from your device when you close the chat</string>
+    <string name="chatmode_delete_24h">Delete after 24 hours</string>
+    <string name="chatmode_delete_24h_desc">Messages disappear automatically after one day</string>
+    <string name="chatmode_keep">Keep forever</string>
+    <string name="chatmode_keep_desc">Messages stay as they are without deletion</string>
+    <string name="chatmode_title">Chat mode</string>
+    <string name="action_close">Close</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/EditMessageDialog.kt -->
+    <string name="edit_message_title">Edit message 👑</string>
+    <string name="edit_message_hint">You can edit within 15 minutes of sending, and the other person sees an “edited” tag.</string>
+    <string name="action_saving">Saving…</string>
+    <string name="action_save">Save</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ExternalPromoBlockedDialog.kt -->
+    <string name="label_warning">Warning</string>
+    <string name="promo_blocked_desc">Sharing an external account was detected automatically. Platform policy prohibits posting or requesting accounts and numbers, and repeating this restricts your account automatically — your messages are a trust, keep the conversation inside the app.</string>
+    <string name="promo_auto_detect_title">Automatic detection</string>
+    <string name="promo_auto_detect_desc">The system detects external accounts automatically. Please follow the app policy.</string>
+    <string name="promo_trust_title">Your messages are a trust</string>
+    <string name="promo_trust_desc">We keep communication inside the platform to protect you and the other person.</string>
+    <string name="promo_detected_words">Detected words:</string>
+    <string name="promo_understood">I understand and will comply</string>
+    <string name="promo_appeal_title">Appeal the block</string>
+    <string name="promo_appeal_desc">Write the reason for your appeal. It will be reviewed as soon as possible.</string>
+    <string name="promo_appeal_hint">Reason for appeal...</string>
+    <string name="action_send">Send</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ForwardSheet.kt -->
+    <string name="forward_to">Forward to</string>
+    <string name="forward_no_chats">No chats available</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/MessageBubble.kt -->
+    <string name="msg_edited">Edited</string>
+    <string name="msg_reveal_blocked_words">Reveal blocked words</string>
+    <string name="msg_type_photo">📷 Photo</string>
+    <string name="msg_type_audio">🎙️ Audio</string>
+    <string name="source_camera">Camera</string>
+    <string name="source_gallery">Gallery</string>
+    <string name="temp_photo">Temporary photo</string>
+    <string name="label_expired">Expired</string>
+    <string name="photo_expired">The photo has expired</string>
+    <string name="photo_loading">Loading photo…</string>
+    <string name="photo_tap_to_view">Tap to view</string>
+    <string name="msg_was_deleted">🚫  Message deleted</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_play">Play</string>
+    <string name="sensitive_content">Sensitive content</string>
+    <string name="tap_to_reveal">Tap to reveal the content</string>
+    <string name="status_sending">Sending</string>
+    <string name="status_read">Read</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_sent">Sent</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/MessageContextMenu.kt -->
+    <string name="action_reply">Reply</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_forward">Forward</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_report">Report</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/MuteDialog.kt -->
+    <string name="mute_one_hour">One hour</string>
+    <string name="mute_eight_hours">8 hours</string>
+    <string name="mute_one_day">One day</string>
+    <string name="mute_one_week">One week</string>
+    <string name="mute_forever">Forever</string>
+    <string name="mute_dialog_desc">Choose how long to mute notifications from this chat</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ReplyPreviewBar.kt -->
+    <string name="msg_type_voice">🎙️ Voice message</string>
+    <string name="msg_type_video">🎥 Video</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/ChatsScreen.kt -->
+    <string name="chat_delete_title">Delete chat</string>
+    <string name="chat_delete_message">The chat will be removed from your list only. Continue?</string>
+    <string name="search_close">Close search</string>
+    <string name="chats_search_hint">Search your chats…</string>
+    <string name="chats_title">Chats</string>
+    <string name="friends_title">Friends</string>
+    <string name="action_search">Search</string>
+    <string name="empty_no_results">No results</string>
+    <string name="empty_no_results_desc">Try searching for something else.</string>
+    <string name="chats_empty_unread">No unread chats</string>
+    <string name="chats_empty_unread_desc">You have read everything — nice work!</string>
+    <string name="chats_empty_pinned">No pinned chats</string>
+    <string name="chats_empty_pinned_desc">Swipe right on any chat to pin it.</string>
+    <string name="chats_empty_premium">No chats with premium members</string>
+    <string name="chats_empty_premium_desc">Chats with 👑 members will appear here.</string>
+    <string name="chats_empty_all">No chats yet</string>
+    <string name="chats_empty_all_desc">Start from the Discover screen and send a new chat request.</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/ChatsViewModel.kt -->
+    <string name="chat_unpinned">Unpinned</string>
+    <string name="chat_pinned">Chat pinned</string>
+    <string name="deleted_no_block_needed">Deleted account — no need to block</string>
+    <string name="deleted_cannot_report">Deleted account — cannot be reported</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/components/ChatsFilterChips.kt -->
+    <string name="filter_all">All</string>
+    <string name="filter_unread">Unread</string>
+    <string name="filter_requests">Requests</string>
+    <string name="filter_my_friends">My friends</string>
+    <string name="filter_close">Close friends</string>
+    <string name="filter_premium">Premium</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/components/ConversationActionsSheet.kt -->
+    <string name="label_conversation">Chat</string>
+    <string name="action_unpin">Unpin</string>
+    <string name="action_pin">Pin chat</string>
+    <string name="action_unmute">Unmute notifications</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/components/ConversationRow.kt -->
+    <string name="msg_type_file">📎 File</string>
+    <string name="chat_update_placeholder">— chat updated</string>
+    <string name="chat_start">Start the chat 👋</string>
+    <string name="status_active_recently">Active recently</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/PendingRequestsScreen.kt -->
+    <string name="pending_requests_title">Chat requests</string>
+    <string name="pending_received">Received</string>
+    <string name="pending_sent">Sent</string>
+    <string name="pending_awaiting_reply">Awaiting reply</string>
+    <string name="pending_wants_to_talk">wants to talk to you</string>
+    <string name="label_new">New</string>
+    <string name="pending_empty_received">No received requests</string>
+    <string name="pending_empty_sent">No sent requests</string>
+    <string name="pending_empty_received_desc">Chat requests sent to you will appear here.</string>
+    <string name="pending_empty_sent_desc">Requests you send to other users appear here until they reply.</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/PendingRequestsViewModel.kt -->
+    <string name="pending_accepted_with_greeting">Accepted and greeting sent</string>
+    <string name="pending_accepted">Request accepted</string>
+    <string name="pending_accept_failed">Failed to accept the request</string>
+    <string name="pending_cancelled">Request cancelled</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/components/GreetingDialog.kt -->
+    <string name="greeting_title">Accept with a greeting</string>
+    <string name="greeting_hint">Hi! Happy to connect…</string>
+    <string name="greeting_send_accept">Send and accept</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/components/PendingRequestRow.kt -->
+    <string name="action_decline">Decline</string>
+    <string name="action_accept_greet">Accept + greet</string>
+    <string name="action_accept">Accept</string>
+    <string name="super_like_label">Super Like</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/request/RequestPreviewScreen.kt -->
+    <string name="request_gone_title">This request is no longer available</string>
+    <string name="request_gone_desc">It may have been accepted, declined, or cancelled by the other person.</string>
+    <string name="action_back">Back</string>
+    <string name="request_their_message">Their message to you</string>
+    <string name="request_accept_with_greeting">👋  Accept with a greeting</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/DiscoverScreen.kt -->
+    <string name="discover_available_100">100+ people available</string>
+    <string name="discover_available_50">50+ people available</string>
+    <string name="discover_available_20">20+ people available</string>
+    <string name="discover_available_10">10+ people available</string>
+    <string name="discover_available_now">People available now</string>
+    <string name="discover_title">Discover</string>
+    <string name="discover_search_users">Search users</string>
+    <string name="discover_customize_search">Customize search</string>
+    <string name="visitors_title_short">Visitors</string>
+    <string name="action_continue">Continue</string>
+    <string name="discover_cards_finished">No more cards</string>
+    <string name="discover_cards_finished_desc">Pull down to refresh or try adjusting your filters</string>
+    <string name="gate_superlike_title">Super Like is a Premium feature</string>
+    <string name="gate_superlike_desc">Show instant interest and get more attention with Super Like. Available to Premium members.</string>
+    <string name="gate_undo_title">Undo is a Premium feature</string>
+    <string name="gate_undo_desc">Swiped by mistake? Premium members can undo their last action and get the card back.</string>
+    <string name="gate_filters_title">Advanced filters are a Premium feature</string>
+    <string name="gate_filters_desc">Filter matches by age, country, and most active — filtering is available to Premium members.</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/DiscoverViewModel.kt -->
+    <string name="discover_chat_exists">Chat already exists — open it</string>
+    <string name="discover_liked">Liked ❤️</string>
+    <string name="discover_new_match">New match! 🎉</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/CardDetailSheet.kt -->
+    <string name="discover_write_message">Write your message…</string>
+    <string name="discover_send_request">Send a chat request</string>
+    <string name="discover_request_sent">✓  Request sent</string>
+    <string name="discover_reported">✓ Reported</string>
+    <string name="action_report_short">Report</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/FiltersSheet.kt -->
+    <string name="filter_gender">Gender</string>
+    <string name="gender_male_short">Male</string>
+    <string name="gender_female_short">Female</string>
+    <string name="filter_age_range">Age range</string>
+    <string name="filter_recently_active">Recently active</string>
+    <string name="filter_recently_active_desc">Show people active in the last 7 days</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_apply">Apply</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/PremiumGateDialog.kt -->
+    <string name="action_upgrade_premium">Upgrade to Premium</string>
+    <string name="action_later">Later</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/QuickMessagesRow.kt -->
+    <string name="quick_msg_hi">Hi</string>
+    <string name="quick_msg_how_are_you">How are you?</string>
+    <string name="quick_msg_get_to_know">Shall we get to know each other?</string>
+    <string name="quick_messages_label">Quick messages (tap to send)</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/SwipeActionButtons.kt -->
+    <string name="action_skip">Skip</string>
+    <string name="action_send_message">Send a message</string>
+    <string name="action_super_like">Super Like</string>
+    <string name="action_like">Like</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/SwipeCardView.kt -->
+    <string name="discover_near_you">Near you</string>
+
+    <!-- com/chathala/hala/feature/friends/data/FriendsRepository.kt -->
+    <string name="friend_request_declined">Request declined</string>
+    <string name="friend_removed">Removed</string>
+
+    <!-- com/chathala/hala/feature/friends/ui/FriendsScreen.kt -->
+    <string name="friends_remove_title">Remove friend</string>
+    <string name="action_remove">Remove</string>
+    <string name="friends_empty_title">No friends yet</string>
+    <string name="friends_empty_desc">Add friends from their profiles and they will appear here.</string>
+    <string name="friend_requests_empty_title">No friend requests</string>
+    <string name="friend_requests_empty_desc">Incoming friend requests appear here.</string>
+    <string name="friend_requests_title">Friend requests</string>
+    <string name="friend_wants_to_add">wants to add you as a friend</string>
+
+    <!-- com/chathala/hala/feature/friends/ui/FriendsViewModel.kt -->
+    <string name="friends_now_friends">You are now friends 🎉</string>
+
+    <!-- com/chathala/hala/feature/legal/data/LegalModels.kt -->
+    <string name="legal_privacy_policy">Privacy Policy</string>
+    <string name="legal_terms_of_use">Terms of Use</string>
+
+    <!-- com/chathala/hala/feature/legal/ui/LegalDocScreen.kt -->
+    <string name="err_generic">Something went wrong</string>
+    <string name="empty_no_content">No content yet</string>
+
+    <!-- com/chathala/hala/feature/notifications/data/NotificationsRepository.kt -->
+    <string name="notif_updated_one">Notification updated</string>
+    <string name="notif_updated_all">Notifications updated</string>
+    <string name="notif_deleted_one">Notification deleted</string>
+    <string name="notif_deleted_all">All notifications deleted</string>
+
+    <!-- com/chathala/hala/feature/notifications/ui/components/NotificationRow.kt -->
+    <string name="notif_official_account">Hala • Official account</string>
+    <string name="notif_new_like">New like</string>
+    <string name="notif_super_like">Super Like</string>
+    <string name="notif_new_match">New match</string>
+    <string name="notif_profile_visit">Profile visit</string>
+    <string name="notif_new_follower">New follower</string>
+    <string name="notif_friend_request">Friend request</string>
+    <string name="notif_friend_added">You were added as a friend</string>
+    <string name="notif_account_verification">Account verification</string>
+    <string name="notif_admin_alert">Alert from the team</string>
+    <string name="notif_account_suspended">Account suspended</string>
+    <string name="notif_account_restricted">Account restrictions</string>
+    <string name="notif_security_alert">Security alert</string>
+    <string name="notif_announcement">Announcement</string>
+    <string name="notif_generic">Notification</string>
+
+    <!-- com/chathala/hala/feature/notifications/util/NotificationFormat.kt -->
+    <string name="time_now">Now</string>
+    <string name="time_moments_ago">A moment ago</string>
+    <string name="time_minute_ago">A minute ago</string>
+    <string name="time_two_minutes_ago">Two minutes ago</string>
+    <string name="time_hour_ago">An hour ago</string>
+    <string name="time_two_hours_ago">Two hours ago</string>
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_two_days_ago">Two days ago</string>
+
+    <!-- com/chathala/hala/feature/premium/data/BillingManager.kt -->
+    <string name="billing_purchase_failed">Purchase failed</string>
+    <string name="billing_play_connect_failed">Could not connect to the Google Play Store</string>
+    <string name="billing_no_products">No products returned — make sure they are active in the Console and the IDs match</string>
+    <string name="billing_fetch_plans_failed">Could not load subscription plans</string>
+    <string name="billing_plan_unavailable">This plan is unavailable right now</string>
+    <string name="billing_no_offer">No offer available for this plan</string>
+    <string name="billing_verify_failed">Could not verify the purchase — if you were charged it will be refunded automatically</string>
+
+    <!-- com/chathala/hala/feature/premium/data/SubscriptionModels.kt -->
+    <string name="plan_weekly">Weekly</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_quarterly">Quarterly</string>
+
+    <!-- com/chathala/hala/feature/premium/ui/SubscriptionScreen.kt -->
+    <string name="premium_perk_superlikes">5 Super Likes daily</string>
+    <string name="premium_perk_top_placement">Appear at the top</string>
+    <string name="premium_perk_see_likes">See who liked you</string>
+    <string name="premium_perk_stealth">Browse in stealth</string>
+    <string name="premium_perk_gold_badge">Exclusive gold badge</string>
+    <string name="premium_perk_no_ads">No ads</string>
+    <string name="premium_title">Hala Premium</string>
+    <string name="premium_subtitle">Unlock every feature and stand out among members</string>
+    <string name="premium_loading_plans">Loading plans…</string>
+    <string name="premium_connecting_store">Connecting to the store…</string>
+    <string name="premium_subscribe_now">Subscribe now</string>
+    <string name="premium_renewal_note">The subscription renews automatically and can be cancelled any time from Google Play.</string>
+    <string name="premium_contact_us">Contact us</string>
+
+    <!-- com/chathala/hala/feature/premium/ui/SubscriptionViewModel.kt -->
+    <string name="premium_activated">Your Premium subscription is active 🎉</string>
+
+    <!-- com/chathala/hala/feature/profile/data/ProfileRepository.kt -->
+    <string name="err_no_session_signin">No active session, please sign in again</string>
+    <string name="profile_data_updated">Details updated</string>
+    <string name="profile_photo_uploaded">Photo uploaded</string>
+    <string name="profile_photo_deleted">Photo deleted</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/EditProfileScreen.kt -->
+    <string name="profile_photo_read_failed">Could not read the photo</string>
+    <string name="profile_change_photo">Change photo</string>
+    <string name="profile_tap_change_photo">Tap to change your photo</string>
+    <string name="profile_warning_title">Important warning</string>
+    <string name="profile_warning_body">Any sexual or pornographic photo, or a name or bio containing sexual language or hints —</string>
+    <string name="profile_warning_tail">puts your account at risk of a permanent ban without notice.</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/EditProfileViewModel.kt -->
+    <string name="profile_photo_updated">Photo updated</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/ProfileScreen.kt -->
+    <string name="action_copied">Copied</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/BirthDateField.kt -->
+    <string name="action_confirm">Confirm</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/CountryPicker.kt -->
+    <string name="action_search_hint">Search…</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/PremiumBanner.kt -->
+    <string name="action_upgrade">Upgrade</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/VerificationCard.kt -->
+    <string name="verify_verified">Verified</string>
+    <string name="verify_verified_desc">Your account was verified successfully</string>
+    <string name="verify_pending">Under review</string>
+    <string name="verify_pending_desc">Your verification request is being reviewed by the team</string>
+    <string name="verify_rejected">Rejected</string>
+    <string name="verify_rejected_desc">Your verification request was not accepted — please try again</string>
+    <string name="verify_unverified">Not verified</string>
+    <string name="verify_unverified_desc">Verify your account to build trust with others</string>
+
+    <!-- com/chathala/hala/feature/push/HalaNotificationChannels.kt -->
+    <string name="channel_social_name">Interactions</string>
+    <string name="channel_social_desc">Notifications for likes, matches, and profile visits</string>
+    <string name="channel_messages_name">Messages</string>
+    <string name="channel_messages_desc">Notifications for incoming chat messages</string>
+    <string name="channel_system_name">System alerts</string>
+    <string name="channel_system_desc">Account, security, and verification alerts</string>
+
+    <!-- com/chathala/hala/feature/reporting/data/ReportApiModels.kt -->
+    <string name="report_reason_spam">Spam or unwanted content</string>
+    <string name="report_reason_inappropriate">Inappropriate content</string>
+    <string name="report_reason_harassment">Harassment or abuse</string>
+    <string name="report_reason_fake">Fake account</string>
+    <string name="report_reason_other">Other reason</string>
+
+    <!-- com/chathala/hala/feature/reporting/data/ReportRepository.kt -->
+    <string name="report_sent">Report sent</string>
+
+    <!-- com/chathala/hala/feature/reporting/ui/ReportUserSheet.kt -->
+    <string name="report_confidential">Your report is confidential — our team reviews every report</string>
+    <string name="report_choose_reason">Choose a reason</string>
+    <string name="report_extra_details">Additional details (optional)</string>
+    <string name="report_submit">Send report</string>
+
+    <!-- com/chathala/hala/feature/settings/data/SettingsRepository.kt -->
+    <string name="settings_no_app_info">No app information available</string>
+    <string name="settings_no_contact_info">No contact information available</string>
+    <string name="settings_enabled_toast">Turned on</string>
+    <string name="settings_disabled_toast">Turned off</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/SettingsScreen.kt -->
+    <string name="settings_subscription">Subscription</string>
+    <string name="settings_content_prefs">Content preferences</string>
+    <string name="settings_sensitive_content">Sensitive content</string>
+    <string name="label_warning_short">Warning</string>
+    <string name="label_restricted">Restricted</string>
+    <string name="label_suspended">Suspended</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/about/AboutScreen.kt -->
+    <string name="about_app_name">Hala Chat</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/AccountRestrictionBanner.kt -->
+    <string name="label_ended">Ended</string>
+    <string name="violation_external_accounts">Posting or sharing external accounts</string>
+    <string name="violation_policy_breach">Terms of use violation</string>
+    <string name="restriction_full_messaging">Full messaging restriction</string>
+    <string name="action_review">Review</string>
+    <string name="label_not_reviewable">Not reviewable</string>
+    <string name="restriction_cannot_send">You cannot send messages or requests</string>
+    <string name="label_reason">Reason</string>
+    <string name="label_time_remaining">Time remaining</string>
+    <string name="restriction_review_hint">If you believe this restriction is wrong, submit a review request and a moderator will look into it.</string>
+    <string name="restriction_not_reviewable_hint">Violations involving pornographic or sexual photos and prohibited names are not reviewable.</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/AccountSettingsScreen.kt -->
+    <string name="account_standing_title">My account status</string>
+    <string name="violations_history_title">Violations history</string>
+    <string name="my_requests_title">My requests</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/AccountStandingScreen.kt -->
+    <string name="err_load_data_failed">Could not load the data</string>
+    <string name="standing_good_title">Your account is in good standing</string>
+    <string name="standing_good_desc">There are no restrictions on your account. Keep following the platform policy.</string>
+    <string name="standing_warning_desc">You are close to the restriction threshold. Any new violation may restrict your messaging.</string>
+    <string name="standing_restricted_title">Your messaging is restricted</string>
+    <string name="standing_restricted_desc">Your account is temporarily restricted.</string>
+    <string name="standing_suspended_title">Your account is suspended</string>
+    <string name="standing_suspended_desc">Your account was temporarily suspended due to repeated violations.</string>
+    <string name="label_unknown">Unknown</string>
+    <string name="standing_current_cycle">Violations in the current cycle</string>
+    <string name="standing_at_threshold">You have reached the threshold — any violation applies the next escalation.</string>
+    <string name="standing_view_history">View violations history ›</string>
+    <string name="standing_escalation_ladder">Escalation ladder</string>
+    <string name="standing_escalation_desc">Each restriction increases the duration. Compliance protects your account from a permanent ban.</string>
+    <string name="label_next">Next</string>
+    <string name="label_recovery">Recovery</string>
+    <string name="standing_reset_soon">The restriction counter will reset soon.</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/MyRequestsScreen.kt -->
+    <string name="request_sent_moderator">Your request was sent and a moderator will review it</string>
+    <string name="err_send_failed_try_later">Could not send, please try again later</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_transferred">Transferred</string>
+    <string name="status_accepted">Accepted</string>
+    <string name="action_messaging_restriction">Messaging restriction</string>
+    <string name="action_account_ban">Account ban</string>
+    <string name="action_device_ban">Device ban</string>
+    <string name="requests_previous">Previous requests</string>
+    <string name="requests_empty">No previous requests</string>
+    <string name="link_violations_history">⚠️ Violations history</string>
+    <string name="link_terms">📄 Terms</string>
+    <string name="link_privacy">🔒 Privacy</string>
+    <string name="link_contact_us">✉️ Contact us</string>
+    <string name="link_instagram">📷 Instagram</string>
+    <string name="violation_not_reviewable">This violation is not reviewable</string>
+    <string name="submit_review_request">Submit a review request</string>
+    <string name="submit_review_desc">Start a conversation with the moderation team to reconsider the action taken against your account.</string>
+    <string name="submit_review_hint">Write your first message to the team…</string>
+    <string name="submit_request">Send request</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/RequestDetailScreen.kt -->
+    <string name="request_details_title">Request details</string>
+    <string name="err_load_request_failed">Could not load the request</string>
+    <string name="request_reply_hint">Write your reply to the moderator…</string>
+    <string name="request_closed">This request is closed</string>
+    <string name="request_admin_chat_banner">💬 Conversation with the team — talk to a moderator to review the action</string>
+    <string name="label_moderator">Moderator</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/ViolationsHistoryScreen.kt -->
+    <string name="violations_empty">No violations on record</string>
+    <string name="violation_type_external_accounts">External accounts</string>
+    <string name="violation_type_banned_words">Prohibited words</string>
+    <string name="violation_posted_external_account">Posted an external account</string>
+    <string name="violation_banned_word">Prohibited word</string>
+    <string name="violation_photo">Violating photo</string>
+    <string name="violation_name">Violating name</string>
+    <string name="violation_bio">Violating bio</string>
+    <string name="violation_spam">Spam</string>
+    <string name="violation_report_accepted">Report upheld</string>
+    <string name="label_violation">Violation</string>
+    <string name="violation_detected_word">Detected word:</string>
+    <string name="action_restriction">Restriction</string>
+    <string name="action_suspension">Suspension</string>
+    <string name="action_photo_deleted">Photo deleted</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/contact/ContactScreen.kt -->
+    <string name="contact_help_title">We are here to help</string>
+    <string name="contact_help_desc">Reach the Hala team through the channels below and we will reply as soon as possible.</string>
+    <string name="social_instagram">Instagram</string>
+    <string name="social_facebook">Facebook</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/content/ContentPreferencesScreen.kt -->
+    <string name="content_show_sensitive">Show sensitive content</string>
+    <string name="content_show_sensitive_desc">Our app automatically hides sexual words in chats to protect you.\nIf you are an adult, you can allow them to be shown with a single tap when needed.</string>
+    <string name="content_enabled_desc">The feature is on. You can reveal hidden content with a tap.</string>
+    <string name="content_allow_display">Allow display</string>
+    <string name="content_tap_toggle">Tap to turn on/off</string>
+    <string name="content_protection_title">Your protection comes first</string>
+    <string name="content_protection_desc">Blocking is the default. Turning it on is optional and only happens when you tap.</string>
+    <string name="content_adults_only">Adults only (18+)</string>
+    <string name="content_adults_only_desc">We verify age based on your saved date of birth.</string>
+    <string name="content_cancel_anytime">You can turn it off any time</string>
+    <string name="content_cancel_anytime_desc">Turn the toggle off and words are hidden again immediately.</string>
+    <string name="content_external_links_blocked">External links stay blocked</string>
+    <string name="content_external_links_desc">Snapchat/Instagram/WhatsApp accounts always stay blocked to protect you.</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/discover/DiscoverSettingsViewModel.kt -->
+    <string name="premium_members_only">This feature is for Premium members only 👑</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/privacy/PrivacyScreen.kt -->
+    <string name="privacy_everyone">Everyone</string>
+    <string name="privacy_chatted_only">People I have chatted with</string>
+    <string name="privacy_nobody">Nobody</string>
+    <string name="privacy_who_can_add">Who can add me as a friend?</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/security/ChangePasswordViewModel.kt -->
+    <string name="valid_current_password_required">Current password is required</string>
+
+    <!-- com/chathala/hala/feature/suspension/data/SuspensionRepository.kt -->
+    <string name="err_device_status_failed">Could not fetch the device status</string>
+    <string name="err_appeal_session_expired">Your appeal session expired — sign in again and try once more</string>
+    <string name="appeal_sent">Appeal sent</string>
+
+    <!-- com/chathala/hala/feature/suspension/ui/SuspendedScreen.kt -->
+    <string name="logout_confirm_title">Sign out?</string>
+    <string name="logout_confirm_body">The action on your account will remain in effect. You can follow your appeal status from here.</string>
+    <string name="logout_confirm_question">Do you really want to sign out?</string>
+    <string name="logout_yes">Yes, sign out</string>
+    <string name="logout_stay">Stay</string>
+    <string name="device_banned_title">This device is banned</string>
+    <string name="account_banned_permanently">Your account has been permanently disabled</string>
+    <string name="account_suspended_temporarily">Your account has been temporarily disabled</string>
+    <string name="suspension_policy_note">in accordance with the Hala terms of use. You can review the details below and submit an appeal to the team.</string>
+    <string name="check_suspension_lifted">Check if the suspension was lifted</string>
+    <string name="err_load_details_failed">Could not load the details</string>
+    <string name="social_instagram_short">Instagram</string>
+    <string name="action_sign_out">Sign out</string>
+    <string name="my_previous_requests">My previous requests</string>
+    <string name="action_appeal">Appeal</string>
+    <string name="action_details_title">Action details</string>
+    <string name="label_name">Name</string>
+    <string name="label_email">Email</string>
+    <string name="label_id">ID</string>
+    <string name="label_action_type">Action type</string>
+    <string name="label_expires_on">Expires on</string>
+    <string name="label_violation_severity">Violation severity</string>
+    <string name="action_permanent_ban">Permanent ban</string>
+    <string name="action_temporary_restriction">Temporary restriction</string>
+    <string name="action_temporary_suspension">Temporary suspension</string>
+    <string name="device_previous_account">Previous account linked to this device</string>
+    <string name="device_previous_account_desc">This device is linked to a previous account that was disabled.</string>
+    <string name="label_account_created">Account created on</string>
+    <string name="ban_details_title">Ban details</string>
+    <string name="label_ban_reason">Ban reason</string>
+    <string name="label_ban_date">Ban date</string>
+    <string name="label_ban_source">Banned by</string>
+    <string name="device_no_new_account">A new account cannot be created from this device — it is linked to the previous account.</string>
+    <string name="device_appeal_hint">If you believe the ban is a mistake, submit an appeal and the team will review it.</string>
+    <string name="ban_source_admin">The team</string>
+    <string name="ban_source_system">Automatic (system)</string>
+    <string name="ban_source_antispam">Anti-spam system</string>
+    <string name="submit_appeal_title">Submit an appeal</string>
+    <string name="submit_appeal_desc">Explain to the team why you believe the decision is wrong. We will reply through the app when needed.</string>
+    <string name="appeal_email_optional">Contact email (optional)</string>
+    <string name="appeal_reason_label">Reason for appeal</string>
+    <string name="appeal_submit">Send appeal</string>
+    <string name="appeal_sent_desc">Your appeal was sent. It will be reviewed and answered when needed.</string>
+    <string name="suspension_lifted">Suspension lifted ✓</string>
+    <string name="welcome_back_hala">Welcome back to Hala 👋\n\n</string>
+    <string name="welcome_back_body">Your account has been reactivated. Please remember to follow the app terms of use</string>
+    <string name="welcome_back_body_tail">and treat others with respect — compliance protects your account from future suspensions.</string>
+    <string name="enter_the_app">Enter the app</string>
+    <string name="label_unspecified">Not specified</string>
+
+    <!-- com/chathala/hala/feature/suspension/ui/SuspendedViewModel.kt -->
+    <string name="still_suspended">Your account is still suspended — try again later</string>
+    <string name="appeal_reason_required">Please write the reason for your appeal</string>
+
+    <!-- com/chathala/hala/feature/user/data/UserRepository.kt -->
+    <string name="err_unexpected_data_missing">Unexpected response (data missing)</string>
+    <string name="err_unexpected_user_missing">Unexpected response (user missing)</string>
+    <string name="err_user_data_incomplete">User data is incomplete</string>
+
+    <!-- com/chathala/hala/feature/userprofile/data/UserProfileRepository.kt -->
+    <string name="err_profile_data_unavailable">Profile data unavailable</string>
+
+    <!-- com/chathala/hala/feature/userprofile/ui/UserProfileScreen.kt -->
+    <string name="label_this_user">this user</string>
+    <string name="friend_cancel_request_title">Cancel friend request</string>
+    <string name="friend_cancel_request">Cancel request</string>
+    <string name="friend_decline_request_title">Decline friend request</string>
+    <string name="profile_no_new_requests">Not accepting new requests</string>
+    <string name="profile_premium_only_requests">Accepts requests from Premium members only</string>
+    <string name="profile_basic_info">Basic information</string>
+    <string name="label_status">Status</string>
+    <string name="label_age">Age</string>
+    <string name="label_member_since">Member since</string>
+    <string name="profile_unblock_user">Unblock user</string>
+    <string name="profile_liked_you">Liked you</string>
+    <string name="profile_premium_user">Premium member</string>
+    <string name="label_location">Location</string>
+    <string name="profile_about_me">About me</string>
+    <string name="profile_photos">Photos</string>
+    <string name="label_friend">Friend</string>
+    <string name="label_request_sent">Sent</string>
+    <string name="action_add">Add</string>
+    <string name="label_premium">Premium</string>
+    <string name="action_message">Message</string>
+    <string name="label_sent_check">✓ Sent</string>
+    <string name="profile_account_deleted_desc">This user deleted their account, and their data is no longer available</string>
+
+    <!-- com/chathala/hala/feature/userprofile/ui/UserProfileViewModel.kt -->
+    <string name="friend_request_sent">Friend request sent</string>
+
+    <!-- com/chathala/hala/feature/verification/ui/VerificationScreen.kt -->
+    <string name="verify_intro">Verifying your account shows a blue badge next to your name in the app and builds more trust with other users.</string>
+    <string name="verify_submit_request">Send verification request</string>
+    <string name="verify_title">Verification</string>
+    <string name="verify_done_title">Your account is verified</string>
+    <string name="verify_done_desc">A blue verification check appears next to your name ✓</string>
+    <string name="verify_pending_title">Your request is under review</string>
+    <string name="verify_pending_note">We will notify you when the review is complete (within 24–48 hours)</string>
+    <string name="verify_rejected_title">Your previous request was declined</string>
+    <string name="verify_rejected_note">You can resend a new, clear selfie</string>
+    <string name="verify_not_yet_title">Not verified yet</string>
+    <string name="verify_not_yet_desc">Send a selfie to get the verification badge</string>
+    <string name="verify_choose_selfie">Choose a selfie</string>
+    <string name="verify_selfie_hint">A clear photo of your face without glasses or a mask</string>
+    <string name="verify_tap_change_photo">Tap the photo to choose another</string>
+
+    <!-- com/chathala/hala/feature/visitors/ui/VisitorsScreen.kt -->
+    <string name="visitors_title">Your profile visitors</string>
+    <string name="visitors_reveal_title">Reveal your profile visitors</string>
+    <string name="visitors_reveal_desc">Subscribe to Premium to see who visited you</string>
+    <string name="visitors_empty_title">No visitors yet</string>
+    <string name="visitors_empty_desc">When someone visits your profile they will appear here.</string>
+
+    <!-- com/chathala/hala/ui/components/HalaAsyncImage.kt -->
+    <string name="err_image_load_failed">Could not load the image</string>
+
+    <!-- ═══ Parameterized strings ═══ -->
+    <string name="err_generic_code">An error occurred (%1$s)</string>
+    <string name="valid_password_min_chars">Password must be at least %1$d characters</string>
+    <string name="valid_name_min_chars">Name must be at least %1$d characters</string>
+    <string name="valid_name_max_chars">Name must not exceed %1$d characters</string>
+    <string name="valid_min_age">You must be at least %1$d years old</string>
+    <string name="block_unblock_named">Unblock %1$s</string>
+    <string name="chat_promo_warning">Sharing %1$s may get your message blocked and logged as a violation</string>
+    <string name="chat_block_confirm_named">Are you sure you want to block %1$s? They will no longer be able to message you or see your profile.</string>
+    <string name="chat_can_send_after">You can send messages again in %1$d hours</string>
+    <string name="chat_locked_send_after">Messaging locked — you can send again in %1$d hours</string>
+    <string name="duration_seconds_short">%1$ds</string>
+    <string name="photo_hides_in">Hides in %1$ds</string>
+    <string name="photo_opened_disappears">Opened — disappears in %1$d seconds</string>
+    <string name="photo_not_opened">Not opened yet · %1$ds</string>
+    <string name="photo_disappears_in">Photo disappears in %1$ds</string>
+    <string name="reply_to_named">Replying to %1$s</string>
+    <string name="greeting_write_to">Write a greeting that is sent to %1$s as soon as you accept</string>
+    <string name="discover_liked_named">You liked %1$s ❤️</string>
+    <string name="separator_age">, %1$s</string>
+    <string name="distance_km">%1$d km</string>
+    <string name="distance_km_bullet">• %1$d km</string>
+    <string name="filter_age_range_value">%1$d – %2$d years</string>
+    <string name="photo_of_named">Photo of %1$s</string>
+    <string name="friends_remove_confirm">Are you sure you want to remove %1$s from your friends list?</string>
+    <string name="friend_cancel_confirm">Are you sure you want to cancel the friend request sent to %1$s?</string>
+    <string name="friend_decline_confirm">Are you sure you want to decline the friend request from %1$s?</string>
+    <string name="restriction_days_time">%1$d days %2$s</string>
+    <string name="standing_hours_until_lift">%1$d hours remain until the restriction is lifted.</string>
+    <string name="standing_remaining_before">%1$d remaining before restriction.</string>
+    <string name="standing_reset_after_days">The restriction counter resets after %1$d days of compliance.</string>
+    <string name="request_admin_note">Moderator note: %1$s</string>
+    <string name="profile_age_years_value">%1$d years</string>
+    <string name="message_to_named">Message to %1$s</string>
+    <string name="report_user_named">Report %1$s</string>
+
+    <plurals name="blocked_users_count">
+        <item quantity="one">%1$d user</item>
+        <item quantity="other">%1$d users</item>
+    </plurals>
+    <plurals name="chat_new_messages">
+        <item quantity="one">%1$d new message</item>
+        <item quantity="other">%1$d new messages</item>
+    </plurals>
+    <plurals name="duration_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <plurals name="time_minutes_ago">
+        <item quantity="one">A minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="time_hours_ago">
+        <item quantity="one">An hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="time_days_ago">
+        <item quantity="one">Yesterday</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="visitors_count">
+        <item quantity="one">%1$d visit</item>
+        <item quantity="other">%1$d visits</item>
+    </plurals>
+    <plurals name="visitors_people_count">
+        <item quantity="one">%1$d person visited your profile</item>
+        <item quantity="other">%1$d people visited your profile</item>
+    </plurals>
+    <string name="report_reason_other_short">Other</string>
+</resources>

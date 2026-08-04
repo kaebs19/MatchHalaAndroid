@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -50,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -138,7 +139,7 @@ fun ChatInputBar(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Send,
-                    contentDescription = stringResource(R.string.chat_send),
+                    contentDescription = S.get(R.string.chat_send),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -164,7 +165,7 @@ fun ChatInputBar(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Mic,
-                    contentDescription = stringResource(R.string.chat_record_audio),
+                    contentDescription = S.get(R.string.chat_record_audio),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -177,7 +178,7 @@ fun ChatInputBar(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.weight(1f),
-            placeholder = { Text(stringResource(R.string.chat_input_hint)) },
+            placeholder = { Text(S.get(R.string.chat_input_hint)) },
             shape = RoundedCornerShape(24.dp),
             maxLines = 5,
             colors = OutlinedTextFieldDefaults.colors(
@@ -196,7 +197,7 @@ fun ChatInputBar(
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(R.string.chat_attach),
+                contentDescription = S.get(R.string.chat_attach),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -239,7 +240,7 @@ private fun AttachSheetContent(
             .padding(bottom = 32.dp, top = 8.dp)
     ) {
         Text(
-            text = stringResource(R.string.chat_attach),
+            text = S.get(R.string.chat_attach),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -250,13 +251,13 @@ private fun AttachSheetContent(
         ) {
             AttachOption(
                 icon = Icons.Filled.PhotoCamera,
-                label = stringResource(R.string.chat_attach_camera),
+                label = S.get(R.string.chat_attach_camera),
                 tint = Color(0xFFE91E8C),
                 onClick = onCamera
             )
             AttachOption(
                 icon = Icons.Filled.Image,
-                label = stringResource(R.string.chat_attach_gallery),
+                label = S.get(R.string.chat_attach_gallery),
                 tint = Color(0xFF7B1FA2),
                 onClick = onGallery
             )
@@ -336,7 +337,7 @@ private fun RecordingBar(
         ) {
             Icon(
                 imageVector = Icons.Filled.Send,
-                contentDescription = stringResource(R.string.chat_send),
+                contentDescription = S.get(R.string.chat_send),
                 tint = MaterialTheme.colorScheme.onPrimary
             )
         }
@@ -357,7 +358,7 @@ private fun RecordingBar(
                 )
                 Spacer(Modifier.size(8.dp))
                 Text(
-                    text = stringResource(R.string.chat_recording, formatDuration(seconds)),
+                    text = S.get(R.string.chat_recording, formatDuration(seconds)),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.error
                 )
@@ -367,7 +368,7 @@ private fun RecordingBar(
         IconButton(onClick = onCancel) {
             Icon(
                 imageVector = Icons.Filled.Close,
-                contentDescription = stringResource(R.string.cancel),
+                contentDescription = S.get(R.string.cancel),
                 tint = MaterialTheme.colorScheme.error
             )
         }

@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.about
 
+import com.chathala.hala.core.i18n.S
+
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.compose.foundation.background
@@ -20,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -40,7 +41,7 @@ fun AboutScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SettingsScaffold(
-        title = stringResource(R.string.about_title),
+        title = S.get(R.string.about_title),
         onBack = onBack
     ) {
         when {
@@ -66,13 +67,13 @@ fun AboutScreen(
                     HalaLogoBadge()
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = d.appName ?: "هلا شات",
+                        text = d.appName ?: S.get(R.string.about_app_name),
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     if (!d.appVersion.isNullOrBlank()) {
                         Text(
-                            text = stringResource(R.string.settings_version) + " " + d.appVersion,
+                            text = S.get(R.string.settings_version) + " " + d.appVersion,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

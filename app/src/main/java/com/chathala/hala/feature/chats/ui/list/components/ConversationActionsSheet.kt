@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.list.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,7 +58,7 @@ fun ConversationActionsSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
             Text(
-                text = targetName ?: "المحادثة",
+                text = targetName ?: S.get(R.string.label_conversation),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -63,31 +66,31 @@ fun ConversationActionsSheet(
 
             ActionItem(
                 icon = Icons.Filled.PushPin,
-                label = if (isPinned) "إلغاء التثبيت" else "تثبيت المحادثة",
+                label = if (isPinned) S.get(R.string.action_unpin) else S.get(R.string.action_pin),
                 tint = MaterialTheme.colorScheme.primary,
                 onClick = onPin
             )
             ActionItem(
                 icon = if (isMuted) Icons.Filled.NotificationsActive else Icons.Filled.NotificationsOff,
-                label = if (isMuted) "إلغاء كتم الإشعارات" else "كتم الإشعارات",
+                label = if (isMuted) S.get(R.string.action_unmute) else S.get(R.string.chat_mute_notifications),
                 tint = MaterialTheme.colorScheme.onSurface,
                 onClick = onMute
             )
             ActionItem(
                 icon = Icons.Filled.Flag,
-                label = "الإبلاغ عن المستخدم",
+                label = S.get(R.string.chat_report_user),
                 tint = MaterialTheme.colorScheme.error,
                 onClick = onReport
             )
             ActionItem(
                 icon = Icons.Filled.Block,
-                label = "حظر المستخدم",
+                label = S.get(R.string.chat_block_user),
                 tint = MaterialTheme.colorScheme.error,
                 onClick = onBlock
             )
             ActionItem(
                 icon = Icons.Filled.DeleteOutline,
-                label = "حذف المحادثة",
+                label = S.get(R.string.chat_delete_title),
                 tint = MaterialTheme.colorScheme.error,
                 onClick = onDelete
             )

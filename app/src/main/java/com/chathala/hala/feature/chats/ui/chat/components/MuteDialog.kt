@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.R
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,12 +30,15 @@ import java.util.Locale
 import java.util.TimeZone
 
 /** خيارات مدة الكتم. */
-enum class MuteDuration(val label: String, val millis: Long?) {
-    HOUR("ساعة واحدة", 60L * 60 * 1000),
-    EIGHT_HOURS("8 ساعات", 8L * 60 * 60 * 1000),
-    DAY("يوم كامل", 24L * 60 * 60 * 1000),
-    WEEK("أسبوع", 7L * 24 * 60 * 60 * 1000),
-    FOREVER("للأبد", null)
+enum class MuteDuration(private val labelRes: Int, val millis: Long?) {
+    HOUR(R.string.mute_one_hour, 60L * 60 * 1000),
+    EIGHT_HOURS(R.string.mute_eight_hours, 8L * 60 * 60 * 1000),
+    DAY(R.string.mute_one_day, 24L * 60 * 60 * 1000),
+    WEEK(R.string.mute_one_week, 7L * 24 * 60 * 60 * 1000),
+    FOREVER(R.string.mute_forever, null);
+
+    /** يُقرأ وقت العرض — ثوابت الـ enum تُهيّأ مرة واحدة فقط. */
+    val label: String get() = S.get(labelRes)
 }
 
 @Composable
@@ -52,13 +58,13 @@ fun MuteDialog(
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(Modifier.size(8.dp))
-                Text("كتم الإشعارات")
+                Text(S.get(R.string.chat_mute_notifications))
             }
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "اختر مدة كتم الإشعارات من هذه المحادثة",
+                    text = S.get(R.string.mute_dialog_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -85,7 +91,7 @@ fun MuteDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("إلغاء") }
+            TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) }
         }
     )
 }

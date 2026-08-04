@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.R
+import com.chathala.hala.core.i18n.S
+
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,13 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.chathala.hala.R
 import com.chathala.hala.ui.components.FullScreenDialogWindow
 
 /** مصدر الصورة المُختارة للمعاينة. */
@@ -104,7 +105,7 @@ fun ImagePreviewScreen(
             ) {
                 CircleIconButton(
                     icon = Icons.Filled.Close,
-                    contentDescription = stringResource(R.string.preview_close),
+                    contentDescription = S.get(R.string.preview_close),
                     onClick = onDismiss
                 )
                 SourceBadge(source = source)
@@ -129,7 +130,7 @@ fun ImagePreviewScreen(
                     )
                     Spacer(Modifier.size(6.dp))
                     Text(
-                        text = stringResource(R.string.preview_self_destruct),
+                        text = S.get(R.string.preview_self_destruct),
                         style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
                         color = Color.White
                     )
@@ -143,13 +144,13 @@ fun ImagePreviewScreen(
                 ) {
                     // إرسال عادي (بدون اختفاء)
                     DurationChip(
-                        label = stringResource(R.string.preview_duration_normal),
+                        label = S.get(R.string.preview_duration_normal),
                         selected = selectedDuration == null,
                         modifier = Modifier.weight(1f)
                     ) { selectedDuration = null }
                     DURATION_OPTIONS.forEach { sec ->
                         DurationChip(
-                            label = "${sec}ث",
+                            label = S.get(R.string.duration_seconds_short, sec),
                             selected = selectedDuration == sec,
                             modifier = Modifier.weight(1f)
                         ) { selectedDuration = sec }
@@ -171,9 +172,9 @@ fun ImagePreviewScreen(
                 ) {
                     Text(
                         text = if (selectedDuration == null)
-                            stringResource(R.string.preview_send)
+                            S.get(R.string.preview_send)
                         else
-                            stringResource(R.string.preview_send_disappearing, selectedDuration!!),
+                            S.get(R.string.preview_send_disappearing, selectedDuration!!),
                         style = androidx.compose.material3.MaterialTheme.typography.titleSmall
                             .copy(fontWeight = FontWeight.Bold),
                         color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
@@ -194,8 +195,8 @@ fun ImagePreviewScreen(
 @Composable
 private fun SourceBadge(source: ImageSource) {
     val (icon, label) = when (source) {
-        ImageSource.CAMERA -> Icons.Filled.PhotoCamera to stringResource(R.string.preview_source_camera)
-        ImageSource.GALLERY -> Icons.Filled.PhotoLibrary to stringResource(R.string.preview_source_gallery)
+        ImageSource.CAMERA -> Icons.Filled.PhotoCamera to S.get(R.string.preview_source_camera)
+        ImageSource.GALLERY -> Icons.Filled.PhotoLibrary to S.get(R.string.preview_source_gallery)
     }
     Row(
         modifier = Modifier

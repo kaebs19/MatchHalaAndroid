@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.appPrefs by preferencesDataStore(name = "hala_app_prefs")
@@ -20,10 +21,22 @@ enum class AppTheme {
     }
 }
 
+/** لغة الواجهة المُفضّلة للمستخدم. */
+enum class AppLanguage(val tag: String) {
+    ARABIC("ar"), ENGLISH("en");
+
+    companion object {
+        /** الافتراضي: العربية — التطبيق عربي أولاً. */
+        fun fromString(s: String?): AppLanguage =
+            entries.firstOrNull { it.name == s } ?: ARABIC
+    }
+}
+
 /** تخزين تفضيلات التطبيق (ليست خاصة بالمستخدم — تبقى بعد Logout). */
 class AppPreferences(private val context: Context) {
 
     private val themeKey = stringPreferencesKey("theme")
+    private val languageKey = stringPreferencesKey("language")
     private val recentSearchesKey = stringPreferencesKey("recent_searches")
     private val sensitiveContentKey = booleanPreferencesKey("sensitive_content_enabled")
 
@@ -33,6 +46,21 @@ class AppPreferences(private val context: Context) {
 
     suspend fun setTheme(theme: AppTheme) {
         context.appPrefs.edit { it[themeKey] = theme.name }
+    }
+
+    // ── لغة الواجهة ──
+
+    val language: Flow<AppLanguage> = context.appPrefs.data.map {
+        AppLanguage.fromString(it[languageKey])
+    }
+
+    /** قراءة متزامنة عند الإقلاع — لتفادي وميض اللغة الخاطئة قبل وصول أول قيمة من الـ Flow. */
+    fun languageBlocking(): AppLanguage = kotlinx.coroutines.runBlocking {
+        AppLanguage.fromString(context.appPrefs.data.first()[languageKey])
+    }
+
+    suspend fun setLanguage(language: AppLanguage) {
+        context.appPrefs.edit { it[languageKey] = language.name }
     }
 
     // ── عمليات بحث سابقة (آخر 8، الأحدث أولاً) ──

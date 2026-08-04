@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.feature.profile.ui.components.AvatarPicker
@@ -60,9 +61,9 @@ fun ProfileCompletionScreen(
     var countryError by remember { mutableStateOf<String?>(null) }
     var interestsError by remember { mutableStateOf<String?>(null) }
 
-    val errGender = stringResource(R.string.err_gender_required)
-    val errCountry = stringResource(R.string.err_country_required)
-    val errInterests = stringResource(R.string.err_interests_required)
+    val errGender = S.get(R.string.err_gender_required)
+    val errCountry = S.get(R.string.err_country_required)
+    val errInterests = S.get(R.string.err_interests_required)
 
     LaunchedEffect(state.saved) {
         if (state.saved) {
@@ -72,12 +73,12 @@ fun ProfileCompletionScreen(
     }
 
     AuthScaffold(
-        title = stringResource(R.string.profile_title),
-        subtitle = stringResource(R.string.profile_subtitle)
+        title = S.get(R.string.profile_title),
+        subtitle = S.get(R.string.profile_subtitle)
     ) {
-        SectionLabel(stringResource(R.string.avatar_section_title))
+        SectionLabel(S.get(R.string.avatar_section_title))
         Text(
-            text = stringResource(R.string.avatar_section_hint),
+            text = S.get(R.string.avatar_section_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -92,14 +93,14 @@ fun ProfileCompletionScreen(
         if (existingImageUrl != null && selectedAvatar == null && uploadedUri == null) {
             Spacer(Modifier.height(8.dp))
             Text(
-                text = stringResource(R.string.profile_prefill_hint),
+                text = S.get(R.string.profile_prefill_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
         Spacer(Modifier.height(18.dp))
-        SectionLabel(stringResource(R.string.field_birthdate))
+        SectionLabel(S.get(R.string.field_birthdate))
         BirthDateField(
             selected = birthDate,
             onSelect = { birthDate = it; birthError = null },
@@ -108,7 +109,7 @@ fun ProfileCompletionScreen(
         )
 
         Spacer(Modifier.height(18.dp))
-        SectionLabel(stringResource(R.string.field_gender))
+        SectionLabel(S.get(R.string.field_gender))
         GenderSelector(
             selected = gender,
             onSelect = { gender = it; genderError = null }
@@ -116,7 +117,7 @@ fun ProfileCompletionScreen(
         if (genderError != null) FormError(genderError)
 
         Spacer(Modifier.height(18.dp))
-        SectionLabel(stringResource(R.string.field_country))
+        SectionLabel(S.get(R.string.field_country))
         CountryField(
             selected = country,
             onSelect = { country = it; countryError = null },
@@ -125,9 +126,9 @@ fun ProfileCompletionScreen(
         )
 
         Spacer(Modifier.height(18.dp))
-        SectionLabel(stringResource(R.string.field_interests))
+        SectionLabel(S.get(R.string.field_interests))
         Text(
-            text = stringResource(R.string.interests_hint),
+            text = S.get(R.string.interests_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -146,7 +147,7 @@ fun ProfileCompletionScreen(
             }
             state.interestsError != null -> {
                 com.chathala.hala.ui.components.ErrorState(
-                    message = state.interestsError ?: "حدث خطأ",
+                    message = state.interestsError ?: S.get(R.string.err_generic),
                     onRetry = { viewModel.loadInterests() }
                 )
             }
@@ -169,7 +170,7 @@ fun ProfileCompletionScreen(
         Spacer(Modifier.height(32.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.btn_save_continue),
+            text = S.get(R.string.btn_save_continue),
             loading = state.saving,
             onClick = {
                 birthError = Validators.birthDate(birthDate)

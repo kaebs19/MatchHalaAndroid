@@ -1,5 +1,7 @@
 package com.chathala.hala.core.util
 
+import com.chathala.hala.core.i18n.LocaleManager
+
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -19,9 +21,10 @@ object ProfileFormatter {
         }
     }
 
-    private val arabicMonthYear by lazy {
-        SimpleDateFormat("MMMM yyyy", Locale("ar"))
-    }
+    // لا نستخدم `by lazy`: كان يجمّد اللغة على أول استدعاء فتبقى أسماء الأشهر عربية
+    // بعد التبديل للإنجليزية. البناء عند الطلب رخيص عند مواضع الاستدعاء هذه.
+    private val monthYear: SimpleDateFormat
+        get() = SimpleDateFormat("MMMM yyyy", LocaleManager.locale)
 
     /** يحوّل ISO timestamp إلى "مارس 2026". يُرجع null إذا فشل التحليل. */
     fun formatJoinDate(iso: String?): String? {
@@ -29,7 +32,7 @@ object ProfileFormatter {
         val trimmed = iso.substringBefore('.').trimEnd('Z')
         return runCatching {
             val date = isoParser.parse(trimmed) ?: return null
-            arabicMonthYear.format(date)
+            monthYear.format(date)
         }.getOrNull()
     }
 

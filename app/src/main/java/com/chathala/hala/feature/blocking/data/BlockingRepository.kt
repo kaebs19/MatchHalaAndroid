@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.blocking.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -18,12 +21,12 @@ class BlockingRepository(
 
     suspend fun block(userId: String): NetworkResult<String> = safeApiCall {
         val resp = api.blockUser(bearer(), userId)
-        resp.message ?: "تم حظر المستخدم"
+        resp.message ?: S.get(R.string.block_user_blocked)
     }
 
     suspend fun unblock(userId: String): NetworkResult<String> = safeApiCall {
         val resp = api.unblockUser(bearer(), userId)
-        resp.message ?: "تم إلغاء الحظر"
+        resp.message ?: S.get(R.string.block_user_unblocked)
     }
 
     /** حالة الحظر بالاتجاهين مع مستخدم محدّد — تُفحص عند كل فتح للمحادثة. */
@@ -34,7 +37,7 @@ class BlockingRepository(
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

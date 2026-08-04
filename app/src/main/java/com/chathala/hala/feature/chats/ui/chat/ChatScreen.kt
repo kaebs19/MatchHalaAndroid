@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -249,17 +252,17 @@ fun ChatScreen(
                 .imePadding()
         ) {
             ChatHeader(
-                title = state.otherUserName ?: "محادثة",
+                title = state.otherUserName ?: S.get(R.string.chat_title_default),
                 avatarUrl = state.otherUserAvatar,
                 // الموقوف دائماً غير متصل بغضّ النظر عن الكاش
                 isOnline = state.otherUserOnline && !state.otherUserSuspended && !state.otherUserDeleted,
                 isVerified = state.otherUserVerified,
                 subtitle = when {
-                    state.otherUserDeleted -> "هذا الحساب لم يعد موجوداً"
-                    state.otherUserSuspended -> "غير متصل"
-                    state.typingUser != null -> "يكتب"
-                    state.otherUserOnline -> "متصل الآن"
-                    state.socketConnected -> "متصل"
+                    state.otherUserDeleted -> S.get(R.string.chat_account_gone)
+                    state.otherUserSuspended -> S.get(R.string.status_offline)
+                    state.typingUser != null -> S.get(R.string.status_typing)
+                    state.otherUserOnline -> S.get(R.string.status_online_now)
+                    state.socketConnected -> S.get(R.string.status_online)
                     else -> "…"
                 },
                 subtitleTint = when {
@@ -463,7 +466,7 @@ fun ChatScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "النزول للأسفل",
+                            contentDescription = S.get(R.string.chat_scroll_to_bottom),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(8.dp).size(24.dp)
                         )
@@ -492,7 +495,7 @@ fun ChatScreen(
                     Text("⚠️", style = MaterialTheme.typography.labelSmall)
                     Spacer(Modifier.size(4.dp))
                     Text(
-                        text = "مشاركة ${state.promoWarningCategory} قد تُحجَب رسالتك وتُسجَّل مخالفة",
+                        text = S.get(R.string.chat_promo_warning, state.promoWarningCategory ?: ""),
                         style = MaterialTheme.typography.labelSmall,
                         color = androidx.compose.ui.graphics.Color(0xFFFF8C00)
                     )
@@ -660,8 +663,8 @@ fun ChatScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.deleting) showDeleteDialog = false },
-            title = { Text("حذف من قائمتي") },
-            text = { Text("سيتم حذف المحادثة من قائمتك فقط (لا يتأثر الطرف الآخر، وتعود عند أي رسالة جديدة). هل تريد المتابعة؟") },
+            title = { Text(S.get(R.string.chat_delete_from_my_list)) },
+            text = { Text(S.get(R.string.chat_delete_from_my_list_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -673,10 +676,10 @@ fun ChatScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) { Text("حذف") }
+                ) { Text(S.get(R.string.action_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("إلغاء") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(S.get(R.string.action_cancel)) }
             }
         )
     }
@@ -684,8 +687,8 @@ fun ChatScreen(
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.deleting) showCancelDialog = false },
-            title = { Text("إنهاء المحادثة للطرفين") },
-            text = { Text("سيتم إنهاء المحادثة للطرفين مع بقاء الرسائل. لن يمكن الإرسال إلا بإرسال طلب جديد يُقبل من الطرف الآخر. هل تريد المتابعة؟") },
+            title = { Text(S.get(R.string.chat_end_for_both)) },
+            text = { Text(S.get(R.string.chat_end_for_both_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -697,10 +700,10 @@ fun ChatScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) { Text("إنهاء") }
+                ) { Text(S.get(R.string.action_end)) }
             },
             dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) { Text("تراجع") }
+                TextButton(onClick = { showCancelDialog = false }) { Text(S.get(R.string.action_undo)) }
             }
         )
     }
@@ -708,9 +711,9 @@ fun ChatScreen(
     if (showBlockDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.blocking) showBlockDialog = false },
-            title = { Text("حظر المستخدم") },
+            title = { Text(S.get(R.string.chat_block_user)) },
             text = {
-                Text("هل أنت متأكد من حظر ${state.otherUserName ?: "هذا المستخدم"}؟ لن يتمكن من مراسلتك أو رؤية ملفك.")
+                Text(S.get(R.string.chat_block_confirm_named, state.otherUserName ?: S.get(R.string.label_this_user)))
             },
             confirmButton = {
                 Button(
@@ -723,10 +726,10 @@ fun ChatScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) { Text("حظر") }
+                ) { Text(S.get(R.string.action_block)) }
             },
             dismissButton = {
-                TextButton(onClick = { showBlockDialog = false }) { Text("إلغاء") }
+                TextButton(onClick = { showBlockDialog = false }) { Text(S.get(R.string.action_cancel)) }
             }
         )
     }
@@ -889,7 +892,7 @@ private fun ChatHeader(
                 onDismissRequest = onMenuDismiss
             ) {
                 DropdownMenuItem(
-                    text = { Text("كتم الإشعارات") },
+                    text = { Text(S.get(R.string.chat_mute_notifications)) },
                     onClick = onOpenMute,
                     leadingIcon = {
                         Icon(
@@ -899,7 +902,7 @@ private fun ChatHeader(
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("الإبلاغ عن المستخدم") },
+                    text = { Text(S.get(R.string.chat_report_user)) },
                     onClick = onReport,
                     leadingIcon = {
                         Icon(
@@ -911,7 +914,7 @@ private fun ChatHeader(
                 )
                 DropdownMenuItem(
                     text = {
-                        Text("حظر المستخدم", color = MaterialTheme.colorScheme.error)
+                        Text(S.get(R.string.chat_block_user), color = MaterialTheme.colorScheme.error)
                     },
                     onClick = onBlock,
                     leadingIcon = {
@@ -925,7 +928,7 @@ private fun ChatHeader(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            "حذف من قائمتي",
+                            S.get(R.string.chat_delete_from_my_list),
                             color = MaterialTheme.colorScheme.error
                         )
                     },
@@ -941,7 +944,7 @@ private fun ChatHeader(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            "إنهاء المحادثة للطرفين",
+                            S.get(R.string.chat_end_for_both),
                             color = MaterialTheme.colorScheme.error
                         )
                     },
@@ -957,7 +960,7 @@ private fun ChatHeader(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            if (isTrusted) "إلغاء الثقة بالمحادثة" else "ثقة بهذه المحادثة"
+                            if (isTrusted) S.get(R.string.chat_untrust) else S.get(R.string.chat_trust)
                         )
                     },
                     onClick = onToggleTrust,
@@ -1003,7 +1006,7 @@ private fun UnreadDividerRow(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
         )
         Text(
-            text = "الرسائل غير المقروءة",
+            text = S.get(R.string.chat_unread_messages),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 10.dp)
@@ -1040,7 +1043,7 @@ private fun NewMessagesPill(
             )
             Spacer(Modifier.size(6.dp))
             Text(
-                text = "$count رسائل جديدة",
+                text = S.plural(R.plurals.chat_new_messages, count),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimary
             )
@@ -1056,12 +1059,12 @@ private fun PendingBanner(
     reopening: Boolean = false
 ) {
     val text = when {
-        status == "cancelled" -> "انتهت هذه المحادثة — أرسل طلباً جديداً للاستئناف"
-        status == "rejected" -> "تم رفض هذه المحادثة"
-        status == "expired" -> "انتهت صلاحية الطلب"
-        status == "pending" && isCreator -> "في انتظار قبول الطرف الآخر…"
-        status == "pending" -> "اقبل الطلب أولاً للردّ"
-        else -> "لا يمكن الردّ حالياً"
+        status == "cancelled" -> S.get(R.string.err_chat_ended)
+        status == "rejected" -> S.get(R.string.chat_request_rejected)
+        status == "expired" -> S.get(R.string.chat_request_expired)
+        status == "pending" && isCreator -> S.get(R.string.chat_waiting_acceptance)
+        status == "pending" -> S.get(R.string.chat_accept_first)
+        else -> S.get(R.string.chat_cannot_reply_now)
     }
     val canReopen = (status == "cancelled" || status == "rejected") && onReopen != null
     Column(
@@ -1082,7 +1085,7 @@ private fun PendingBanner(
                 onClick = { onReopen?.invoke() },
                 enabled = !reopening
             ) {
-                Text(if (reopening) "جارٍ الإرسال…" else "إرسال طلب جديد")
+                Text(if (reopening) S.get(R.string.chat_sending) else S.get(R.string.chat_send_new_request))
             }
         }
     }
@@ -1104,13 +1107,13 @@ private fun MessagingRestrictionBanner(
         Spacer(Modifier.size(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = restriction.title ?: "حسابك مقيّد مؤقتاً",
+                text = restriction.title ?: S.get(R.string.chat_account_restricted),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 color = orange
             )
             Text(
                 text = restriction.message
-                    ?: "تم تقييد المراسلة بسبب تكرار نشر حسابات خارجية.",
+                    ?: S.get(R.string.chat_restricted_promo_msg),
                 style = MaterialTheme.typography.labelSmall,
                 color = orange.copy(alpha = 0.85f)
             )
@@ -1124,7 +1127,7 @@ private fun MessagingRestrictionBanner(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "$hrs ساعة",
+                    text = S.plural(R.plurals.duration_hours, hrs),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                     color = orange
                 )
@@ -1152,7 +1155,7 @@ private fun BlockedUserInputBar() {
         )
         Spacer(Modifier.size(8.dp))
         Text(
-            text = "قمت بحظر هذا المستخدم — ألغِ الحظر للمراسلة",
+            text = S.get(R.string.chat_you_blocked_them),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1181,7 +1184,7 @@ private fun BlockedByThemInputBar() {
         )
         Spacer(Modifier.size(8.dp))
         Text(
-            text = "لا يمكنك مراسلة هذا المستخدم",
+            text = S.get(R.string.chat_cannot_message_user),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1207,7 +1210,7 @@ private fun SuspendedUserInputBar() {
         )
         Spacer(Modifier.size(8.dp))
         Text(
-            text = "لا يمكن مراسلة مستخدم موقوف",
+            text = S.get(R.string.chat_cannot_message_suspended),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1233,7 +1236,7 @@ private fun DeletedUserInputBar() {
         )
         Spacer(Modifier.size(8.dp))
         Text(
-            text = "حساب محذوف — لا يمكن إرسال رسائل",
+            text = S.get(R.string.chat_cannot_message_deleted),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1266,13 +1269,13 @@ private fun LockedInputBar(
             Spacer(Modifier.size(8.dp))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "المراسلة مقفلة مؤقتاً",
+                    text = S.get(R.string.chat_messaging_locked),
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                     color = orange
                 )
                 Text(
-                    text = restriction.hoursLeft?.let { "يمكنك الإرسال بعد $it ساعة" }
-                        ?: "تم تقييد المراسلة بسبب نشر حسابات خارجية",
+                    text = restriction.hoursLeft?.let { S.get(R.string.chat_can_send_after, it) }
+                        ?: S.get(R.string.chat_restricted_promo_short),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1298,7 +1301,7 @@ private fun LockedInputBar(
                 )
                 Spacer(Modifier.size(6.dp))
                 Text(
-                    text = "طلب المراجعة قيد المعالجة لدى المشرف",
+                    text = S.get(R.string.chat_review_pending),
                     style = MaterialTheme.typography.labelMedium,
                     color = orange
                 )
@@ -1324,7 +1327,7 @@ private fun LockedInputBar(
                     )
                     Spacer(Modifier.size(6.dp))
                     Text(
-                        text = "طلب مراجعة",
+                        text = S.get(R.string.chat_request_review),
                         style = MaterialTheme.typography.labelLarge,
                         color = orange
                     )
@@ -1355,14 +1358,14 @@ private fun ChatPrivacyNotice() {
             )
             Spacer(androidx.compose.ui.Modifier.size(4.dp))
             Text(
-                text = "محادثتك سرية",
+                text = S.get(R.string.chat_secret_title),
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "لا يمكن الاطلاع عليها ما لم تقم بمشاركتها",
+                text = S.get(R.string.chat_secret_desc),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1379,7 +1382,7 @@ private fun EmptyChat() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "ابدأ الحديث بقول مرحباً 👋",
+            text = S.get(R.string.chat_say_hello),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

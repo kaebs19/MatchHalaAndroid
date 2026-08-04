@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.auth.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.content.Context
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -46,7 +49,7 @@ class GoogleSignInHelper(private val context: Context) {
                 val google = GoogleIdTokenCredential.createFrom(credential.data)
                 GoogleSignInResult.Success(google.idToken)
             } else {
-                GoogleSignInResult.Error("نوع بيانات الاعتماد غير متوقع")
+                GoogleSignInResult.Error(S.get(R.string.google_unexpected_credential))
             }
         } catch (e: GetCredentialCancellationException) {
             // ملاحظة: خدمات Google تُبلّغ أحياناً عن "إلغاء" حتى حين يكون السبب الحقيقي
@@ -55,16 +58,16 @@ class GoogleSignInHelper(private val context: Context) {
             GoogleSignInResult.Cancelled
         } catch (e: NoCredentialException) {
             android.util.Log.w(TAG, "No Google credential: ${e.message}", e)
-            GoogleSignInResult.Error("لا توجد حسابات Google على الجهاز. أضف حساباً من الإعدادات وحاول مجدداً.")
+            GoogleSignInResult.Error(S.get(R.string.google_no_accounts))
         } catch (e: GoogleIdTokenParsingException) {
             android.util.Log.e(TAG, "ID token parsing failed", e)
-            GoogleSignInResult.Error("فشل قراءة بيانات Google")
+            GoogleSignInResult.Error(S.get(R.string.google_read_failed))
         } catch (e: GetCredentialException) {
             android.util.Log.e(TAG, "GetCredentialException: type=${e.type} msg=${e.message}", e)
-            GoogleSignInResult.Error(e.message ?: "تعذّر الدخول بـ Google — حاول مجدداً")
+            GoogleSignInResult.Error(e.message ?: S.get(R.string.google_signin_failed))
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Unexpected Google sign-in error", e)
-            GoogleSignInResult.Error(e.message ?: "خطأ غير متوقع")
+            GoogleSignInResult.Error(e.message ?: S.get(R.string.err_unexpected))
         }
     }
 

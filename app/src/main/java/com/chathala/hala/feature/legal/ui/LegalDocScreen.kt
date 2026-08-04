@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.legal.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,7 +77,7 @@ fun LegalDocScreen(
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             state.error != null -> com.chathala.hala.ui.components.ErrorState(
-                message = state.error ?: "حدث خطأ",
+                message = state.error ?: S.get(R.string.err_generic),
                 onRetry = { viewModel.load(type) },
                 modifier = Modifier.fillMaxSize()
             )
@@ -83,7 +86,7 @@ fun LegalDocScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "لا يوجد محتوى بعد",
+                    text = S.get(R.string.empty_no_content),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

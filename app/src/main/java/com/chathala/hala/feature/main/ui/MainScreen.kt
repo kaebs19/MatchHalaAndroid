@@ -1,5 +1,9 @@
 package com.chathala.hala.feature.main.ui
 
+import com.chathala.hala.R
+
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chathala.hala.HalaApp
@@ -165,7 +168,7 @@ private fun MainBottomBar(
                         Icon(imageVector = tab.icon, contentDescription = null, modifier = iconMod)
                     }
                 },
-                label = { Text(text = stringResource(tab.labelRes)) },
+                label = { Text(text = S.get(tab.labelRes)) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = MaterialTheme.colorScheme.onPrimary,
                     selectedTextColor = MaterialTheme.colorScheme.primary,

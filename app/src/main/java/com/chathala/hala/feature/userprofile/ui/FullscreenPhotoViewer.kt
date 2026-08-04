@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.userprofile.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -72,7 +75,7 @@ fun FullscreenPhotoViewer(
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.4f))
             ) {
-                Icon(Icons.Filled.Close, contentDescription = "إغلاق", tint = Color.White)
+                Icon(Icons.Filled.Close, contentDescription = S.get(R.string.action_close), tint = Color.White)
             }
 
             if (urls.size > 1) {

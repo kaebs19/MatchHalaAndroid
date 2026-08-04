@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -233,7 +236,7 @@ fun MessageBubble(
                     if (isRevealed && message.type != "image") {
                         Spacer(Modifier.size(4.dp))
                         Text(
-                            text = "يُخفى بعد ${remainingSeconds}ث",
+                            text = S.get(R.string.photo_hides_in, remainingSeconds),
                             style = MaterialTheme.typography.labelSmall,
                             color = pinkColor.copy(alpha = 0.7f)
                         )
@@ -248,14 +251,14 @@ fun MessageBubble(
                 ) {
                     if (message.isEdited == true) {
                         Text(
-                            text = "مُعدَّلة",
+                            text = S.get(R.string.msg_edited),
                             style = MaterialTheme.typography.labelSmall,
                             color = textColor.copy(alpha = 0.6f)
                         )
                         Spacer(Modifier.size(4.dp))
                     }
                     Text(
-                        text = NotificationFormat.timeAgoArabic(message.createdAt),
+                        text = NotificationFormat.timeAgo(message.createdAt),
                         style = MaterialTheme.typography.labelSmall,
                         color = textColor.copy(alpha = 0.7f)
                     )
@@ -299,7 +302,7 @@ fun MessageBubble(
                 Text(text = "👁", style = MaterialTheme.typography.labelSmall)
                 Spacer(Modifier.size(6.dp))
                 Text(
-                    text = "كشف الكلمات المحجوبة",
+                    text = S.get(R.string.msg_reveal_blocked_words),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFFFF8C00)
                 )
@@ -346,8 +349,8 @@ private fun ReplyPreviewInBubble(
             )
             Text(
                 text = when (reply.type) {
-                    "image" -> "📷 صورة"
-                    "audio" -> "🎙️ صوت"
+                    "image" -> S.get(R.string.msg_type_photo)
+                    "audio" -> S.get(R.string.msg_type_audio)
                     else -> reply.content?.takeIf { it.isNotBlank() } ?: "…"
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -385,8 +388,8 @@ private fun ImageContent(
         // شارة مصدر الصورة (كاميرا / معرض) أعلى البداية
         message.imageSource?.let { src ->
             val (icon, label) = when (src.lowercase()) {
-                "camera" -> Icons.Filled.PhotoCamera to "كاميرا"
-                else -> Icons.Filled.PhotoLibrary to "معرض"
+                "camera" -> Icons.Filled.PhotoCamera to S.get(R.string.source_camera)
+                else -> Icons.Filled.PhotoLibrary to S.get(R.string.source_gallery)
             }
             Row(
                 modifier = Modifier
@@ -431,7 +434,7 @@ private fun ImageContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = NotificationFormat.timeAgoArabic(message.createdAt),
+                    text = NotificationFormat.timeAgo(message.createdAt),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.White.copy(alpha = 0.9f)
                 )
@@ -510,7 +513,7 @@ private fun FullscreenImageViewer(url: String, onDismiss: () -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "إغلاق",
+                    contentDescription = S.get(R.string.action_close),
                     tint = Color.White,
                     modifier = Modifier.size(22.dp)
                 )
@@ -554,15 +557,15 @@ private fun SenderDisappearingContent(
         Spacer(Modifier.size(8.dp))
         Column {
             Text(
-                text = "صورة مؤقتة",
+                text = S.get(R.string.temp_photo),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onPrimary
             )
             Text(
                 text = when {
-                    expired -> "انتهت"
-                    isViewing -> "فُتحت — تختفي بعد $remainingSec ثانية"
-                    else -> "لم تُفتح بعد · ${durationSec}ث"
+                    expired -> S.get(R.string.label_expired)
+                    isViewing -> S.get(R.string.photo_opened_disappears, remainingSec)
+                    else -> S.get(R.string.photo_not_opened, durationSec)
                 },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
@@ -620,7 +623,7 @@ private fun DisappearingImageContent(
                     )
                     Spacer(Modifier.size(8.dp))
                     Text(
-                        text = "انتهت صلاحية الصورة",
+                        text = S.get(R.string.photo_expired),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -664,7 +667,7 @@ private fun DisappearingImageContent(
                     )
                     Spacer(Modifier.size(10.dp))
                     Text(
-                        text = "جارٍ تحميل الصورة…",
+                        text = S.get(R.string.photo_loading),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -685,13 +688,13 @@ private fun DisappearingImageContent(
                     )
                     Spacer(Modifier.size(8.dp))
                     Text(
-                        text = "اضغط للمشاهدة",
+                        text = S.get(R.string.photo_tap_to_view),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.size(4.dp))
                     Text(
-                        text = "صورة تختفي خلال ${durationSec}ث",
+                        text = S.get(R.string.photo_disappears_in, durationSec),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -765,7 +768,7 @@ private fun DeletedBubble(isMine: Boolean, modifier: Modifier = Modifier) {
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Text(
-                text = "🚫  تم حذف الرسالة",
+                text = S.get(R.string.msg_was_deleted),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -807,7 +810,7 @@ private fun AudioContent(
         ) {
             Icon(
                 imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                contentDescription = if (isPlaying) "إيقاف" else "تشغيل",
+                contentDescription = if (isPlaying) S.get(R.string.action_pause) else S.get(R.string.action_play),
                 tint = accentColor,
                 modifier = Modifier.size(20.dp)
             )
@@ -857,7 +860,7 @@ private fun SensitiveBubble(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "محتوى حساس",
+                    text = S.get(R.string.sensitive_content),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                     ),
@@ -868,7 +871,7 @@ private fun SensitiveBubble(
             }
             Spacer(Modifier.size(4.dp))
             Text(
-                text = "اضغط للكشف عن المحتوى",
+                text = S.get(R.string.tap_to_reveal),
                 style = MaterialTheme.typography.labelSmall,
                 color = Color(0xFFE91E8C).copy(alpha = 0.7f)
             )
@@ -904,10 +907,10 @@ private fun MineStatusIcon(
             else -> Icons.Filled.Done
         },
         contentDescription = when {
-            isPending -> "قيد الإرسال"
-            isRead -> "تمت القراءة"
-            isDelivered -> "تم التسليم"
-            else -> "أُرسلت"
+            isPending -> S.get(R.string.status_sending)
+            isRead -> S.get(R.string.status_read)
+            isDelivered -> S.get(R.string.status_delivered)
+            else -> S.get(R.string.status_sent)
         },
         tint = if (isRead) readTint else tint,
         modifier = Modifier.size(14.dp)

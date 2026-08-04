@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.discover.ui.search
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
-import androidx.compose.ui.res.stringResource
 
 /**
  * بطاقة ترويجية احترافية تُعرض لغير المشتركين: «اشترك لزيادة ظهورك».
@@ -70,12 +71,12 @@ fun PremiumPromoCard(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
-                text = stringResource(R.string.premium_promo_title),
+                text = S.get(R.string.premium_promo_title),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color.White
             )
             Text(
-                text = stringResource(R.string.premium_promo_desc),
+                text = S.get(R.string.premium_promo_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.White.copy(alpha = 0.9f)
             )

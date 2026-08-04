@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.account
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,7 +66,7 @@ fun AccountSettingsScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         SettingsScaffold(
-            title = stringResource(R.string.settings_section_account_settings),
+            title = S.get(R.string.settings_section_account_settings),
             onBack = onBack
         ) {
             Column(
@@ -74,7 +75,7 @@ fun AccountSettingsScreen(
             ) {
                 AccountRow(
                     icon = Icons.Filled.Block,
-                    label = stringResource(R.string.blocked_users_title),
+                    label = S.get(R.string.blocked_users_title),
                     onClick = onOpenBlockedUsers
                 )
 
@@ -82,32 +83,32 @@ fun AccountSettingsScreen(
                 if (authProvider == null || authProvider == "app") {
                     AccountRow(
                         icon = Icons.Filled.Lock,
-                        label = stringResource(R.string.change_password_title),
+                        label = S.get(R.string.change_password_title),
                         onClick = onOpenChangePassword
                     )
                 }
 
                 AccountRow(
                     icon = Icons.Filled.Shield,
-                    label = "حالة حسابي",
+                    label = S.get(R.string.account_standing_title),
                     onClick = onOpenStanding
                 )
 
                 AccountRow(
                     icon = Icons.Filled.Warning,
-                    label = "سجل المخالفات",
+                    label = S.get(R.string.violations_history_title),
                     onClick = onOpenViolations
                 )
 
                 AccountRow(
                     icon = Icons.AutoMirrored.Filled.ListAlt,
-                    label = "طلباتي",
+                    label = S.get(R.string.my_requests_title),
                     onClick = onOpenRequests
                 )
 
                 AccountRow(
                     icon = Icons.Filled.DeleteForever,
-                    label = stringResource(R.string.settings_delete_account),
+                    label = S.get(R.string.settings_delete_account),
                     tint = MaterialTheme.colorScheme.error,
                     onClick = { showDeleteDialog = true }
                 )

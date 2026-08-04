@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Surface
 import androidx.core.view.WindowCompat
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import com.chathala.hala.core.i18n.LocaleManager
+import com.chathala.hala.core.storage.AppLanguage
 import com.chathala.hala.core.storage.AppTheme
 import com.chathala.hala.feature.push.PushIntentCoordinator
 import com.chathala.hala.navigation.HalaNavGraph
@@ -31,8 +34,20 @@ class MainActivity : ComponentActivity() {
         PushIntentCoordinator.handle(intent)
         setContent {
             val theme by app.appPreferences.theme.collectAsState(initial = AppTheme.SYSTEM)
+            val language by app.appPreferences.language.collectAsState(initial = LocaleManager.current)
+
+            // مزامنة الحالة العامة التي يقرأها S.get في كل طبقات التطبيق
+            LaunchedEffect(language) { LocaleManager.setLanguage(language) }
+
+            val direction =
+                if (language == AppLanguage.ARABIC) LayoutDirection.Rtl else LayoutDirection.Ltr
+
             HalaTheme(themeMode = theme) {
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                // نتحكّم بالاتجاه فقط، ولا نتجاوز LocalContext/LocalConfiguration عمداً:
+                // الحوارات والأوراق (Dialog/Popup/ModalBottomSheet) تُنشئ نافذة جديدة
+                // تُعيد توفير هذين المحلّيين من الـ Activity، فكانت نصوصها ترجع للغة الجهاز.
+                // كل النصوص تمرّ عبر S.get الذي يقرأ LocaleManager مباشرةً بدل CompositionLocal.
+                CompositionLocalProvider(LocalLayoutDirection provides direction) {
                     Surface(modifier = Modifier.fillMaxSize()) {
                         Column(
                             modifier = Modifier
@@ -40,6 +55,9 @@ class MainActivity : ComponentActivity() {
                                 .statusBarsPadding()
                                 .navigationBarsPadding()
                         ) {
+                            // لا نستخدم key(language): كان سيُعيد إنشاء NavController ويمسح
+                            // مكدس التنقّل. التحديث الفوري مضمون لأن S.get يقرأ
+                            // LocaleManager.current (حالة Compose) فيُعاد تركيب كل نص وحده.
                             OfflineBanner()
                             HalaNavGraph()
                         }

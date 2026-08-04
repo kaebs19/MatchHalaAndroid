@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -21,37 +24,37 @@ class SettingsRepository(
 
     suspend fun fetchPrivacySettings(): NetworkResult<PrivacySettingsData> = safeApiCall {
         val resp = api.getPrivacySettings(bearer())
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     suspend fun setShowDistance(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateShowDistance(bearer(), UpdateDistanceRequest(value))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun setStealthMode(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateStealthMode(bearer(), UpdateStealthRequest(value))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun setShowAge(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateShowAge(bearer(), UpdateShowAgeRequest(value))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun setShowCountry(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateShowCountry(bearer(), UpdateShowCountryRequest(value))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun setAcceptingRequests(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateAcceptingRequests(bearer(), UpdateAcceptingRequestsRequest(value))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun setPremiumOnlyRequests(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updatePremiumOnlyRequests(bearer(), UpdatePremiumOnlyRequestsRequest(value))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     /** من يستطيع إرسال طلب صداقة لي: everyone | contacts | nobody. */
@@ -60,7 +63,7 @@ class SettingsRepository(
             bearer(),
             com.chathala.hala.feature.friends.data.UpdateFriendRequestsPrivacyBody(value)
         )
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun setDoNotDisturb(
@@ -74,7 +77,7 @@ class SettingsRepository(
             bearer(),
             UpdateDoNotDisturbRequest(enabled, startHour, startMinute, endHour, endMinute)
         )
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     suspend fun setPauseDiscovery(
@@ -82,29 +85,29 @@ class SettingsRepository(
         durationHours: Int? = null
     ): NetworkResult<String> = safeApiCall {
         val resp = api.updatePauseDiscovery(bearer(), UpdatePauseDiscoveryRequest(enabled, durationHours))
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun fetchNotificationPrefs(): NetworkResult<NotificationPrefsData> = safeApiCall {
         val resp = api.getNotificationPrefs(bearer())
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     suspend fun updateNotificationPref(
         body: UpdateNotificationPrefRequest
     ): NetworkResult<NotificationPrefsData> = safeApiCall {
         val resp = api.updateNotificationPref(bearer(), body)
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     suspend fun fetchAbout(): NetworkResult<AboutData> = safeApiCall {
         val resp = api.getAbout()
-        resp.data ?: throw IllegalStateException("لا توجد معلومات عن التطبيق")
+        resp.data ?: throw IllegalStateException(S.get(R.string.settings_no_app_info))
     }
 
     suspend fun fetchContact(): NetworkResult<ContactData> = safeApiCall {
         val resp = api.getContact()
-        resp.data ?: throw IllegalStateException("لا توجد معلومات الاتصال")
+        resp.data ?: throw IllegalStateException(S.get(R.string.settings_no_contact_info))
     }
 
     suspend fun changePassword(
@@ -115,17 +118,17 @@ class SettingsRepository(
             bearer = bearer(),
             body = ChangePasswordRequest(currentPassword, newPassword)
         )
-        resp.message ?: "تم تغيير كلمة المرور"
+        resp.message ?: S.get(R.string.auth_password_changed)
     }
 
     suspend fun setAllowSensitiveContent(enabled: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateAllowSensitiveContent(bearer(), UpdateAllowSensitiveContentRequest(enabled))
-        resp.message ?: if (enabled) "تم التفعيل" else "تم التعطيل"
+        resp.message ?: if (enabled) S.get(R.string.settings_enabled_toast) else S.get(R.string.settings_disabled_toast)
     }
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

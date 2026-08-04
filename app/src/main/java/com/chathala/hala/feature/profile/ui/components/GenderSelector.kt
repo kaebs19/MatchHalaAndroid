@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
@@ -35,14 +36,14 @@ fun GenderSelector(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         GenderChip(
-            label = stringResource(R.string.gender_male),
+            label = S.get(R.string.gender_male),
             icon = Icons.Filled.Male,
             selected = selected == "male",
             onClick = { onSelect("male") },
             modifier = Modifier.weight(1f)
         )
         GenderChip(
-            label = stringResource(R.string.gender_female),
+            label = S.get(R.string.gender_female),
             icon = Icons.Filled.Female,
             selected = selected == "female",
             onClick = { onSelect("female") },

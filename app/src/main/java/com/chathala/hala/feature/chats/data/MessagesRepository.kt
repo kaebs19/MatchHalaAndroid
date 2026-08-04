@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.content.Context
 import android.net.Uri
 import com.chathala.hala.core.network.ApiClient
@@ -23,7 +26,7 @@ class MessagesRepository(
         limit: Int = 50
     ): NetworkResult<MessagesData> = safeApiCall {
         val resp = api.getMessages(bearer(), conversationId, page, limit)
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     suspend fun sendText(
@@ -44,7 +47,7 @@ class MessagesRepository(
         if (resp.messagingLocked != null) {
             return@safeApiCall Triple(null, null, resp.messagingLocked)
         }
-        val msg = resp.data?.message ?: throw IllegalStateException("فشل إرسال الرسالة")
+        val msg = resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_send_failed))
         Triple(msg, resp.externalPromoBlocked, null)
     }
 
@@ -56,7 +59,7 @@ class MessagesRepository(
         imageSource: String = "gallery"
     ): NetworkResult<Message> = safeApiCall {
         val part = MediaUploadHelper.uriToImagePart(context, uri, fieldName = "image")
-            ?: throw IllegalStateException("تعذّر قراءة الصورة")
+            ?: throw IllegalStateException(S.get(R.string.msg_image_read_failed))
         val resp = api.sendImageMessage(
             bearer = bearer(),
             image = part,
@@ -64,7 +67,7 @@ class MessagesRepository(
             caption = caption?.let(MediaUploadHelper::plainText),
             imageSource = MediaUploadHelper.plainText(imageSource)
         )
-        resp.data?.message ?: throw IllegalStateException("فشل إرسال الصورة")
+        resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_image_send_failed))
     }
 
     suspend fun sendAudio(
@@ -79,7 +82,7 @@ class MessagesRepository(
             conversationId = MediaUploadHelper.plainText(conversationId),
             duration = MediaUploadHelper.plainText(durationSeconds.toString())
         )
-        resp.data?.message ?: throw IllegalStateException("فشل إرسال الصوت")
+        resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_audio_send_failed))
     }
 
     suspend fun react(messageId: String, emoji: String): NetworkResult<List<Reaction>> = safeApiCall {
@@ -94,12 +97,12 @@ class MessagesRepository(
     /** يعدّل نصّ رسالة ويُرجع النصّ بعد فلاتر الخادم (قد يُكتَم جزء منه). */
     suspend fun editMessage(messageId: String, content: String): NetworkResult<String> = safeApiCall {
         val resp = api.editMessage(bearer(), messageId, EditMessageRequest(content))
-        resp.data?.content ?: throw IllegalStateException(resp.message ?: "فشل تعديل الرسالة")
+        resp.data?.content ?: throw IllegalStateException(resp.message ?: S.get(R.string.msg_edit_failed))
     }
 
     suspend fun deleteMessage(messageId: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteMessage(bearer(), messageId)
-        resp.message ?: "تم الحذف"
+        resp.message ?: S.get(R.string.msg_deleted)
     }
 
     suspend fun forwardMessage(
@@ -110,7 +113,7 @@ class MessagesRepository(
             bearer = bearer(),
             body = ForwardRequest(messageId = messageId, targetConversationId = targetConversationId)
         )
-        resp.data?.message ?: throw IllegalStateException("فشل إعادة التوجيه")
+        resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_forward_failed))
     }
 
     suspend fun viewDisappearingPhoto(messageId: String): NetworkResult<Unit> = safeApiCall {
@@ -120,7 +123,7 @@ class MessagesRepository(
 
     suspend fun revealSensitiveContent(messageId: String): NetworkResult<String> = safeApiCall {
         val resp = api.revealSensitiveContent(bearer(), messageId)
-        resp.data?.content ?: throw IllegalStateException(resp.message ?: "فشل الكشف")
+        resp.data?.content ?: throw IllegalStateException(resp.message ?: S.get(R.string.msg_reveal_failed))
     }
 
     suspend fun sendDisappearingImage(
@@ -131,7 +134,7 @@ class MessagesRepository(
         imageSource: String = "gallery"
     ): NetworkResult<Message> = safeApiCall {
         val part = MediaUploadHelper.uriToImagePart(context, uri, fieldName = "image")
-            ?: throw IllegalStateException("تعذّر قراءة الصورة")
+            ?: throw IllegalStateException(S.get(R.string.msg_image_read_failed))
         val resp = api.sendDisappearingImage(
             bearer = bearer(),
             image = part,
@@ -140,12 +143,12 @@ class MessagesRepository(
             imageSource = MediaUploadHelper.plainText(imageSource),
             disappearingDuration = MediaUploadHelper.plainText(durationSeconds.toString())
         )
-        resp.data?.message ?: throw IllegalStateException("فشل إرسال الصورة")
+        resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_image_send_failed))
     }
 
     suspend fun appealBlock(messageId: String, reason: String): NetworkResult<String> = safeApiCall {
         val resp = api.appealBlock(bearer(), messageId, AppealBlockRequest(reason))
-        resp.message ?: "تم تقديم الاستئناف، سيتم مراجعته في أقرب فرصة ممكنة"
+        resp.message ?: S.get(R.string.appeal_submitted)
     }
 
     /**
@@ -161,7 +164,7 @@ class MessagesRepository(
                 actionType = "restriction"
             )
         )
-        resp.message ?: "تم إرسال طلبك، سيراجعه المشرف في أقرب فرصة ممكنة"
+        resp.message ?: S.get(R.string.request_submitted)
     }
 
     suspend fun fetchPromoKeywords(): NetworkResult<List<PromoKeyword>> = safeApiCall {
@@ -171,7 +174,7 @@ class MessagesRepository(
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

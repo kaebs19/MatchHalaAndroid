@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.push
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -24,30 +27,30 @@ object HalaNotificationChannels {
         manager.createNotificationChannel(
             NotificationChannel(
                 SOCIAL,
-                "التفاعلات",
+                S.get(R.string.channel_social_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "إشعارات الإعجابات والمطابقات وزيارات البروفايل"
+                description = S.get(R.string.channel_social_desc)
             }
         )
 
         manager.createNotificationChannel(
             NotificationChannel(
                 MESSAGES,
-                "الرسائل",
+                S.get(R.string.channel_messages_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "إشعارات الرسائل الواردة من المحادثات"
+                description = S.get(R.string.channel_messages_desc)
             }
         )
 
         manager.createNotificationChannel(
             NotificationChannel(
                 SYSTEM,
-                "تنبيهات النظام",
+                S.get(R.string.channel_system_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "تنبيهات الحساب والأمان والتحقق"
+                description = S.get(R.string.channel_system_desc)
             }
         )
     }

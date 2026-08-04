@@ -1,5 +1,8 @@
 package com.chathala.hala.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,7 +52,7 @@ fun HalaAsyncImage(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.BrokenImage,
-                        contentDescription = "تعذّر تحميل الصورة",
+                        contentDescription = S.get(R.string.err_image_load_failed),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(40.dp)
                     )

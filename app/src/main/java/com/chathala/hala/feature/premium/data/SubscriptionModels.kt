@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.premium.data
 
+import com.chathala.hala.R
+import com.chathala.hala.core.i18n.S
 import com.squareup.moshi.JsonClass
 
 /**
@@ -11,12 +13,15 @@ enum class PremiumPlan(
     val productId: String,
     /** القيمة المرسلة للخادم (متوافقة مع premiumPlan في قاعدة البيانات). */
     val serverPlan: String,
-    /** اسم معروض للمستخدم. */
-    val titleAr: String
+    /** مورد الاسم المعروض — نخزّن المعرّف لا النص كي لا تتجمّد اللغة عند تحميل الصنف. */
+    private val titleRes: Int
 ) {
-    WEEKLY("premium_weekly", "weekly", "أسبوعي"),
-    MONTHLY("premium_monthly", "monthly", "شهري"),
-    QUARTERLY("premium_quarterly", "quarterly", "ربع سنوي");
+    WEEKLY("premium_weekly", "weekly", R.string.plan_weekly),
+    MONTHLY("premium_monthly", "monthly", R.string.plan_monthly),
+    QUARTERLY("premium_quarterly", "quarterly", R.string.plan_quarterly);
+
+    /** الاسم المعروض باللغة الحالية. */
+    val title: String get() = S.get(titleRes)
 
     companion object {
         val allProductIds: List<String> = entries.map { it.productId }

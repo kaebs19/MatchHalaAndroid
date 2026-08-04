@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.visitors.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -131,13 +134,13 @@ private fun TopBar(onBack: () -> Unit, total: Int) {
         }
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             Text(
-                text = "زوّار ملفك",
+                text = S.get(R.string.visitors_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
             if (total > 0) {
                 Text(
-                    text = "$total زيارة",
+                    text = S.plural(R.plurals.visitors_count, total),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -167,14 +170,14 @@ private fun UpgradeBanner(total: Int, onClick: () -> Unit) {
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = if (total > 0) "$total شخصاً زاروا ملفك" else "اكشف زوّار ملفك",
+                text = if (total > 0) S.plural(R.plurals.visitors_people_count, total) else S.get(R.string.visitors_reveal_title),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF4A2C00)
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = "اشترك في بريميوم لمعرفة من زارك",
+                text = S.get(R.string.visitors_reveal_desc),
                 fontSize = 12.5.sp,
                 color = Color(0xFF5A3A00)
             )
@@ -183,7 +186,7 @@ private fun UpgradeBanner(total: Int, onClick: () -> Unit) {
             modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(Color(0xFF3A2400))
                 .padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
-            Text("ترقية", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFE082))
+            Text(S.get(R.string.action_upgrade), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFE082))
         }
     }
 }
@@ -236,7 +239,7 @@ private fun VisitorRow(item: ProfileViewItem, locked: Boolean, onClick: () -> Un
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = visitor?.name ?: "مستخدم",
+                        text = visitor?.name ?: S.get(R.string.label_user),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onBackground,
                         maxLines = 1
@@ -250,7 +253,7 @@ private fun VisitorRow(item: ProfileViewItem, locked: Boolean, onClick: () -> Un
                 Countries.byCode(visitor?.country)?.let { c ->
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = "${c.flag} ${c.nameAr}",
+                        text = "${c.flag} ${c.name}",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -258,7 +261,7 @@ private fun VisitorRow(item: ProfileViewItem, locked: Boolean, onClick: () -> Un
             }
             Spacer(Modifier.height(3.dp))
             Text(
-                text = NotificationFormat.timeAgoArabic(item.createdAt),
+                text = NotificationFormat.timeAgo(item.createdAt),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -284,14 +287,14 @@ private fun EmptyVisitors() {
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = "لا يوجد زوّار بعد",
+            text = S.get(R.string.visitors_empty_title),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "عندما يزور أحدهم ملفك سيظهر هنا.",
+            text = S.get(R.string.visitors_empty_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

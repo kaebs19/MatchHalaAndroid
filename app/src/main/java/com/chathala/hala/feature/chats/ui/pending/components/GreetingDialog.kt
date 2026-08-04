@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.pending.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,14 +35,14 @@ fun GreetingDialog(
         shape = RoundedCornerShape(20.dp),
         title = {
             Text(
-                text = "قبول مع ترحيب",
+                text = S.get(R.string.greeting_title),
                 style = MaterialTheme.typography.titleMedium
             )
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "اكتب رسالة ترحيب تُرسل فور القبول إلى ${senderName ?: "المستخدم"}",
+                    text = S.get(R.string.greeting_write_to, senderName ?: S.get(R.string.label_user)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -48,7 +51,7 @@ fun GreetingDialog(
                     value = text,
                     onValueChange = { text = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("مرحباً! سعيد بتواصلك…") },
+                    placeholder = { Text(S.get(R.string.greeting_hint)) },
                     shape = RoundedCornerShape(14.dp),
                     maxLines = 4,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -61,10 +64,10 @@ fun GreetingDialog(
             TextButton(
                 enabled = text.trim().isNotEmpty(),
                 onClick = { onConfirm(text.trim()) }
-            ) { Text("إرسال وقبول") }
+            ) { Text(S.get(R.string.greeting_send_accept)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("إلغاء") }
+            TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) }
         }
     )
 }

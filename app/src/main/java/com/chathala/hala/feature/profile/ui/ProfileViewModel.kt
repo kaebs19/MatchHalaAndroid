@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.profile.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -71,7 +74,7 @@ class ProfileViewModel(
         _refreshing.value = true
         viewModelScope.launch {
             when (val r = userRepo.refresh()) {
-                is NetworkResult.Success -> _message.tryEmit("تم التحديث")
+                is NetworkResult.Success -> _message.tryEmit(S.get(R.string.conv_updated))
                 is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
             }
             _refreshing.value = false
@@ -85,7 +88,7 @@ class ProfileViewModel(
             when (val r = profileRepo.uploadProfileImage(part)) {
                 is NetworkResult.Success -> {
                     userRepo.refresh()
-                    _message.tryEmit("تم تحديث الصورة")
+                    _message.tryEmit(S.get(R.string.profile_photo_updated))
                 }
                 is NetworkResult.Error ->
                     _message.tryEmit(ErrorMessages.friendly(r))
@@ -101,7 +104,7 @@ class ProfileViewModel(
             when (val r = profileRepo.deleteProfileImage()) {
                 is NetworkResult.Success -> {
                     userRepo.refresh()
-                    _message.tryEmit("تم حذف الصورة")
+                    _message.tryEmit(S.get(R.string.profile_photo_deleted))
                 }
                 is NetworkResult.Error ->
                     _message.tryEmit(ErrorMessages.friendly(r))

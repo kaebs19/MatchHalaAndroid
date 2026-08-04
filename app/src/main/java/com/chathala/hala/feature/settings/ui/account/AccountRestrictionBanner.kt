@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.account
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,20 +52,20 @@ private fun parseIsoMillis(iso: String?): Long? {
 
 /** ينسّق المدة المتبقية: «1 يوم 23:59:58» أو «47:59:58» أو «انتهى». */
 private fun formatCountdown(remainingMs: Long): String {
-    if (remainingMs <= 0) return "انتهى"
+    if (remainingMs <= 0) return S.get(R.string.label_ended)
     val totalSec = remainingMs / 1000
     val days = totalSec / 86400
     val hours = (totalSec % 86400) / 3600
     val minutes = (totalSec % 3600) / 60
     val seconds = totalSec % 60
     val hms = "%02d:%02d:%02d".format(hours, minutes, seconds)
-    return if (days > 0) "$days يوم $hms" else hms
+    return if (days > 0) S.get(R.string.restriction_days_time, days, hms) else hms
 }
 
 /** ترجمة سبب التقييد إلى نص عربي واضح. */
 private fun reasonLabel(reason: String?): String = when (reason) {
-    "external_promotion" -> "نشر أو مشاركة حسابات خارجية"
-    else -> "مخالفة سياسة الاستخدام"
+    "external_promotion" -> S.get(R.string.violation_external_accounts)
+    else -> S.get(R.string.violation_policy_breach)
 }
 
 /**
@@ -104,7 +107,7 @@ fun AccountRestrictionBanner(
 
     var expanded by remember { mutableStateOf(true) }
 
-    val title = if (suspended) "حسابك معلّق مؤقتاً" else "تقييد كامل للمراسلة"
+    val title = if (suspended) S.get(R.string.err_account_suspended) else S.get(R.string.restriction_full_messaging)
     val hoursLeft = s.restriction?.hoursLeft ?: 0
     val reason = reasonLabel(s.restriction?.reason)
 
@@ -146,14 +149,14 @@ fun AccountRestrictionBanner(
                         .padding(horizontal = 18.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        "مراجعة",
+                        S.get(R.string.action_review),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                         color = Red
                     )
                 }
             } else {
                 Text(
-                    "غير قابلة للمراجعة",
+                    S.get(R.string.label_not_reviewable),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color.White,
                     modifier = Modifier
@@ -173,7 +176,7 @@ fun AccountRestrictionBanner(
                     color = Color.White
                 )
                 Text(
-                    "لا يمكنك إرسال رسائل أو طلبات",
+                    S.get(R.string.restriction_cannot_send),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.White.copy(alpha = 0.9f)
                 )
@@ -199,7 +202,7 @@ fun AccountRestrictionBanner(
                         .padding(12.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxWidth()) {
-                        DetailRow("السبب", reason)
+                        DetailRow(S.get(R.string.label_reason), reason)
                         // عدّاد حيّ يتناقص كل ثانية من وقت الانتهاء
                         val untilMs = remember(s.restriction?.until) {
                             parseIsoMillis(s.restriction?.until)
@@ -214,17 +217,17 @@ fun AccountRestrictionBanner(
                                 }
                             }
                             Spacer(Modifier.size(6.dp))
-                            DetailRow("المدة المتبقية", countdown)
+                            DetailRow(S.get(R.string.label_time_remaining), countdown)
                         } else if (!suspended && hoursLeft > 0) {
                             Spacer(Modifier.size(6.dp))
-                            DetailRow("المدة المتبقية", "$hoursLeft ساعة")
+                            DetailRow(S.get(R.string.label_time_remaining), S.plural(R.plurals.duration_hours, hoursLeft))
                         }
                         Spacer(Modifier.size(8.dp))
                         Text(
                             text = if (s.reviewable)
-                                "إذا كنت ترى أن التقييد غير صحيح، قدّم طلب مراجعة وسيراجعه المشرف."
+                                S.get(R.string.restriction_review_hint)
                             else (s.nonReviewableNote
-                                ?: "مخالفات الصور الإباحية أو الجنسية والأسماء المخالفة غير قابلة للمراجعة."),
+                                ?: S.get(R.string.restriction_not_reviewable_hint)),
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White.copy(alpha = 0.9f)
                         )

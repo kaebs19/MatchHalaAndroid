@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,7 +20,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -63,7 +64,7 @@ fun RegisterScreen(
         emailError = Validators.email(email)
         passwordError = Validators.password(password)
         confirmError = Validators.passwordConfirm(password, confirm)
-        termsError = if (!termsAccepted) "يجب الموافقة على الشروط وسياسة الخصوصية" else null
+        termsError = if (!termsAccepted) S.get(R.string.err_must_agree_policy) else null
         if (nameError == null && emailError == null && passwordError == null &&
             confirmError == null && termsError == null
         ) {
@@ -86,14 +87,14 @@ fun RegisterScreen(
     }
 
     AuthScaffold(
-        title = stringResource(R.string.register_title),
-        subtitle = stringResource(R.string.register_subtitle),
+        title = S.get(R.string.register_title),
+        subtitle = S.get(R.string.register_subtitle),
         onBack = onBackToLogin
     ) {
         HalaTextField(
             value = name,
             onValueChange = { name = it; nameError = null },
-            label = stringResource(R.string.field_name),
+            label = S.get(R.string.field_name),
             leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
             isError = nameError != null,
             errorMessage = nameError,
@@ -104,7 +105,7 @@ fun RegisterScreen(
         HalaTextField(
             value = email,
             onValueChange = { email = it; emailError = null },
-            label = stringResource(R.string.field_email),
+            label = S.get(R.string.field_email),
             keyboardType = KeyboardType.Email,
             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
             isError = emailError != null,
@@ -116,7 +117,7 @@ fun RegisterScreen(
         HalaTextField(
             value = password,
             onValueChange = { password = it; passwordError = null },
-            label = stringResource(R.string.field_password),
+            label = S.get(R.string.field_password),
             keyboardType = KeyboardType.Password,
             isPassword = true,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -130,7 +131,7 @@ fun RegisterScreen(
             PasswordStrengthBar(password = password)
         } else if (passwordError == null) {
             androidx.compose.material3.Text(
-                text = stringResource(R.string.password_hint),
+                text = S.get(R.string.password_hint),
                 style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -140,7 +141,7 @@ fun RegisterScreen(
         HalaTextField(
             value = confirm,
             onValueChange = { confirm = it; confirmError = null },
-            label = stringResource(R.string.field_confirm_password),
+            label = S.get(R.string.field_confirm_password),
             keyboardType = KeyboardType.Password,
             isPassword = true,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -163,7 +164,7 @@ fun RegisterScreen(
         Spacer(Modifier.height(16.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.btn_register),
+            text = S.get(R.string.btn_register),
             loading = state.loading,
             onClick = { submit() }
         )
@@ -171,8 +172,8 @@ fun RegisterScreen(
         Spacer(Modifier.height(24.dp))
 
         AuthFooterLinks(
-            prompt = stringResource(R.string.have_account),
-            actionText = stringResource(R.string.go_to_login),
+            prompt = S.get(R.string.have_account),
+            actionText = S.get(R.string.go_to_login),
             onAction = onBackToLogin
         )
     }

@@ -154,6 +154,11 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         ApiClient.init(tokenStorage = tokenStorage, userStorage = userStorage)
         networkMonitor = NetworkMonitor(applicationContext)
         appPreferences = AppPreferences(applicationContext)
+        // اللغة يجب أن تُضبط قبل أي نص يُقرأ (رسائل الإشعارات، الـ repositories)
+        com.chathala.hala.core.i18n.LocaleManager.init(
+            context = applicationContext,
+            language = appPreferences.languageBlocking()
+        )
         userRepository = UserRepository(
             userStorage = userStorage,
             tokenStorage = tokenStorage

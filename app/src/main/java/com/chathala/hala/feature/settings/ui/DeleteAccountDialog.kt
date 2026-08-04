@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -16,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
@@ -37,11 +38,11 @@ fun DeleteAccountDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_account_title)) },
+        title = { Text(S.get(R.string.delete_account_title)) },
         text = {
             Column {
                 Text(
-                    text = stringResource(R.string.delete_account_message),
+                    text = S.get(R.string.delete_account_message),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 if (requirePassword) {
@@ -49,7 +50,7 @@ fun DeleteAccountDialog(
                     HalaTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = stringResource(R.string.delete_account_password_hint),
+                        label = S.get(R.string.delete_account_password_hint),
                         isPassword = true,
                         keyboardType = KeyboardType.Password,
                         leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) }
@@ -65,14 +66,14 @@ fun DeleteAccountDialog(
                 }
             ) {
                 Text(
-                    text = stringResource(R.string.delete_account_confirm),
+                    text = S.get(R.string.delete_account_confirm),
                     color = MaterialTheme.colorScheme.error
                 )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.delete_account_cancel))
+                Text(S.get(R.string.delete_account_cancel))
             }
         }
     )

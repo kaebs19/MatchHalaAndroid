@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.notifications
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -38,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,7 +64,7 @@ fun NotificationSettingsScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         SettingsScaffold(
-            title = stringResource(R.string.notif_settings_title),
+            title = S.get(R.string.notif_settings_title),
             onBack = onBack
         ) {
             when {
@@ -87,8 +88,8 @@ fun NotificationSettingsScreen(
                         // المفتاح الرئيسي
                         NotifToggle(
                             icon = Icons.Filled.NotificationsActive,
-                            title = stringResource(R.string.notif_master_title),
-                            subtitle = stringResource(R.string.notif_master_desc),
+                            title = S.get(R.string.notif_master_title),
+                            subtitle = S.get(R.string.notif_master_desc),
                             checked = d.pushEnabled,
                             enabled = enabled,
                             highlighted = true,
@@ -96,7 +97,7 @@ fun NotificationSettingsScreen(
                         )
 
                         Text(
-                            text = stringResource(R.string.notif_categories_header),
+                            text = S.get(R.string.notif_categories_header),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 4.dp, top = 8.dp)
@@ -111,32 +112,32 @@ fun NotificationSettingsScreen(
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 NotifToggle(
                                     icon = Icons.Filled.Chat,
-                                    title = stringResource(R.string.notif_invitations_title),
-                                    subtitle = stringResource(R.string.notif_invitations_desc),
+                                    title = S.get(R.string.notif_invitations_title),
+                                    subtitle = S.get(R.string.notif_invitations_desc),
                                     checked = d.invitations,
                                     enabled = enabled,
                                     onChange = { viewModel.toggle(NotifPrefKey.INVITATIONS, it) }
                                 )
                                 NotifToggle(
                                     icon = Icons.Filled.MarkChatUnread,
-                                    title = stringResource(R.string.notif_messages_title),
-                                    subtitle = stringResource(R.string.notif_messages_desc),
+                                    title = S.get(R.string.notif_messages_title),
+                                    subtitle = S.get(R.string.notif_messages_desc),
                                     checked = d.messages,
                                     enabled = enabled,
                                     onChange = { viewModel.toggle(NotifPrefKey.MESSAGES, it) }
                                 )
                                 NotifToggle(
                                     icon = Icons.Filled.Visibility,
-                                    title = stringResource(R.string.notif_profile_visits_title),
-                                    subtitle = stringResource(R.string.notif_profile_visits_desc),
+                                    title = S.get(R.string.notif_profile_visits_title),
+                                    subtitle = S.get(R.string.notif_profile_visits_desc),
                                     checked = d.profileVisits,
                                     enabled = enabled,
                                     onChange = { viewModel.toggle(NotifPrefKey.PROFILE_VISITS, it) }
                                 )
                                 NotifToggle(
                                     icon = Icons.Filled.Campaign,
-                                    title = stringResource(R.string.notif_app_alerts_title),
-                                    subtitle = stringResource(R.string.notif_app_alerts_desc),
+                                    title = S.get(R.string.notif_app_alerts_title),
+                                    subtitle = S.get(R.string.notif_app_alerts_desc),
                                     checked = d.appAlerts,
                                     enabled = enabled,
                                     onChange = { viewModel.toggle(NotifPrefKey.APP_ALERTS, it) }
@@ -147,7 +148,7 @@ fun NotificationSettingsScreen(
                         // ── ساعات الهدوء ──
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.notif_quiet_header),
+                            text = S.get(R.string.notif_quiet_header),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 4.dp, top = 8.dp)
@@ -155,8 +156,8 @@ fun NotificationSettingsScreen(
                         val dnd = state.dnd
                         NotifToggle(
                             icon = Icons.Filled.Bedtime,
-                            title = stringResource(R.string.notif_quiet_title),
-                            subtitle = stringResource(R.string.notif_quiet_desc),
+                            title = S.get(R.string.notif_quiet_title),
+                            subtitle = S.get(R.string.notif_quiet_desc),
                             checked = dnd?.enabled == true,
                             enabled = enabled && dnd != null,
                             onChange = { viewModel.toggleQuietHours(it) }
@@ -168,14 +169,14 @@ fun NotificationSettingsScreen(
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 TimeRow(
-                                    label = stringResource(R.string.notif_quiet_from),
+                                    label = S.get(R.string.notif_quiet_from),
                                     hour = dnd?.startHour ?: 23,
                                     minute = dnd?.startMinute ?: 0,
                                     enabled = enabled,
                                     onPick = { h, m -> viewModel.setQuietTime(isStart = true, hour = h, minute = m) }
                                 )
                                 TimeRow(
-                                    label = stringResource(R.string.notif_quiet_to),
+                                    label = S.get(R.string.notif_quiet_to),
                                     hour = dnd?.endHour ?: 7,
                                     minute = dnd?.endMinute ?: 0,
                                     enabled = enabled,
@@ -186,7 +187,7 @@ fun NotificationSettingsScreen(
 
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.notif_critical_note),
+                            text = S.get(R.string.notif_critical_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 4.dp)

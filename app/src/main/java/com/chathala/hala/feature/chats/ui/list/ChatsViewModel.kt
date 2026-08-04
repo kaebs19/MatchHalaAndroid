@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.list
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -259,7 +262,7 @@ class ChatsViewModel(
         val isPinned = conversationId in _state.value.pinnedIds
         viewModelScope.launch {
             cache.setPinned(conversationId, !isPinned)
-            _message.tryEmit(if (isPinned) "تم إلغاء التثبيت" else "تم تثبيت المحادثة")
+            _message.tryEmit(if (isPinned) S.get(R.string.chat_unpinned) else S.get(R.string.chat_pinned))
         }
         _state.update { it.copy(actionTarget = null) }
     }
@@ -274,7 +277,7 @@ class ChatsViewModel(
             _state.update { it.copy(processingIds = it.processingIds - conversationId) }
             when (r) {
                 is NetworkResult.Success -> {
-                    _message.tryEmit(if (muted) "تم إلغاء الكتم" else "تم كتم المحادثة")
+                    _message.tryEmit(if (muted) S.get(R.string.chat_unmuted) else S.get(R.string.chat_muted))
                     runCatching { userRepo.refresh() }
                 }
                 is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
@@ -312,7 +315,7 @@ class ChatsViewModel(
         val other = conversation.otherParticipant(_state.value.currentUserId)
         if (other == null) {
             _state.update { it.copy(actionTarget = null) }
-            _message.tryEmit("حساب محذوف — لا حاجة للحظر")
+            _message.tryEmit(S.get(R.string.deleted_no_block_needed))
             return
         }
         _state.update { it.copy(actionTarget = null, processingIds = it.processingIds + conversation.id) }
@@ -336,7 +339,7 @@ class ChatsViewModel(
     fun reportOther(conversation: Conversation, reason: ReportReason, description: String?) {
         val other = conversation.otherParticipant(_state.value.currentUserId)
         if (other == null) {
-            _message.tryEmit("حساب محذوف — لا يمكن الإبلاغ عنه")
+            _message.tryEmit(S.get(R.string.deleted_cannot_report))
             return
         }
         viewModelScope.launch {

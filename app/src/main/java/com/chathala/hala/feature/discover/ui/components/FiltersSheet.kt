@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -63,26 +66,26 @@ fun FiltersSheet(
                 .padding(horizontal = 20.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "تخصيص البحث",
+                text = S.get(R.string.discover_customize_search),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.height(16.dp))
 
-            Section(title = "الجنس") {
+            Section(title = S.get(R.string.filter_gender)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ChoicePill(
-                        label = "الكل",
+                        label = S.get(R.string.filter_all),
                         selected = gender == null,
                         onClick = { gender = null }
                     )
                     ChoicePill(
-                        label = "ذكر",
+                        label = S.get(R.string.gender_male_short),
                         selected = gender == "male",
                         onClick = { gender = "male" }
                     )
                     ChoicePill(
-                        label = "أنثى",
+                        label = S.get(R.string.gender_female_short),
                         selected = gender == "female",
                         onClick = { gender = "female" }
                     )
@@ -92,10 +95,10 @@ fun FiltersSheet(
             Spacer(Modifier.height(20.dp))
 
             Section(
-                title = "الفئة العمرية",
+                title = S.get(R.string.filter_age_range),
                 trailing = {
                     Text(
-                        text = "${ageRange.start.toInt()} – ${ageRange.endInclusive.toInt()} سنة",
+                        text = S.get(R.string.filter_age_range_value, ageRange.start.toInt(), ageRange.endInclusive.toInt()),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -114,11 +117,11 @@ fun FiltersSheet(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "النشيطون مؤخراً",
+                        text = S.get(R.string.filter_recently_active),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
                     )
                     Text(
-                        text = "عرض من كانوا نشطين خلال 7 أيام",
+                        text = S.get(R.string.filter_recently_active_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -142,7 +145,7 @@ fun FiltersSheet(
                         onlyRecent = false
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("إعادة تعيين") }
+                ) { Text(S.get(R.string.action_reset)) }
 
                 Button(
                     onClick = {
@@ -160,7 +163,7 @@ fun FiltersSheet(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     modifier = Modifier.weight(1f)
-                ) { Text("تطبيق") }
+                ) { Text(S.get(R.string.action_apply)) }
             }
 
             Spacer(Modifier.height(20.dp))

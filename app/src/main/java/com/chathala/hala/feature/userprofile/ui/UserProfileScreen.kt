@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.userprofile.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -213,22 +216,22 @@ private fun FriendRemoveConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val name = userName ?: "هذا المستخدم"
+    val name = userName ?: S.get(R.string.label_this_user)
     val (title, message, confirmLabel) = when (status) {
         FriendStatus.PENDING_SENT -> Triple(
-            "إلغاء طلب الصداقة",
-            "هل أنت متأكد من إلغاء طلب الصداقة المُرسل إلى $name؟",
-            "إلغاء الطلب"
+            S.get(R.string.friend_cancel_request_title),
+            S.get(R.string.friend_cancel_confirm, name),
+            S.get(R.string.friend_cancel_request)
         )
         FriendStatus.PENDING_RECEIVED -> Triple(
-            "رفض طلب الصداقة",
-            "هل أنت متأكد من رفض طلب الصداقة من $name؟",
-            "رفض"
+            S.get(R.string.friend_decline_request_title),
+            S.get(R.string.friend_decline_confirm, name),
+            S.get(R.string.action_decline)
         )
         else -> Triple(
-            "إزالة صديق",
-            "هل أنت متأكد من إزالة $name من قائمة أصدقائك؟",
-            "إزالة"
+            S.get(R.string.friends_remove_title),
+            S.get(R.string.friends_remove_confirm, name),
+            S.get(R.string.action_remove)
         )
     }
 
@@ -262,7 +265,7 @@ private fun FriendRemoveConfirmDialog(
             }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("تراجع") }
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text(S.get(R.string.action_undo)) }
         }
     )
 }
@@ -287,24 +290,24 @@ private fun BlockConfirmDialog(
         },
         title = {
             Text(
-                text = "حظر المستخدم",
+                text = S.get(R.string.chat_block_user),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
             Text(
-                text = "هل أنت متأكد من حظر ${userName ?: "هذا المستخدم"}؟ لن يتمكن من مراسلتك أو رؤية ملفك.",
+                text = S.get(R.string.chat_block_confirm_named, userName ?: S.get(R.string.label_this_user)),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = onConfirm, enabled = !blocking) {
-                Text("حظر", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                Text(S.get(R.string.action_block), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("إلغاء") }
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) }
         }
     )
 }
@@ -336,8 +339,8 @@ private fun ProfileContent(
 
     // بوابة زر الرسالة حسب إعدادات الطرف الآخر
     val messageBlockedReason: String? = when {
-        user.acceptingRequests == false -> "لا يستقبل طلبات جديدة"
-        user.premiumOnlyRequests == true && !currentUserPremium -> "يستقبل من المشتركين فقط"
+        user.acceptingRequests == false -> S.get(R.string.profile_no_new_requests)
+        user.premiumOnlyRequests == true && !currentUserPremium -> S.get(R.string.profile_premium_only_requests)
         else -> null
     }
 
@@ -417,8 +420,8 @@ private fun ProfileContent(
 private fun BasicInfoCard(user: UserProfile) {
     val age = ProfileFormatter.computeAge(user.birthDate)
     val genderText = when (user.gender) {
-        "male" -> "ذكر"
-        "female" -> "أنثى"
+        "male" -> S.get(R.string.gender_male_short)
+        "female" -> S.get(R.string.gender_female_short)
         else -> null
     }
     val (statusText, active) = connectionStatus(user.isOnline, user.lastLogin)
@@ -427,13 +430,13 @@ private fun BasicInfoCard(user: UserProfile) {
 
     InfoCard(
         icon = { Text("👤", fontSize = 18.sp) },
-        title = "معلومات أساسية"
+        title = S.get(R.string.profile_basic_info)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            InfoLine("الحالة", statusText, valueColor = statusColor)
-            genderText?.let { InfoLine("الجنس", it) }
-            age?.let { InfoLine("العمر", "$it سنة") }
-            memberSince?.let { InfoLine("عضو منذ", it) }
+            InfoLine(S.get(R.string.label_status), statusText, valueColor = statusColor)
+            genderText?.let { InfoLine(S.get(R.string.filter_gender), it) }
+            age?.let { InfoLine(S.get(R.string.label_age), S.get(R.string.profile_age_years_value, it)) }
+            memberSince?.let { InfoLine(S.get(R.string.label_member_since), it) }
         }
     }
 }
@@ -455,9 +458,9 @@ private fun minutesSince(iso: String?): Long? {
 
 /** @return (نص الحالة, نشِط؟) — نشِط = أخضر. */
 private fun connectionStatus(isOnline: Boolean?, lastLogin: String?): Pair<String, Boolean> {
-    if (isOnline == true) return "متصل الآن" to true
+    if (isOnline == true) return S.get(R.string.status_online_now) to true
     val mins = minutesSince(lastLogin)
-    return if (mins != null && mins <= 120) "متصل" to true else "غير متصل" to false
+    return if (mins != null && mins <= 120) S.get(R.string.status_online) to true else S.get(R.string.status_offline) to false
 }
 
 @Composable
@@ -491,7 +494,7 @@ private fun SafetyActions(
     ) {
         SafetyRow(
             icon = Icons.Filled.Flag,
-            text = if (reported) "✓ تم الإبلاغ" else "الإبلاغ عن المستخدم",
+            text = if (reported) S.get(R.string.discover_reported) else S.get(R.string.chat_report_user),
             enabled = !reported,
             onClick = onReport
         )
@@ -504,7 +507,7 @@ private fun SafetyActions(
         // محظور → «إلغاء الحظر»؛ غير محظور → «حظر المستخدم» (بتأكيد)
         SafetyRow(
             icon = Icons.Filled.Block,
-            text = if (blocked) "إلغاء حظر المستخدم" else "حظر المستخدم",
+            text = if (blocked) S.get(R.string.profile_unblock_user) else S.get(R.string.chat_block_user),
             enabled = true,
             onClick = if (blocked) onUnblock else onBlock
         )
@@ -560,7 +563,7 @@ private fun TopBar(onBack: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "رجوع",
+                contentDescription = S.get(R.string.action_back),
                 tint = Color.White
             )
         }
@@ -610,7 +613,7 @@ private fun HeroSection(user: UserProfile, onOpenPhoto: () -> Unit) {
         if (mainPhoto != null) {
             AsyncImage(
                 model = mainPhoto,
-                contentDescription = "صورة ${user.name ?: "المستخدم"}",
+                contentDescription = S.get(R.string.photo_of_named, user.name ?: S.get(R.string.label_user)),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -661,7 +664,7 @@ private fun LikedYouBadge() {
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Icon(Icons.Filled.Favorite, null, tint = Color.White, modifier = Modifier.size(14.dp))
-        Text("أعجب بك", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(S.get(R.string.profile_liked_you), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -689,7 +692,7 @@ private fun NameRow(user: UserProfile) {
             )
         }
         Text(
-            text = user.name ?: "مستخدم",
+            text = user.name ?: S.get(R.string.label_user),
             color = Color.White,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
@@ -710,19 +713,19 @@ private fun PillsRow(user: UserProfile) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (user.verification?.isVerified == true) {
-            Pill(icon = "✓", text = "موثّق", tint = Color(0xFF2EA9FF))
+            Pill(icon = "✓", text = S.get(R.string.verify_verified), tint = Color(0xFF2EA9FF))
         }
         if (user.isOnline == true) {
             OnlinePill()
         }
         Zodiac.fromBirthDate(user.birthDate)?.let { z ->
-            Pill(icon = z.emoji, text = z.nameAr, tint = Color(0xFFB388FF))
+            Pill(icon = z.emoji, text = z.name, tint = Color(0xFFB388FF))
         }
         Zodiac.birthdayLabel(user.birthDate)?.let { bd ->
             Pill(icon = "🎈", text = bd, tint = Color(0xFFFF5A5F))
         }
         if (user.isPremium == true) {
-            Pill(icon = "👑", text = "مستخدم مميز", tint = Color(0xFFFFC107))
+            Pill(icon = "👑", text = S.get(R.string.profile_premium_user), tint = Color(0xFFFFC107))
         }
     }
 }
@@ -760,7 +763,7 @@ private fun OnlinePill() {
                 .clip(CircleShape)
                 .background(Color(0xFF4CAF50))
         )
-        Text("متصل", color = Color(0xFF4CAF50), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Text(S.get(R.string.status_online), color = Color(0xFF4CAF50), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -816,14 +819,14 @@ private fun LocationCard(user: UserProfile) {
                 modifier = Modifier.size(20.dp)
             )
         },
-        title = "الموقع"
+        title = S.get(R.string.label_location)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             country?.let {
                 Text(text = it.flag, fontSize = 16.sp)
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = it.nameAr,
+                    text = it.name,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 )
@@ -831,7 +834,7 @@ private fun LocationCard(user: UserProfile) {
             user.distance?.let {
                 if (country != null) Spacer(Modifier.width(10.dp))
                 Text(
-                    text = "• ${it.toInt()} كم",
+                    text = S.get(R.string.distance_km_bullet, it.toInt()),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp
                 )
@@ -847,7 +850,7 @@ private fun BioCard(user: UserProfile) {
         icon = {
             Text("📝", fontSize = 18.sp)
         },
-        title = "نبذة عني"
+        title = S.get(R.string.profile_about_me)
     ) {
         Text(
             text = bio,
@@ -873,7 +876,7 @@ private fun PhotosCard(user: UserProfile, onOpenPhoto: (Int) -> Unit) {
             Text("📸", fontSize = 18.sp)
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "الصور",
+                text = S.get(R.string.profile_photos),
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -939,10 +942,10 @@ private fun FloatingActionBar(
     )
     // مظهر زر الصداقة حسب الحالة
     val (friendLabel, friendIcon) = when (friendStatus) {
-        FriendStatus.FRIENDS -> "صديق" to Icons.Filled.HowToReg
-        FriendStatus.PENDING_SENT -> "مُرسل" to Icons.Filled.HourglassTop
-        FriendStatus.PENDING_RECEIVED -> "قبول" to Icons.Filled.PersonAdd
-        FriendStatus.NONE -> "إضافة" to Icons.Filled.PersonAdd
+        FriendStatus.FRIENDS -> S.get(R.string.label_friend) to Icons.Filled.HowToReg
+        FriendStatus.PENDING_SENT -> S.get(R.string.label_request_sent) to Icons.Filled.HourglassTop
+        FriendStatus.PENDING_RECEIVED -> S.get(R.string.action_accept) to Icons.Filled.PersonAdd
+        FriendStatus.NONE -> S.get(R.string.action_add) to Icons.Filled.PersonAdd
     }
     val friendColor = Color(0xFFAB47BC)   // بنفسجي — يميّزه عن بقية الأزرار
     // مملوء عند وجود علاقة قائمة (صديق) أو طلب ينتظر ردّي (لفت الانتباه)
@@ -959,21 +962,21 @@ private fun FloatingActionBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         ProfileActionButton(
-            label = "تخطي",
+            label = S.get(R.string.action_skip),
             icon = Icons.Filled.Close,
             color = Color(0xFFFF5A5F),
             modifier = Modifier.weight(1f)
         ) { HapticHelper.medium(haptic); onSkip() }
 
         ProfileActionButton(
-            label = "مميز",
+            label = S.get(R.string.label_premium),
             icon = Icons.Filled.Star,
             color = Color(0xFF2EA9FF),
             modifier = Modifier.weight(1f)
         ) { HapticHelper.medium(haptic); onSuperLike() }
 
         ProfileActionButton(
-            label = "إعجاب",
+            label = S.get(R.string.action_like),
             icon = Icons.Filled.Favorite,
             color = if (liked) Color(0xFFE91E63) else Color(0xFF4CAF50),
             filled = liked,
@@ -982,7 +985,7 @@ private fun FloatingActionBar(
         ) { HapticHelper.medium(haptic); onLike() }
 
         ProfileActionButton(
-            label = "رسالة",
+            label = S.get(R.string.action_message),
             icon = Icons.AutoMirrored.Filled.Chat,
             color = Color(0xFFE91E8C),
             enabled = messageEnabled,
@@ -1085,7 +1088,7 @@ private fun MessageBottomSheet(
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text = "رسالة إلى ${targetName ?: "المستخدم"}",
+                text = S.get(R.string.message_to_named, targetName ?: S.get(R.string.label_user)),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -1099,7 +1102,7 @@ private fun MessageBottomSheet(
             androidx.compose.material3.OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                placeholder = { Text("اكتب رسالتك…") },
+                placeholder = { Text(S.get(R.string.discover_write_message)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 maxLines = 4
@@ -1112,7 +1115,7 @@ private fun MessageBottomSheet(
                 androidx.compose.material3.OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
-                ) { Text("إلغاء") }
+                ) { Text(S.get(R.string.action_cancel)) }
 
                 androidx.compose.material3.Button(
                     onClick = { onSend(text.trim().ifBlank { null }) },
@@ -1126,7 +1129,7 @@ private fun MessageBottomSheet(
                             modifier = Modifier.size(18.dp)
                         )
                     } else {
-                        Text(if (alreadySent) "✓ تم الإرسال" else "إرسال", fontWeight = FontWeight.Bold)
+                        Text(if (alreadySent) S.get(R.string.label_sent_check) else S.get(R.string.action_send), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1156,21 +1159,21 @@ private fun DeletedAccountState(onBack: () -> Unit) {
         )
         Spacer(Modifier.height(14.dp))
         Text(
-            text = "حساب محذوف",
+            text = S.get(R.string.deleted_account_name),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            text = "قام هذا المستخدم بحذف حسابه، ولم تعد بياناته متاحة",
+            text = S.get(R.string.profile_account_deleted_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
         Spacer(Modifier.height(18.dp))
         androidx.compose.material3.OutlinedButton(onClick = onBack) {
-            Text("رجوع")
+            Text(S.get(R.string.action_back))
         }
     }
 }

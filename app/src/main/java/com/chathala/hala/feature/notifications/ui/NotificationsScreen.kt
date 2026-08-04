@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.notifications.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +43,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -180,19 +181,19 @@ fun NotificationsScreen(
     if (showDeleteAllDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text(stringResource(R.string.notifications_delete_all_title)) },
-            text = { Text(stringResource(R.string.notifications_delete_all_message)) },
+            title = { Text(S.get(R.string.notifications_delete_all_title)) },
+            text = { Text(S.get(R.string.notifications_delete_all_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showDeleteAllDialog = false
                         viewModel.deleteAll()
                     }
-                ) { Text(stringResource(R.string.notifications_delete_all)) }
+                ) { Text(S.get(R.string.notifications_delete_all)) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(S.get(R.string.cancel))
                 }
             }
         )
@@ -214,7 +215,7 @@ private fun NotificationsTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(R.string.notifications_title),
+            text = S.get(R.string.notifications_title),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -240,7 +241,7 @@ private fun NotificationsTopBar(
         ) {
             Icon(
                 imageVector = Icons.Filled.DoneAll,
-                contentDescription = stringResource(R.string.notifications_mark_all_read),
+                contentDescription = S.get(R.string.notifications_mark_all_read),
                 tint = if (canMarkAllRead)
                     MaterialTheme.colorScheme.primary
                 else
@@ -253,7 +254,7 @@ private fun NotificationsTopBar(
         ) {
             Icon(
                 imageVector = Icons.Filled.DeleteSweep,
-                contentDescription = stringResource(R.string.notifications_delete_all),
+                contentDescription = S.get(R.string.notifications_delete_all),
                 tint = if (canDeleteAll)
                     MaterialTheme.colorScheme.error
                 else
@@ -291,7 +292,7 @@ private fun FilterBar(
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     onSelect(f)
                 },
-                label = { Text(stringResource(labelRes)) },
+                label = { Text(S.get(labelRes)) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -461,7 +462,7 @@ private fun SwipeToDeleteRow(
                     )
                     Spacer(Modifier.size(8.dp))
                     Text(
-                        text = stringResource(R.string.notifications_delete_one),
+                        text = S.get(R.string.notifications_delete_one),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onError
                     )

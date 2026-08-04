@@ -1,5 +1,7 @@
 package com.chathala.hala.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -22,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.HalaApp
@@ -60,7 +61,7 @@ fun OfflineBanner(modifier: Modifier = Modifier) {
             )
             Spacer(Modifier.size(10.dp))
             Text(
-                text = stringResource(R.string.offline_banner),
+                text = S.get(R.string.offline_banner),
                 color = Color.White,
                 style = androidx.compose.material3.MaterialTheme.typography
                     .bodyMedium.copy(fontWeight = FontWeight.SemiBold)

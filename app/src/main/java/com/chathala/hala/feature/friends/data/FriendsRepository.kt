@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.friends.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -28,11 +31,11 @@ class FriendsRepository(
     }
 
     suspend fun decline(friendshipId: String): NetworkResult<String> = safeApiCall {
-        api.declineFriendRequest(bearer(), friendshipId).message ?: "تم رفض الطلب"
+        api.declineFriendRequest(bearer(), friendshipId).message ?: S.get(R.string.friend_request_declined)
     }
 
     suspend fun remove(userId: String): NetworkResult<String> = safeApiCall {
-        api.removeFriend(bearer(), userId).message ?: "تمت الإزالة"
+        api.removeFriend(bearer(), userId).message ?: S.get(R.string.friend_removed)
     }
 
     suspend fun list(): NetworkResult<FriendsListData> = safeApiCall {
@@ -45,12 +48,12 @@ class FriendsRepository(
 
     suspend fun setFriendRequestsPrivacy(value: String): NetworkResult<String> = safeApiCall {
         api.updateFriendRequestsPrivacy(bearer(), UpdateFriendRequestsPrivacyBody(value)).message
-            ?: "تم التحديث"
+            ?: S.get(R.string.conv_updated)
     }
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.chathala.hala.HalaApp
 import com.chathala.hala.core.network.ErrorMessages
 import com.chathala.hala.core.network.NetworkResult
+import com.chathala.hala.core.i18n.LocaleManager
+import com.chathala.hala.core.storage.AppLanguage
 import com.chathala.hala.core.storage.AppPreferences
 import com.chathala.hala.core.storage.AppTheme
 import com.chathala.hala.feature.auth.data.AuthRepository
@@ -31,6 +33,8 @@ class SettingsViewModel(
 
     val theme: Flow<AppTheme> = prefs.theme
 
+    val language: Flow<AppLanguage> = prefs.language
+
     val currentUser: StateFlow<User?> = userRepo.currentUser.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -45,6 +49,15 @@ class SettingsViewModel(
 
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch { prefs.setTheme(theme) }
+    }
+
+    /**
+     * التبديل فوري: نحدّث [LocaleManager] مباشرةً (حالة Compose) قبل الكتابة في DataStore
+     * حتى لا ينتظر المستخدم دورة الـ Flow.
+     */
+    fun setLanguage(language: AppLanguage) {
+        LocaleManager.setLanguage(language)
+        viewModelScope.launch { prefs.setLanguage(language) }
     }
 
     fun logout(onDone: () -> Unit) {

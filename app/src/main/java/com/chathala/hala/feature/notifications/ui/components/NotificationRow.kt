@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.notifications.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.border
@@ -100,7 +102,7 @@ fun NotificationRow(
                             )
                             Spacer(Modifier.size(4.dp))
                             Text(
-                                text = "هلا • حساب رسمي",
+                                text = S.get(R.string.notif_official_account),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -128,7 +130,7 @@ fun NotificationRow(
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = NotificationFormat.timeAgoArabic(item.createdAt),
+                            text = NotificationFormat.timeAgo(item.createdAt),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -314,18 +316,18 @@ private fun typeBadge(type: String?): Pair<ImageVector, Color>? = when (type) {
 }
 
 private fun typeTitle(type: String?): String = when (type) {
-    "like", "new_like" -> "إعجاب جديد"
-    "super_like" -> "سوبر لايك"
-    "match", "new_match" -> "مطابقة جديدة"
-    "profile_view" -> "زيارة لبروفايلك"
-    "new_follower" -> "متابع جديد"
-    "friend_request" -> "طلب صداقة"
-    "friend_accepted" -> "تمت إضافتك صديقاً"
-    "verification" -> "تحقق من الحساب"
-    "warning", "official_warning" -> "تنبيه من الإدارة"
-    "account_suspended" -> "تعليق الحساب"
-    "account_restricted", "restriction" -> "قيود على الحساب"
-    "security_alert" -> "تنبيه أمني"
-    "announcement", "broadcast" -> "إعلان"
-    else -> "إشعار"
+    "like", "new_like" -> S.get(R.string.notif_new_like)
+    "super_like" -> S.get(R.string.notif_super_like)
+    "match", "new_match" -> S.get(R.string.notif_new_match)
+    "profile_view" -> S.get(R.string.notif_profile_visit)
+    "new_follower" -> S.get(R.string.notif_new_follower)
+    "friend_request" -> S.get(R.string.notif_friend_request)
+    "friend_accepted" -> S.get(R.string.notif_friend_added)
+    "verification" -> S.get(R.string.notif_account_verification)
+    "warning", "official_warning" -> S.get(R.string.notif_admin_alert)
+    "account_suspended" -> S.get(R.string.notif_account_suspended)
+    "account_restricted", "restriction" -> S.get(R.string.notif_account_restricted)
+    "security_alert" -> S.get(R.string.notif_security_alert)
+    "announcement", "broadcast" -> S.get(R.string.notif_announcement)
+    else -> S.get(R.string.notif_generic)
 }

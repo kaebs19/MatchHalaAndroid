@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -71,7 +74,7 @@ fun SwipeActionButtons(
             iconSize = 18.dp,
             color = Color(0xFF1DD1B1),
             onClick = { HapticHelper.light(haptic); onUndo() },
-            contentLabel = "تراجع",
+            contentLabel = S.get(R.string.action_undo),
             showCrown = !isPremium,
             enabled = canUndo || !isPremium,
             isFilled = false
@@ -82,7 +85,7 @@ fun SwipeActionButtons(
             iconSize = 24.dp,
             color = Color(0xFFFF5A5F),
             onClick = { HapticHelper.medium(haptic); onSkip() },
-            contentLabel = "تخطي",
+            contentLabel = S.get(R.string.action_skip),
             isFilled = false
         )
         ActionButton(
@@ -91,7 +94,7 @@ fun SwipeActionButtons(
             iconSize = 20.dp,
             color = MaterialTheme.colorScheme.primary,
             onClick = { HapticHelper.light(haptic); onMessage() },
-            contentLabel = "إرسال رسالة",
+            contentLabel = S.get(R.string.action_send_message),
             isFilled = false
         )
         ActionButton(
@@ -100,7 +103,7 @@ fun SwipeActionButtons(
             iconSize = 20.dp,
             color = Color(0xFF2EA9FF),
             onClick = { HapticHelper.medium(haptic); onSuperLike() },
-            contentLabel = "إعجاب مميز",
+            contentLabel = S.get(R.string.action_super_like),
             showCrown = !isPremium,
             isFilled = false
         )
@@ -110,7 +113,7 @@ fun SwipeActionButtons(
             iconSize = 24.dp,
             color = if (isLiked) Color(0xFFE91E63) else Color(0xFF4CAF50),
             onClick = { HapticHelper.medium(haptic); onLike() },
-            contentLabel = "إعجاب",
+            contentLabel = S.get(R.string.action_like),
             isFilled = isLiked
         )
     }

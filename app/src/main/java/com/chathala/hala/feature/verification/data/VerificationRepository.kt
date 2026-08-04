@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.verification.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.content.Context
 import android.net.Uri
 import com.chathala.hala.core.network.ApiClient
@@ -21,14 +24,14 @@ class VerificationRepository(
 
     suspend fun submit(context: Context, selfieUri: Uri): NetworkResult<String> = safeApiCall {
         val part = MediaUploadHelper.uriToImagePart(context, selfieUri, fieldName = "selfie")
-            ?: throw IllegalStateException("تعذّر قراءة الصورة")
+            ?: throw IllegalStateException(S.get(R.string.msg_image_read_failed))
         val resp = api.submitVerification(bearer(), part)
-        resp.message ?: "تم إرسال الطلب"
+        resp.message ?: S.get(R.string.conv_request_sent)
     }
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.blocking.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -113,16 +116,16 @@ fun BlockedUsersScreen(
         AlertDialog(
             onDismissRequest = { toUnblock = null },
             shape = RoundedCornerShape(20.dp),
-            title = { Text("إلغاء حظر ${target.name ?: "المستخدم"}") },
-            text = { Text("سيتمكن هذا المستخدم من التواصل معك مجدداً.") },
+            title = { Text(S.get(R.string.block_unblock_named, target.name ?: S.get(R.string.label_user))) },
+            text = { Text(S.get(R.string.block_unblock_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.unblock(target)
                     toUnblock = null
-                }) { Text("إلغاء الحظر") }
+                }) { Text(S.get(R.string.block_unblock)) }
             },
             dismissButton = {
-                TextButton(onClick = { toUnblock = null }) { Text("إلغاء") }
+                TextButton(onClick = { toUnblock = null }) { Text(S.get(R.string.action_cancel)) }
             }
         )
     }
@@ -143,13 +146,13 @@ private fun TopBar(count: Int, onBack: () -> Unit) {
         }
         Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
             Text(
-                text = "المحظورون",
+                text = S.get(R.string.blocked_list_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
             if (count > 0) {
                 Text(
-                    text = "$count مستخدم",
+                    text = S.plural(R.plurals.blocked_users_count, count),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -195,7 +198,7 @@ private fun BlockedUserRow(
             Spacer(Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = user.name ?: "مستخدم",
+                    text = user.name ?: S.get(R.string.label_user),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -218,7 +221,7 @@ private fun BlockedUserRow(
                         modifier = Modifier.size(14.dp)
                     )
                 } else {
-                    Text("إلغاء الحظر", color = MaterialTheme.colorScheme.primary)
+                    Text(S.get(R.string.block_unblock), color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -240,14 +243,14 @@ private fun EmptyState() {
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = "لا يوجد مستخدمون محظورون",
+            text = S.get(R.string.blocked_empty_title),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            text = "عند حظر أحد المستخدمين سيظهر هنا لإلغاء الحظر.",
+            text = S.get(R.string.blocked_empty_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

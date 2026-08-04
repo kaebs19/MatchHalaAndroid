@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -49,7 +52,7 @@ fun ProfilePillsRow(
         if (!gender.isNullOrBlank()) {
             val isMale = gender == "male"
             Pill(
-                text = if (isMale) "ذكر" else "أنثى",
+                text = if (isMale) S.get(R.string.gender_male_short) else S.get(R.string.gender_female_short),
                 icon = if (isMale) Icons.Filled.Male else Icons.Filled.Female,
                 accent = if (isMale) ProfilePalette.Gender else Color(0xFFFF4D8F)
             )

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +83,7 @@ fun ExternalPromoBlockedDialog(
         ) {
             // العنوان
             Text(
-                text = info.title ?: "تم حجب رسالتك",
+                text = info.title ?: S.get(R.string.msg_blocked_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
@@ -90,7 +93,7 @@ fun ExternalPromoBlockedDialog(
 
             // الوصف
             Text(
-                text = info.message ?: "تم التعرف تلقائياً على مشاركة حساب خارجي. سياسة المنصة تمنع ذلك، وتكرار مشاركة حسابات أو أرقام يقيّد حسابك آلياً.",
+                text = info.message ?: S.get(R.string.msg_blocked_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -108,7 +111,7 @@ fun ExternalPromoBlockedDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "التحذير",
+                    text = S.get(R.string.label_warning),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -134,7 +137,7 @@ fun ExternalPromoBlockedDialog(
             Spacer(Modifier.height(16.dp))
 
             // رسالة السيرفر التفصيلية (إذا وُجدت)
-            val detailMsg = info.serverMessage ?: "تم التعرف تلقائياً على مشاركة حساب خارجي. سياسة المنصة تمنع نشر أو طلب الحسابات والأرقام، وتكرار ذلك يقيّد حسابك تلقائياً — رسائلك أمانة، حافظ على التواصل داخل التطبيق."
+            val detailMsg = info.serverMessage ?: S.get(R.string.promo_blocked_desc)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,15 +159,15 @@ fun ExternalPromoBlockedDialog(
             PromoInfoRow(
                 icon = Icons.Filled.AutoFixHigh,
                 iconTint = Color(0xFF9E9E9E),
-                title = "كشف تلقائي",
-                description = "النظام يكشف الحسابات الخارجية تلقائياً. يُرجى الالتزام بسياسة التطبيق."
+                title = S.get(R.string.promo_auto_detect_title),
+                description = S.get(R.string.promo_auto_detect_desc)
             )
             Spacer(Modifier.height(10.dp))
             PromoInfoRow(
                 icon = Icons.Filled.Shield,
                 iconTint = Color(0xFF6A1B9A),
-                title = "رسائلك أمانة",
-                description = "نحرص على بقاء التواصل داخل المنصة لحمايتك وحماية الطرف الآخر."
+                title = S.get(R.string.promo_trust_title),
+                description = S.get(R.string.promo_trust_desc)
             )
 
             // الكلمات المكتشفة
@@ -179,7 +182,7 @@ fun ExternalPromoBlockedDialog(
                 ) {
                     Column {
                         Text(
-                            text = "الكلمات المكتشفة:",
+                            text = S.get(R.string.promo_detected_words),
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                             color = OrangeColor
                         )
@@ -218,7 +221,7 @@ fun ExternalPromoBlockedDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = OrangeColor)
             ) {
                 Text(
-                    text = "فهمت والتزم",
+                    text = S.get(R.string.promo_understood),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = Color.White
                 )
@@ -232,7 +235,7 @@ fun ExternalPromoBlockedDialog(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "استئناف الحجب",
+                        text = S.get(R.string.promo_appeal_title),
                         style = MaterialTheme.typography.bodyMedium,
                         color = OrangeColor
                     )
@@ -250,11 +253,11 @@ private fun AppealDialog(
     var reason by remember { mutableStateOf("") }
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("استئناف الحجب") },
+        title = { Text(S.get(R.string.promo_appeal_title)) },
         text = {
             Column {
                 Text(
-                    text = "اكتب سبب استئنافك. سيتم مراجعته في أقرب فرصة ممكنة.",
+                    text = S.get(R.string.promo_appeal_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -262,7 +265,7 @@ private fun AppealDialog(
                 OutlinedTextField(
                     value = reason,
                     onValueChange = { reason = it },
-                    placeholder = { Text("سبب الاستئناف...") },
+                    placeholder = { Text(S.get(R.string.promo_appeal_hint)) },
                     maxLines = 4,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -272,10 +275,10 @@ private fun AppealDialog(
             Button(
                 onClick = { onSubmit(reason.trim()) },
                 enabled = reason.isNotBlank()
-            ) { Text("إرسال") }
+            ) { Text(S.get(R.string.action_send)) }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("إلغاء") }
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) }
         }
     )
 }

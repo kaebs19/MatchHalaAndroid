@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.userprofile.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -13,12 +16,12 @@ class UserProfileRepository(
 ) {
     suspend fun fetch(userId: String): NetworkResult<UserProfile> = safeApiCall {
         val resp = api.getUserProfile(bearer(), userId)
-        resp.data?.user ?: throw IllegalStateException("بيانات البروفايل غير متوفرة")
+        resp.data?.user ?: throw IllegalStateException(S.get(R.string.err_profile_data_unavailable))
     }
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

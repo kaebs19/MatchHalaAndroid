@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.notifications.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -54,7 +57,7 @@ class NotificationsRepository(
             group = group,
             markRead = markRead
         )
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     /** مزامنة خفيفة لعدد غير المقروء فقط — للـ badge في شريط التبويبات. */
@@ -74,27 +77,27 @@ class NotificationsRepository(
 
     suspend fun markRead(id: String): NetworkResult<String> = safeApiCall {
         val resp = api.markNotificationRead(bearer(), id)
-        resp.message ?: "تم تحديث الإشعار"
+        resp.message ?: S.get(R.string.notif_updated_one)
     }
 
     suspend fun markAllRead(): NetworkResult<String> = safeApiCall {
         val resp = api.markAllNotificationsRead(bearer())
-        resp.message ?: "تم تحديث الإشعارات"
+        resp.message ?: S.get(R.string.notif_updated_all)
     }
 
     suspend fun delete(id: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteNotification(bearer(), id)
-        resp.message ?: "تم حذف الإشعار"
+        resp.message ?: S.get(R.string.notif_deleted_one)
     }
 
     suspend fun deleteAll(): NetworkResult<String> = safeApiCall {
         val resp = api.deleteAllNotifications(bearer())
-        resp.message ?: "تم حذف جميع الإشعارات"
+        resp.message ?: S.get(R.string.notif_deleted_all)
     }
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

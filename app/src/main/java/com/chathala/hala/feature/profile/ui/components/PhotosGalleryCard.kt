@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -37,7 +38,7 @@ fun PhotosGalleryCard(
 
     ProfileSectionCard(
         modifier = modifier,
-        title = stringResource(R.string.profile_section_photos),
+        title = S.get(R.string.profile_section_photos),
         titleIcon = Icons.Filled.PhotoLibrary,
         titleIconTint = ProfilePalette.Interests,
         countBadge = photos.size

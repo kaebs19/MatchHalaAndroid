@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.pending
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -159,7 +162,7 @@ private fun TopBar(onBack: () -> Unit) {
             )
         }
         Text(
-            text = "طلبات المحادثة",
+            text = S.get(R.string.pending_requests_title),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 4.dp)
@@ -181,13 +184,13 @@ private fun TabRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         TabPill(
-            label = "مستلمة",
+            label = S.get(R.string.pending_received),
             count = receivedCount,
             selected = selected == PendingTab.RECEIVED,
             onClick = { onSelect(PendingTab.RECEIVED) }
         )
         TabPill(
-            label = "مرسلة",
+            label = S.get(R.string.pending_sent),
             count = sentCount,
             selected = selected == PendingTab.SENT,
             onClick = { onSelect(PendingTab.SENT) }
@@ -276,7 +279,7 @@ private fun RequestListItem(
                 // السطر الأول: الاسم (+ توثيق) واليمين الوقت
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = creator?.name ?: "مستخدم",
+                        text = creator?.name ?: S.get(R.string.label_user),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onBackground,
                         maxLines = 1,
@@ -294,7 +297,7 @@ private fun RequestListItem(
                     }
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = NotificationFormat.timeAgoArabic(request.createdAt),
+                        text = NotificationFormat.timeAgo(request.createdAt),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -304,7 +307,7 @@ private fun RequestListItem(
                 val initial = request.initialMessage?.content?.takeIf { it.isNotBlank() }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = initial ?: if (isSent) "بانتظار الرد" else "يريد التحدث معك",
+                        text = initial ?: if (isSent) S.get(R.string.pending_awaiting_reply) else S.get(R.string.pending_wants_to_talk),
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (initial != null)
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -345,7 +348,7 @@ private fun NewBadge() {
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(
-            text = "جديد",
+            text = S.get(R.string.label_new),
             color = Color.White,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold
@@ -422,7 +425,7 @@ private fun EmptyPending(tab: PendingTab) {
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = if (tab == PendingTab.RECEIVED) "لا توجد طلبات مستلمة" else "لا توجد طلبات مرسلة",
+            text = if (tab == PendingTab.RECEIVED) S.get(R.string.pending_empty_received) else S.get(R.string.pending_empty_sent),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
@@ -430,9 +433,9 @@ private fun EmptyPending(tab: PendingTab) {
         Spacer(Modifier.height(8.dp))
         Text(
             text = if (tab == PendingTab.RECEIVED)
-                "ستظهر هنا طلبات المحادثة الواردة إليك."
+                S.get(R.string.pending_empty_received_desc)
             else
-                "الطلبات التي ترسلها للمستخدمين تظهر هنا حتى يتم الرد عليها.",
+                S.get(R.string.pending_empty_sent_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

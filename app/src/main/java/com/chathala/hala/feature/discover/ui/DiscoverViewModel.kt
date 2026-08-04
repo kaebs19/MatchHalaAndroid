@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -220,9 +223,9 @@ class DiscoverViewModel(
                         )
                     }
                     val msg = r.data.message ?: if (r.data.isExisting)
-                        "محادثة موجودة — افتحها"
+                        S.get(R.string.discover_chat_exists)
                     else
-                        "تم إرسال الطلب"
+                        S.get(R.string.conv_request_sent)
                     _message.tryEmit(msg)
                     // إذا موجودة مسبقاً → افتحها فقط عند الطلب الصريح (زر «رسالة»)
                     val convId = r.data.conversationId
@@ -255,11 +258,11 @@ class DiscoverViewModel(
         if (!alreadyLiked) {
             _state.update { it.copy(likedIds = it.likedIds + card.id) }  // تغيّر اللون فوراً
             val name = card.name?.takeIf { it.isNotBlank() }
-            _message.tryEmit(if (name != null) "تم الإعجاب بـ $name ❤️" else "تم الإعجاب ❤️")
+            _message.tryEmit(if (name != null) S.get(R.string.discover_liked_named, name) else S.get(R.string.discover_liked))
             viewModelScope.launch {
                 when (val r = repo.recordSwipe(card.id, "like")) {
                     is NetworkResult.Success ->
-                        if (r.data.matched) _message.tryEmit(r.data.message ?: "تطابق جديد! 🎉")
+                        if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
                     is NetworkResult.Error -> { /* «سبق السوايب» وغيره → تجاهل بهدوء، نُبقي اللون */ }
                 }
             }
@@ -275,7 +278,7 @@ class DiscoverViewModel(
         viewModelScope.launch {
             when (val r = repo.recordSwipe(card.id, "superlike")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(r.data.message ?: "تطابق جديد! 🎉")
+                    if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
                 is NetworkResult.Error -> {
                     // مثل تجاوز الحد اليومي → أظهر الرسالة وأعِد لون الزر
                     _state.update { it.copy(likedIds = it.likedIds - card.id) }

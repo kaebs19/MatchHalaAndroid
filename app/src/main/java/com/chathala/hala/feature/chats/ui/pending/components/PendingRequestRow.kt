@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.pending.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -78,7 +81,7 @@ fun PendingRequestRow(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = creator?.name ?: "مستخدم",
+                            text = creator?.name ?: S.get(R.string.label_user),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -94,7 +97,7 @@ fun PendingRequestRow(
                     }
                     Spacer(Modifier.size(2.dp))
                     Text(
-                        text = NotificationFormat.timeAgoArabic(request.createdAt),
+                        text = NotificationFormat.timeAgo(request.createdAt),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -140,14 +143,14 @@ fun PendingRequestRow(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.size(4.dp))
-                    Text("رفض")
+                    Text(S.get(R.string.action_decline))
                 }
                 TextButton(
                     onClick = onAcceptWithMessage,
                     enabled = !isProcessing,
                     modifier = Modifier.weight(1.2f)
                 ) {
-                    Text("قبول + ترحيب")
+                    Text(S.get(R.string.action_accept_greet))
                 }
                 FilledTonalButton(
                     onClick = onAccept,
@@ -171,7 +174,7 @@ fun PendingRequestRow(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.size(4.dp))
-                        Text("قبول")
+                        Text(S.get(R.string.action_accept))
                     }
                 }
             }
@@ -230,7 +233,7 @@ private fun SuperLikeBanner() {
         )
         Spacer(Modifier.size(6.dp))
         Text(
-            text = "Super Like — إعجاب مميز",
+            text = S.get(R.string.super_like_label),
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.tertiary
         )

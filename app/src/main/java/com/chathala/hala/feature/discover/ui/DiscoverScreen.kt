@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -268,11 +271,11 @@ fun DiscoverScreen(
 /** تسمية احترافية لعدد المتاحين — مجمّعة بلا رقم دقيق ولا تنازل مع كل سحب. */
 private fun availableUsersLabel(total: Int): String? = when {
     total <= 0 -> null
-    total >= 100 -> "أكثر من 100 شخص متاح"
-    total >= 50 -> "أكثر من 50 شخص متاح"
-    total >= 20 -> "أكثر من 20 شخص متاح"
-    total >= 10 -> "أكثر من 10 أشخاص متاحين"
-    else -> "أشخاص متاحون الآن"
+    total >= 100 -> S.get(R.string.discover_available_100)
+    total >= 50 -> S.get(R.string.discover_available_50)
+    total >= 20 -> S.get(R.string.discover_available_20)
+    total >= 10 -> S.get(R.string.discover_available_10)
+    else -> S.get(R.string.discover_available_now)
 }
 
 @Composable
@@ -296,7 +299,7 @@ private fun TopBar(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "اكتشف",
+                text = S.get(R.string.discover_title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -311,7 +314,7 @@ private fun TopBar(
         IconButton(onClick = onSearchClick) {
             Icon(
                 imageVector = Icons.Filled.Search,
-                contentDescription = "بحث عن مستخدمين",
+                contentDescription = S.get(R.string.discover_search_users),
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }
@@ -319,7 +322,7 @@ private fun TopBar(
             IconButton(onClick = onFiltersClick) {
                 Icon(
                     imageVector = Icons.Filled.FilterList,
-                    contentDescription = "تخصيص البحث",
+                    contentDescription = S.get(R.string.discover_customize_search),
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -350,13 +353,13 @@ private fun VisitorsPill(isPremium: Boolean, onClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Filled.Visibility,
-                contentDescription = "الزوار",
+                contentDescription = S.get(R.string.visitors_title_short),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(Modifier.width(6.dp))
             Text(
-                text = "الزوار",
+                text = S.get(R.string.visitors_title_short),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -481,7 +484,7 @@ private fun NativeAdOverlay(onDismiss: () -> Unit) {
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text(
-                        text = "متابعة",
+                        text = S.get(R.string.action_continue),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
                     )
                 }
@@ -505,14 +508,14 @@ private fun EmptyDiscover(onRefresh: () -> Unit) {
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = "انتهت البطاقات",
+            text = S.get(R.string.discover_cards_finished),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "اسحب للأسفل للتحديث أو جرّب تعديل الفلاتر",
+            text = S.get(R.string.discover_cards_finished_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -526,15 +529,15 @@ private fun hasActiveFilters(f: com.chathala.hala.feature.discover.data.Discover
 
 private enum class PremiumGateReason(val title: String, val message: String) {
     SUPER_LIKE(
-        title = "الإعجاب المميز للبريميوم",
-        message = "اظهر باهتمامك الفوري واحصل على انتباه أكبر مع الإعجاب المميز. متاح لمشتركي البريميوم."
+        title = S.get(R.string.gate_superlike_title),
+        message = S.get(R.string.gate_superlike_desc)
     ),
     UNDO(
-        title = "التراجع للبريميوم",
-        message = "سحبت بالخطأ؟ بإمكان مشتركي البريميوم التراجع عن آخر حركة واستعادة البطاقة."
+        title = S.get(R.string.gate_undo_title),
+        message = S.get(R.string.gate_undo_desc)
     ),
     FILTERS(
-        title = "الفلترة المتقدّمة للبريميوم",
-        message = "صفِّ نتائج التعارف حسب العمر والدولة والأكثر نشاطاً — الفلترة متاحة لمشتركي البريميوم."
+        title = S.get(R.string.gate_filters_title),
+        message = S.get(R.string.gate_filters_desc)
     )
 }

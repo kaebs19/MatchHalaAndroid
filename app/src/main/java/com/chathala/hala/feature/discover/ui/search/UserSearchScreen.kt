@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.discover.ui.search
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,7 +63,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -121,8 +122,8 @@ fun UserSearchScreen(
     }
     if (showGate) {
         PremiumGateDialog(
-            title = stringResource(R.string.premium_filter_gate_title),
-            message = stringResource(R.string.premium_filter_gate_msg),
+            title = S.get(R.string.premium_filter_gate_title),
+            message = S.get(R.string.premium_filter_gate_msg),
             onDismiss = { showGate = false },
             onUpgrade = {
                 showGate = false
@@ -147,7 +148,7 @@ fun UserSearchScreen(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
+                    contentDescription = S.get(R.string.back),
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -155,13 +156,13 @@ fun UserSearchScreen(
                 value = state.query,
                 onValueChange = viewModel::onQueryChange,
                 modifier = Modifier.weight(1f).focusRequester(focusRequester),
-                placeholder = { Text(stringResource(R.string.user_search_hint)) },
+                placeholder = { Text(S.get(R.string.user_search_hint)) },
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 trailingIcon = {
                     if (state.query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onQueryChange("") }) {
-                            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cancel))
+                            Icon(Icons.Filled.Close, contentDescription = S.get(R.string.cancel))
                         }
                     }
                 },
@@ -180,7 +181,7 @@ fun UserSearchScreen(
                 IconButton(onClick = onFiltersClick) {
                     Icon(
                         imageVector = Icons.Filled.Tune,
-                        contentDescription = stringResource(R.string.search_filters_title),
+                        contentDescription = S.get(R.string.search_filters_title),
                         tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
@@ -201,8 +202,8 @@ fun UserSearchScreen(
                     state.error != null -> ErrorState(message = state.error ?: "", onRetry = viewModel::retry)
                     state.searched && state.results.isEmpty() -> EmptyState(
                         icon = Icons.Filled.PersonSearch,
-                        title = stringResource(R.string.user_search_empty_title),
-                        subtitle = stringResource(R.string.user_search_empty_desc)
+                        title = S.get(R.string.user_search_empty_title),
+                        subtitle = S.get(R.string.user_search_empty_desc)
                     )
                     else -> ResultsList(
                         results = state.results,
@@ -218,8 +219,8 @@ fun UserSearchScreen(
 
                 state.premium.isEmpty() && state.online.isEmpty() && state.recent.isEmpty() -> EmptyState(
                     icon = Icons.Filled.Search,
-                    title = stringResource(R.string.user_search_prompt_title),
-                    subtitle = stringResource(R.string.user_search_prompt_desc)
+                    title = S.get(R.string.user_search_prompt_title),
+                    subtitle = S.get(R.string.user_search_prompt_desc)
                 )
 
                 else -> SuggestionsList(
@@ -340,9 +341,9 @@ private fun SuggestionsList(
                     modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    SectionHeader(icon = Icons.Filled.History, text = stringResource(R.string.user_search_section_recent))
+                    SectionHeader(icon = Icons.Filled.History, text = S.get(R.string.user_search_section_recent))
                     Spacer(Modifier.weight(1f))
-                    TextButton(onClick = onClearRecent) { Text(stringResource(R.string.user_search_clear_recent)) }
+                    TextButton(onClick = onClearRecent) { Text(S.get(R.string.user_search_clear_recent)) }
                 }
             }
             item(key = "recent_chips") {
@@ -361,7 +362,7 @@ private fun SuggestionsList(
         if (premium.isNotEmpty()) {
             item(key = "premium_header") {
                 Box(Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)) {
-                    SectionHeader(icon = Icons.Filled.WorkspacePremium, text = stringResource(R.string.user_search_section_premium), iconTint = GoldColor)
+                    SectionHeader(icon = Icons.Filled.WorkspacePremium, text = S.get(R.string.user_search_section_premium), iconTint = GoldColor)
                 }
             }
             item(key = "premium_carousel") {
@@ -379,7 +380,7 @@ private fun SuggestionsList(
         if (online.isNotEmpty()) {
             item(key = "online_header") {
                 Box(Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) {
-                    SectionHeader(icon = Icons.Filled.FiberManualRecord, text = stringResource(R.string.user_search_section_online), iconTint = OnlineColor)
+                    SectionHeader(icon = Icons.Filled.FiberManualRecord, text = S.get(R.string.user_search_section_online), iconTint = OnlineColor)
                 }
             }
             online.forEachIndexed { index, user ->
@@ -483,7 +484,7 @@ private fun RecentChip(term: String, onClick: () -> Unit, onRemove: () -> Unit) 
         Spacer(Modifier.width(4.dp))
         Icon(
             Icons.Filled.Close,
-            contentDescription = stringResource(R.string.cancel),
+            contentDescription = S.get(R.string.cancel),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(16.dp).clip(CircleShape).clickable(onClick = onRemove).padding(1.dp)
         )
@@ -640,5 +641,5 @@ private fun EmptyState(
 private fun countryText(code: String?): String? {
     if (code.isNullOrBlank()) return null
     val c = Countries.byCode(code)
-    return if (c != null) "${c.flag} ${c.nameAr}" else code
+    return if (c != null) "${c.flag} ${c.name}" else code
 }

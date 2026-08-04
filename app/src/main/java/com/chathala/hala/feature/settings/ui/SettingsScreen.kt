@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Notifications
@@ -49,12 +52,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chathala.hala.R
+import com.chathala.hala.core.i18n.LocaleManager
+import com.chathala.hala.core.storage.AppLanguage
 import com.chathala.hala.core.storage.AppTheme
 import com.chathala.hala.core.util.showToast
 import com.chathala.hala.ui.components.HalaSnackbarHost
@@ -78,8 +82,10 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 ) {
     val theme by viewModel.theme.collectAsStateWithLifecycle(initialValue = AppTheme.SYSTEM)
+    val language by viewModel.language.collectAsStateWithLifecycle(initialValue = LocaleManager.current)
 
     var showThemeSheet by remember { mutableStateOf(false) }
+    var showLanguageSheet by remember { mutableStateOf(false) }
     val snackbarHost = rememberHalaSnackbarHost()
 
     LaunchedEffect(Unit) {
@@ -95,111 +101,121 @@ fun SettingsScreen(
             SettingsHeader(onBack = onBack)
             Spacer(Modifier.height(8.dp))
 
-            SettingsSection(title = "الاشتراك") {
+            SettingsSection(title = S.get(R.string.settings_subscription)) {
                 SettingsItem(
                     icon = Icons.Filled.Star,
                     iconTint = Color(0xFFFFC107),
-                    label = "هلا بريميوم",
-                    value = "ترقية",
+                    label = S.get(R.string.premium_title),
+                    value = S.get(R.string.action_upgrade),
                     onClick = onOpenPremium
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
+            SettingsSection(title = S.get(R.string.settings_section_appearance)) {
                 SettingsItem(
                     icon = Icons.Filled.Palette,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.settings_appearance_mode),
+                    label = S.get(R.string.settings_appearance_mode),
                     value = when (theme) {
-                        AppTheme.SYSTEM -> stringResource(R.string.settings_theme_system)
-                        AppTheme.LIGHT -> stringResource(R.string.settings_theme_light)
-                        AppTheme.DARK -> stringResource(R.string.settings_theme_dark)
+                        AppTheme.SYSTEM -> S.get(R.string.settings_theme_system)
+                        AppTheme.LIGHT -> S.get(R.string.settings_theme_light)
+                        AppTheme.DARK -> S.get(R.string.settings_theme_dark)
                     },
                     onClick = { showThemeSheet = true }
                 )
+                SettingsItem(
+                    icon = Icons.Filled.Language,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    label = S.get(R.string.settings_language),
+                    value = when (language) {
+                        AppLanguage.ARABIC -> "العربية"
+                        AppLanguage.ENGLISH -> "English"
+                    },
+                    onClick = { showLanguageSheet = true }
+                )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_notifications)) {
+            SettingsSection(title = S.get(R.string.settings_section_notifications)) {
                 SettingsItem(
                     icon = Icons.Filled.Notifications,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.notif_settings_title),
+                    label = S.get(R.string.notif_settings_title),
                     onClick = onOpenNotificationSettings
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_discover)) {
+            SettingsSection(title = S.get(R.string.settings_section_discover)) {
                 SettingsItem(
                     icon = Icons.Filled.Explore,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.discover_settings_title),
+                    label = S.get(R.string.discover_settings_title),
                     onClick = onOpenDiscoverSettings
                 )
             }
 
-            SettingsSection(title = "تفضيلات المحتوى") {
+            SettingsSection(title = S.get(R.string.settings_content_prefs)) {
                 SettingsItem(
                     icon = Icons.Filled.VisibilityOff,
                     iconTint = Color(0xFFE91E8C),
-                    label = "المحتوى الحساس",
+                    label = S.get(R.string.settings_sensitive_content),
                     onClick = onOpenContentSettings
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_privacy_security)) {
+            SettingsSection(title = S.get(R.string.settings_section_privacy_security)) {
                 SettingsItem(
                     icon = Icons.Filled.PrivacyTip,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.privacy_title),
+                    label = S.get(R.string.privacy_title),
                     onClick = onOpenPrivacySettings
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_account_settings)) {
+            SettingsSection(title = S.get(R.string.settings_section_account_settings)) {
                 SettingsItem(
                     icon = Icons.Filled.ManageAccounts,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.settings_section_account_settings),
+                    label = S.get(R.string.settings_section_account_settings),
                     trailing = { AccountStatusBadge() },
                     onClick = onOpenAccountSettings
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_docs)) {
+            SettingsSection(title = S.get(R.string.settings_section_docs)) {
                 SettingsItem(
                     icon = Icons.Filled.Description,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.terms_title),
+                    label = S.get(R.string.terms_title),
                     onClick = onOpenTerms
                 )
                 SettingsItem(
                     icon = Icons.Filled.Shield,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.privacy_policy_doc),
+                    label = S.get(R.string.privacy_policy_doc),
                     onClick = onOpenPrivacy
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_about)) {
+            SettingsSection(title = S.get(R.string.settings_section_about)) {
                 SettingsItem(
                     icon = Icons.Filled.Info,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.about_title),
+                    label = S.get(R.string.about_title),
                     onClick = onOpenAbout
                 )
                 SettingsItem(
                     icon = Icons.Filled.ContactSupport,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    label = stringResource(R.string.contact_title),
+                    label = S.get(R.string.contact_title),
                     onClick = onOpenContact
                 )
             }
 
-            SettingsSection(title = stringResource(R.string.settings_section_account)) {
+            SettingsSection(title = S.get(R.string.settings_section_account)) {
                 SettingsItem(
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
                     iconTint = MaterialTheme.colorScheme.error,
-                    label = stringResource(R.string.settings_logout),
+                    label = S.get(R.string.settings_logout),
                     onClick = { viewModel.logout(onLoggedOut) }
                 )
             }
@@ -211,6 +227,10 @@ fun SettingsScreen(
             hostState = snackbarHost,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+
+    if (showLanguageSheet) {
+        LanguagePickerSheet(onDismiss = { showLanguageSheet = false })
     }
 
     if (showThemeSheet) {
@@ -234,7 +254,7 @@ private fun SettingsHeader(onBack: () -> Unit) {
             )
         }
         Text(
-            text = stringResource(R.string.settings_title),
+            text = S.get(R.string.settings_title),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(start = 8.dp)
@@ -325,9 +345,9 @@ private fun AccountStatusBadge() {
     val st = standing ?: return
     if (st == "good") return // لا نعرض شيئاً عند السلامة
     val (color, label) = when (st) {
-        "warning" -> Color(0xFFFFB300) to "تحذير"
-        "restricted" -> Color(0xFFFF8C00) to "مقيّد"
-        "suspended" -> Color(0xFFE53935) to "معلّق"
+        "warning" -> Color(0xFFFFB300) to S.get(R.string.label_warning_short)
+        "restricted" -> Color(0xFFFF8C00) to S.get(R.string.label_restricted)
+        "suspended" -> Color(0xFFE53935) to S.get(R.string.label_suspended)
         else -> return
     }
     Row(verticalAlignment = Alignment.CenterVertically) {

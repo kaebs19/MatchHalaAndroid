@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -75,26 +78,26 @@ private data class Style(
 private fun verificationStyle(isVerified: Boolean, status: String?): Style = when {
     isVerified || status == "verified" -> Style(
         icon = Icons.Filled.Verified,
-        title = "موثّق",
-        subtitle = "تم التحقق من حسابك بنجاح",
+        title = S.get(R.string.verify_verified),
+        subtitle = S.get(R.string.verify_verified_desc),
         accent = Color(0xFF34C759)
     )
     status == "pending" -> Style(
         icon = Icons.Filled.HourglassTop,
-        title = "قيد المراجعة",
-        subtitle = "طلب التوثيق قيد المراجعة من الإدارة",
+        title = S.get(R.string.verify_pending),
+        subtitle = S.get(R.string.verify_pending_desc),
         accent = Color(0xFFFF9500)
     )
     status == "rejected" -> Style(
         icon = Icons.Filled.GppMaybe,
-        title = "مرفوض",
-        subtitle = "لم يتم قبول طلب التوثيق — حاول مرة أخرى",
+        title = S.get(R.string.verify_rejected),
+        subtitle = S.get(R.string.verify_rejected_desc),
         accent = Color(0xFFFF3B30)
     )
     else -> Style(
         icon = Icons.Filled.GppGood,
-        title = "غير موثّق",
-        subtitle = "وثّق حسابك لبناء الثقة مع الآخرين",
+        title = S.get(R.string.verify_unverified),
+        subtitle = S.get(R.string.verify_unverified_desc),
         accent = Color(0xFF8E8E93)
     )
 }

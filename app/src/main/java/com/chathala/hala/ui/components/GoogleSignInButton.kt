@@ -1,5 +1,9 @@
 package com.chathala.hala.ui.components
 
+import com.chathala.hala.R
+
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +68,7 @@ fun GoogleSignInButton(
                 GoogleLogoG()
                 Spacer(Modifier.size(12.dp))
                 Text(
-                    text = androidx.compose.ui.res.stringResource(com.chathala.hala.R.string.btn_google_continue),
+                    text = S.get(com.chathala.hala.R.string.btn_google_continue),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
             }

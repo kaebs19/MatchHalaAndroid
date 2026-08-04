@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.R
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,12 +30,16 @@ import androidx.compose.ui.unit.dp
 enum class ChatMode(
     val apiValue: String,
     val icon: String,
-    val title: String,
-    val subtitle: String
+    private val titleRes: Int,
+    private val subtitleRes: Int
 ) {
-    SNAP("snap", "👻", "حذف عند الخروج", "تُمسح الرسائل من جهازك عند إغلاق المحادثة"),
-    TWENTY_FOUR_HOURS("24h", "⏰", "حذف بعد 24 ساعة", "تختفي الرسائل تلقائياً بعد يوم"),
-    KEEP("keep", "♾️", "الاحتفاظ دائماً", "الرسائل تبقى كما هي دون حذف");
+    SNAP("snap", "👻", R.string.chatmode_delete_on_exit, R.string.chatmode_delete_on_exit_desc),
+    TWENTY_FOUR_HOURS("24h", "⏰", R.string.chatmode_delete_24h, R.string.chatmode_delete_24h_desc),
+    KEEP("keep", "♾️", R.string.chatmode_keep, R.string.chatmode_keep_desc);
+
+    // معرّفات الموارد لا نصوص: ثوابت الـ enum تُهيّأ مرة واحدة عند تحميل الصنف.
+    val title: String get() = S.get(titleRes)
+    val subtitle: String get() = S.get(subtitleRes)
 
     companion object {
         fun fromApi(value: String?): ChatMode = entries.firstOrNull { it.apiValue == value } ?: SNAP
@@ -48,7 +55,7 @@ fun ChatModeDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(20.dp),
-        title = { Text("وضع المحادثة", style = MaterialTheme.typography.titleMedium) },
+        title = { Text(S.get(R.string.chatmode_title), style = MaterialTheme.typography.titleMedium) },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -100,7 +107,7 @@ fun ChatModeDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("إغلاق") }
+            TextButton(onClick = onDismiss) { Text(S.get(R.string.action_close)) }
         }
     )
 }

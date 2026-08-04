@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.premium.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.app.Activity
 import android.content.Context
 import android.util.Log
@@ -69,7 +72,7 @@ class BillingManager(private val appContext: Context) {
                 _events.tryEmit(BillingEvent.Cancelled)
             }
             else -> {
-                _events.tryEmit(BillingEvent.Error(result.debugMessage.ifBlank { "فشل الشراء" }))
+                _events.tryEmit(BillingEvent.Error(result.debugMessage.ifBlank { S.get(R.string.billing_purchase_failed) }))
             }
         }
     }
@@ -98,7 +101,7 @@ class BillingManager(private val appContext: Context) {
                 } else {
                     _connected.value = false
                     _events.tryEmit(
-                        BillingEvent.Error(result.debugMessage.ifBlank { "تعذّر الاتصال بمتجر Google Play" })
+                        BillingEvent.Error(result.debugMessage.ifBlank { S.get(R.string.billing_play_connect_failed) })
                     )
                 }
             }
@@ -128,11 +131,11 @@ class BillingManager(private val appContext: Context) {
                 ?: emptyMap()
             _productDetails.value = map
             if (map.isEmpty()) {
-                Log.w(TAG, "لم تُرجع أي منتجات — تأكد من تفعيلها في Console ومطابقة معرّفاتها")
+                Log.w(TAG, S.get(R.string.billing_no_products))
             }
         } else {
             _events.tryEmit(
-                BillingEvent.Error(result.billingResult.debugMessage.ifBlank { "تعذّر جلب باقات الاشتراك" })
+                BillingEvent.Error(result.billingResult.debugMessage.ifBlank { S.get(R.string.billing_fetch_plans_failed) })
             )
         }
     }
@@ -140,12 +143,12 @@ class BillingManager(private val appContext: Context) {
     /** إطلاق تدفّق الشراء لخطة محددة. يجب استدعاؤها من Activity. */
     fun launchPurchase(activity: Activity, plan: PremiumPlan) {
         val details = _productDetails.value[plan.productId] ?: run {
-            _events.tryEmit(BillingEvent.Error("الباقة غير متاحة حالياً"))
+            _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_plan_unavailable)))
             return
         }
         // أول عرض متاح للاشتراك (base plan) — نأخذ آخر offerToken (عادةً الأنسب)
         val offerToken = details.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: run {
-            _events.tryEmit(BillingEvent.Error("لا يوجد عرض متاح لهذه الباقة"))
+            _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_no_offer)))
             return
         }
         val productParams = BillingFlowParams.ProductDetailsParams.newBuilder()
@@ -176,7 +179,7 @@ class BillingManager(private val appContext: Context) {
         scope.launch {
             val verified = runCatching { purchaseVerifier?.invoke(purchase) ?: false }.getOrDefault(false)
             if (!verified) {
-                _events.tryEmit(BillingEvent.Error("تعذّر التحقق من الشراء — إن خُصم المبلغ سيُسترجع تلقائياً"))
+                _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_verify_failed)))
                 return@launch
             }
             if (!purchase.isAcknowledged) {

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.account
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -137,13 +140,13 @@ fun RequestDetailScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     var input by remember { mutableStateOf("") }
 
-    SettingsScaffold(title = "تفاصيل الطلب", onBack = onBack, scrollable = false) {
+    SettingsScaffold(title = S.get(R.string.request_details_title), onBack = onBack, scrollable = false) {
         Column(modifier = Modifier.fillMaxSize().imePadding()) {
             Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 when {
                     state.loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     state.appeal == null -> Text(
-                        state.error ?: "تعذّر تحميل الطلب",
+                        state.error ?: S.get(R.string.err_load_request_failed),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -173,7 +176,7 @@ fun RequestDetailScreen(
                     OutlinedTextField(
                         value = input,
                         onValueChange = { input = it },
-                        placeholder = { Text("اكتب ردك للمشرف…") },
+                        placeholder = { Text(S.get(R.string.request_reply_hint)) },
                         modifier = Modifier.weight(1f),
                         maxLines = 4
                     )
@@ -184,14 +187,14 @@ fun RequestDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "إرسال",
+                            contentDescription = S.get(R.string.action_send),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             } else if (closed) {
                 Text(
-                    text = "تم إغلاق هذا الطلب",
+                    text = S.get(R.string.request_closed),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -234,14 +237,14 @@ private fun StatusHeader(a: AppealItem) {
         if (!a.adminNote.isNullOrBlank()) {
             Spacer(Modifier.size(6.dp))
             Text(
-                "ملاحظة المشرف: ${a.adminNote}",
+                S.get(R.string.request_admin_note, a.adminNote ?: ""),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Spacer(Modifier.size(8.dp))
         Text(
-            "💬 محادثة مع الإدارة — تواصل مع المشرف لمراجعة الإجراء",
+            S.get(R.string.request_admin_chat_banner),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -268,7 +271,7 @@ private fun MessageBubble(m: AppealMessage) {
         ) {
             if (!isUser) {
                 Text(
-                    "المشرف",
+                    S.get(R.string.label_moderator),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary
                 )

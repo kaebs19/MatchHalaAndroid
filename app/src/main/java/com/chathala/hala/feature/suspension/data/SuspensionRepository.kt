@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.suspension.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.device.DeviceIdentity
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
@@ -27,7 +30,7 @@ class SuspensionRepository(
                 vendorId = DeviceIdentity.vendorId.ifEmpty { null }
             )
         )
-        resp.data ?: throw IllegalStateException("تعذّر جلب حالة الجهاز")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_device_status_failed))
     }
 
     /**
@@ -42,7 +45,7 @@ class SuspensionRepository(
     ): NetworkResult<String> = safeApiCall {
         val bearerToken = token?.takeIf { it.isNotBlank() } ?: tokenStorage.token.first()
         if (bearerToken.isNullOrBlank()) {
-            throw IllegalStateException("انتهت جلسة الاستئناف — أعد تسجيل الدخول وحاول مجدداً")
+            throw IllegalStateException(S.get(R.string.err_appeal_session_expired))
         }
         val resp = api.submitAppeal(
             bearer = "Bearer $bearerToken",
@@ -51,7 +54,7 @@ class SuspensionRepository(
                 actionType = if (permanent) "ban" else "suspension"
             )
         )
-        resp.message ?: "تم إرسال الاستئناف"
+        resp.message ?: S.get(R.string.appeal_sent)
     }
 
     /** يجلب الاستئنافات السابقة للمستخدم (وضع الحساب فقط — يحتاج توكن). */
@@ -72,6 +75,6 @@ class SuspensionRepository(
                 deviceToken = DeviceIdentity.deviceToken.ifEmpty { null }
             )
         )
-        resp.message ?: "تم إرسال الاستئناف"
+        resp.message ?: S.get(R.string.appeal_sent)
     }
 }

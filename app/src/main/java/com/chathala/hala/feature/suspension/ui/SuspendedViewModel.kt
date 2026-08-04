@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.suspension.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -138,7 +141,7 @@ class SuspendedViewModel(
                     it.copy(
                         rechecking = false,
                         recheckMessage = if (showFeedback) {
-                            if (r.code == "ACCOUNT_SUSPENDED") "لا يزال حسابك معلّقاً — حاول لاحقاً"
+                            if (r.code == "ACCOUNT_SUSPENDED") S.get(R.string.still_suspended)
                             else r.message
                         } else null
                     )
@@ -152,7 +155,7 @@ class SuspendedViewModel(
      */
     fun submitAppeal(reason: String, email: String?) {
         if (reason.isBlank()) {
-            _state.update { it.copy(appealError = "يُرجى كتابة سبب الاستئناف") }
+            _state.update { it.copy(appealError = S.get(R.string.appeal_reason_required)) }
             return
         }
         _state.update { it.copy(submitting = true, appealError = null) }

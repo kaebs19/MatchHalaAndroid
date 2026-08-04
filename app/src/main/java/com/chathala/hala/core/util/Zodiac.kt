@@ -1,9 +1,12 @@
 package com.chathala.hala.core.util
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-data class ZodiacSign(val nameAr: String, val emoji: String)
+data class ZodiacSign(val name: String, val emoji: String)
 
 /**
  * يحسب البرج من تاريخ الميلاد (ISO أو yyyy-MM-dd).
@@ -25,18 +28,18 @@ object Zodiac {
     }
 
     private fun compute(month: Int, day: Int): ZodiacSign = when {
-        (month == 3 && day >= 21) || (month == 4 && day <= 19) -> ZodiacSign("الحمل", "♈️")
-        (month == 4 && day >= 20) || (month == 5 && day <= 20) -> ZodiacSign("الثور", "♉️")
-        (month == 5 && day >= 21) || (month == 6 && day <= 20) -> ZodiacSign("الجوزاء", "♊️")
-        (month == 6 && day >= 21) || (month == 7 && day <= 22) -> ZodiacSign("السرطان", "♋️")
-        (month == 7 && day >= 23) || (month == 8 && day <= 22) -> ZodiacSign("الأسد", "♌️")
-        (month == 8 && day >= 23) || (month == 9 && day <= 22) -> ZodiacSign("العذراء", "♍️")
-        (month == 9 && day >= 23) || (month == 10 && day <= 22) -> ZodiacSign("الميزان", "♎️")
-        (month == 10 && day >= 23) || (month == 11 && day <= 21) -> ZodiacSign("العقرب", "♏️")
-        (month == 11 && day >= 22) || (month == 12 && day <= 21) -> ZodiacSign("القوس", "♐️")
-        (month == 12 && day >= 22) || (month == 1 && day <= 19) -> ZodiacSign("الجدي", "♑️")
-        (month == 1 && day >= 20) || (month == 2 && day <= 18) -> ZodiacSign("الدلو", "♒️")
-        else -> ZodiacSign("الحوت", "♓️")
+        (month == 3 && day >= 21) || (month == 4 && day <= 19) -> ZodiacSign(S.get(R.string.zodiac_aries), "♈️")
+        (month == 4 && day >= 20) || (month == 5 && day <= 20) -> ZodiacSign(S.get(R.string.zodiac_taurus), "♉️")
+        (month == 5 && day >= 21) || (month == 6 && day <= 20) -> ZodiacSign(S.get(R.string.zodiac_gemini), "♊️")
+        (month == 6 && day >= 21) || (month == 7 && day <= 22) -> ZodiacSign(S.get(R.string.zodiac_cancer), "♋️")
+        (month == 7 && day >= 23) || (month == 8 && day <= 22) -> ZodiacSign(S.get(R.string.zodiac_leo), "♌️")
+        (month == 8 && day >= 23) || (month == 9 && day <= 22) -> ZodiacSign(S.get(R.string.zodiac_virgo), "♍️")
+        (month == 9 && day >= 23) || (month == 10 && day <= 22) -> ZodiacSign(S.get(R.string.zodiac_libra), "♎️")
+        (month == 10 && day >= 23) || (month == 11 && day <= 21) -> ZodiacSign(S.get(R.string.zodiac_scorpio), "♏️")
+        (month == 11 && day >= 22) || (month == 12 && day <= 21) -> ZodiacSign(S.get(R.string.zodiac_sagittarius), "♐️")
+        (month == 12 && day >= 22) || (month == 1 && day <= 19) -> ZodiacSign(S.get(R.string.zodiac_capricorn), "♑️")
+        (month == 1 && day >= 20) || (month == 2 && day <= 18) -> ZodiacSign(S.get(R.string.zodiac_aquarius), "♒️")
+        else -> ZodiacSign(S.get(R.string.zodiac_pisces), "♓️")
     }
 
     /** يُرجع تاريخ الميلاد بصيغة "4 Apr" مطابق iOS. */

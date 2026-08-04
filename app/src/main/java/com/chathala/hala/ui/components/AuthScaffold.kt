@@ -50,6 +50,8 @@ fun AuthScaffold(
     subtitle: String,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
+    /** يعرض زر تبديل اللغة في أعلى الهيدر — لشاشات الدخول قبل توفّر الإعدادات. */
+    showLanguageToggle: Boolean = false,
     headerExtra: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -99,6 +101,10 @@ fun AuthScaffold(
                         tint = Color.White
                     )
                 }
+            }
+
+            if (showLanguageToggle) {
+                LanguageToggleChip(modifier = Modifier.align(Alignment.TopEnd))
             }
 
             Column(

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -89,14 +92,14 @@ fun MessageContextMenu(
     val appear by animateFloatAsState(targetValue = 1f, label = "menu-appear")
 
     val actions = buildList {
-        add(MenuAction("رد", Icons.AutoMirrored.Filled.Reply, onReply))
-        if (canCopy) add(MenuAction("نسخ", Icons.Filled.ContentCopy, onCopy))
-        add(MenuAction("إعادة توجيه", Icons.AutoMirrored.Filled.Send, onForward))
-        if (canEdit) add(MenuAction("تعديل", Icons.Filled.Edit, onEdit, premium = true))
+        add(MenuAction(S.get(R.string.action_reply), Icons.AutoMirrored.Filled.Reply, onReply))
+        if (canCopy) add(MenuAction(S.get(R.string.action_copy), Icons.Filled.ContentCopy, onCopy))
+        add(MenuAction(S.get(R.string.action_forward), Icons.AutoMirrored.Filled.Send, onForward))
+        if (canEdit) add(MenuAction(S.get(R.string.action_edit), Icons.Filled.Edit, onEdit, premium = true))
         if (canDelete) {
-            add(MenuAction("حذف", Icons.Filled.Delete, onDelete, destructive = true, premium = true))
+            add(MenuAction(S.get(R.string.action_delete), Icons.Filled.Delete, onDelete, destructive = true, premium = true))
         }
-        add(MenuAction("إبلاغ", Icons.Filled.ReportProblem, onReport, destructive = true))
+        add(MenuAction(S.get(R.string.action_report), Icons.Filled.ReportProblem, onReport, destructive = true))
     }
 
     // ارتفاع تقريبي للقائمة (شريط الردود + البطاقة) لاختيار موضعها فوق/تحت الفقاعة

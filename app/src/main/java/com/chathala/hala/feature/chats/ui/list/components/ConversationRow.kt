@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.list.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -106,7 +109,7 @@ fun ConversationRow(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isDeletedAccount) DELETED_ACCOUNT_NAME else (other?.name ?: "مستخدم"),
+                        text = if (isDeletedAccount) DELETED_ACCOUNT_NAME else (other?.name ?: S.get(R.string.label_user)),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = if (isDeletedAccount)
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -145,7 +148,7 @@ fun ConversationRow(
                     )
                     Spacer(Modifier.size(4.dp))
                 }
-                val time = lastMessage?.createdAt?.let(NotificationFormat::timeAgoArabic)
+                val time = lastMessage?.createdAt?.let(NotificationFormat::timeAgo)
                     ?: presenceLabel(isOnline, isRecentlyActive)
                 if (!time.isNullOrBlank()) {
                     Text(
@@ -301,19 +304,19 @@ private fun previewText(
     content: String?,
     conv: Conversation
 ): String = when (type) {
-    "image" -> "📷 صورة"
-    "audio" -> "🎙️ رسالة صوتية"
-    "video" -> "🎥 فيديو"
-    "file" -> "📎 ملف"
-    "system" -> "— تحديث المحادثة"
+    "image" -> S.get(R.string.msg_type_photo)
+    "audio" -> S.get(R.string.msg_type_voice)
+    "video" -> S.get(R.string.msg_type_video)
+    "file" -> S.get(R.string.msg_type_file)
+    "system" -> S.get(R.string.chat_update_placeholder)
     else -> content?.takeIf { it.isNotBlank() }
         ?: conv.initialMessage?.content?.takeIf { it.isNotBlank() }
-        ?: "ابدأ المحادثة 👋"
+        ?: S.get(R.string.chat_start)
 }
 
 private fun presenceLabel(isOnline: Boolean, recent: Boolean): String? = when {
-    isOnline -> "متصل"
-    recent -> "نشط مؤخراً"
+    isOnline -> S.get(R.string.status_online)
+    recent -> S.get(R.string.status_active_recently)
     else -> null
 }
 

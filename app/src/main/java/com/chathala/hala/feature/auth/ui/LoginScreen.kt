@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -89,13 +90,14 @@ fun LoginScreen(
     }
 
     AuthScaffold(
-        title = stringResource(R.string.login_welcome),
-        subtitle = stringResource(R.string.login_subtitle)
+        title = S.get(R.string.login_welcome),
+        subtitle = S.get(R.string.login_subtitle),
+        showLanguageToggle = true
     ) {
         HalaTextField(
             value = email,
             onValueChange = { email = it; emailError = null },
-            label = stringResource(R.string.field_email),
+            label = S.get(R.string.field_email),
             keyboardType = KeyboardType.Email,
             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
             isError = emailError != null,
@@ -107,7 +109,7 @@ fun LoginScreen(
         HalaTextField(
             value = password,
             onValueChange = { password = it; passwordError = null },
-            label = stringResource(R.string.field_password),
+            label = S.get(R.string.field_password),
             keyboardType = KeyboardType.Password,
             isPassword = true,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -122,7 +124,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            TextLink(text = stringResource(R.string.btn_forgot_password), onClick = onForgot)
+            TextLink(text = S.get(R.string.btn_forgot_password), onClick = onForgot)
         }
 
         FormError(state.error)
@@ -130,7 +132,7 @@ fun LoginScreen(
         Spacer(Modifier.height(20.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.btn_login),
+            text = S.get(R.string.btn_login),
             loading = state.loading,
             onClick = { submit() }
         )
@@ -155,8 +157,8 @@ fun LoginScreen(
         Spacer(Modifier.height(28.dp))
 
         AuthFooterLinks(
-            prompt = stringResource(R.string.no_account),
-            actionText = stringResource(R.string.create_account),
+            prompt = S.get(R.string.no_account),
+            actionText = S.get(R.string.create_account),
             onAction = onRegister
         )
 

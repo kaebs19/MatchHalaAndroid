@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.pending
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -163,10 +166,10 @@ class PendingRequestsViewModel(
                     repo.refreshPendingCount()
                     _acceptedEvent.tryEmit(evt)
                     _message.tryEmit(
-                        if (evt.welcomeSent) "تم القبول وإرسال الترحيب" else "تم قبول الطلب"
+                        if (evt.welcomeSent) S.get(R.string.pending_accepted_with_greeting) else S.get(R.string.pending_accepted)
                     )
                 },
-                onFailure = { e -> _message.tryEmit(e.message ?: "فشل قبول الطلب") }
+                onFailure = { e -> _message.tryEmit(e.message ?: S.get(R.string.pending_accept_failed)) }
             )
         }
     }
@@ -202,7 +205,7 @@ class PendingRequestsViewModel(
                     _state.update { s ->
                         s.copy(sent = s.sent.filterNot { it.id == id })
                     }
-                    _message.tryEmit("تم إلغاء الطلب")
+                    _message.tryEmit(S.get(R.string.pending_cancelled))
                 }
                 is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
             }

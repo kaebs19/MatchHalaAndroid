@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,11 +36,11 @@ import com.chathala.hala.core.util.HapticHelper
 private data class QuickMessage(val emoji: String, val text: String)
 
 private val QuickMessages = listOf(
-    QuickMessage("👋", "مرحبا"),
+    QuickMessage("👋", S.get(R.string.quick_msg_hi)),
     QuickMessage("😊", "Hello"),
-    QuickMessage("🌹", "كيف حالك؟"),
+    QuickMessage("🌹", S.get(R.string.quick_msg_how_are_you)),
     QuickMessage("✨", "How are you?"),
-    QuickMessage("☕️", "نتعرف؟"),
+    QuickMessage("☕️", S.get(R.string.quick_msg_get_to_know)),
     QuickMessage("💬", "Let's chat!")
 )
 
@@ -53,7 +56,7 @@ fun QuickMessagesRow(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "رسائل سريعة (اضغط للإرسال)",
+            text = S.get(R.string.quick_messages_label),
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant

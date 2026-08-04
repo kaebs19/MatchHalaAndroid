@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -75,7 +78,7 @@ fun ForwardSheet(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "إعادة توجيه إلى",
+                text = S.get(R.string.forward_to),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -90,7 +93,7 @@ fun ForwardSheet(
                 ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
 
                 conversations.isEmpty() -> Text(
-                    text = "لا توجد محادثات متاحة",
+                    text = S.get(R.string.forward_no_chats),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 24.dp)
@@ -149,7 +152,7 @@ private fun ForwardRow(
         }
         Spacer(Modifier.size(12.dp))
         Text(
-            text = other?.name ?: "محادثة",
+            text = other?.name ?: S.get(R.string.chat_title_default),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,12 +85,12 @@ fun PremiumGateDialog(
         },
         confirmButton = {
             TextButton(onClick = onUpgrade) {
-                Text("ترقية للبريميوم", fontWeight = FontWeight.Bold)
+                Text(S.get(R.string.action_upgrade_premium), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("لاحقاً")
+                Text(S.get(R.string.action_later))
             }
         }
     )

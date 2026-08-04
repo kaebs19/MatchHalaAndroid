@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.friends.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -85,7 +88,7 @@ class FriendsViewModel(
         viewModelScope.launch {
             when (val r = repo.accept(id)) {
                 is NetworkResult.Success -> {
-                    _message.tryEmit("أصبحتما صديقين 🎉")
+                    _message.tryEmit(S.get(R.string.friends_now_friends))
                     _state.update {
                         it.copy(
                             processingIds = it.processingIds - id,

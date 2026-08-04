@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.verification.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -95,7 +98,7 @@ fun VerificationScreen(
                     Spacer(Modifier.height(16.dp))
 
                     Text(
-                        text = "التحقق من الحساب يُظهر شارة زرقاء بجانب اسمك في التطبيق ويُعطيك ثقة أكبر مع المستخدمين.",
+                        text = S.get(R.string.verify_intro),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -129,7 +132,7 @@ fun VerificationScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                             } else {
-                                Text("إرسال طلب التوثيق")
+                                Text(S.get(R.string.verify_submit_request))
                             }
                         }
                     }
@@ -158,7 +161,7 @@ private fun TopBar(onBack: () -> Unit) {
             )
         }
         Text(
-            text = "التوثيق",
+            text = S.get(R.string.verify_title),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 4.dp)
@@ -177,26 +180,26 @@ private fun StatusBanner(status: String) {
     val config = when (status) {
         "verified" -> Config(
             icon = Icons.Filled.Verified,
-            title = "تم توثيق حسابك",
-            subtitle = "يظهر أمام اسمك علامة توثيق زرقاء ✓",
+            title = S.get(R.string.verify_done_title),
+            subtitle = S.get(R.string.verify_done_desc),
             tint = MaterialTheme.colorScheme.primary
         )
         "pending" -> Config(
             icon = Icons.Filled.HourglassBottom,
-            title = "طلبك قيد المراجعة",
-            subtitle = "سنرسل لك إشعار عند اكتمال المراجعة (خلال 24-48 ساعة)",
+            title = S.get(R.string.verify_pending_title),
+            subtitle = S.get(R.string.verify_pending_note),
             tint = MaterialTheme.colorScheme.tertiary
         )
         "rejected" -> Config(
             icon = Icons.Filled.Shield,
-            title = "تم رفض الطلب السابق",
-            subtitle = "يمكنك إعادة إرسال صورة سيلفي واضحة وجديدة",
+            title = S.get(R.string.verify_rejected_title),
+            subtitle = S.get(R.string.verify_rejected_note),
             tint = MaterialTheme.colorScheme.error
         )
         else -> Config(
             icon = Icons.Filled.Shield,
-            title = "غير موثّق بعد",
-            subtitle = "أرسل صورة سيلفي للحصول على علامة التوثيق",
+            title = S.get(R.string.verify_not_yet_title),
+            subtitle = S.get(R.string.verify_not_yet_desc),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -269,13 +272,13 @@ private fun SelfieArea(uri: Uri?, onPick: () -> Unit) {
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = "اختر صورة سيلفي",
+                    text = S.get(R.string.verify_choose_selfie),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "صورة واضحة لوجهك بدون نظارات أو قناع",
+                    text = S.get(R.string.verify_selfie_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -286,7 +289,7 @@ private fun SelfieArea(uri: Uri?, onPick: () -> Unit) {
     if (uri != null) {
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "اضغط على الصورة لاختيار أخرى",
+            text = S.get(R.string.verify_tap_change_photo),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

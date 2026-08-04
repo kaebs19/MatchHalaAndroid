@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.suspension.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -91,20 +94,20 @@ fun SuspendedScreen(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text("تسجيل الخروج؟", fontWeight = FontWeight.Bold) },
+            title = { Text(S.get(R.string.logout_confirm_title), fontWeight = FontWeight.Bold) },
             text = {
                 Text(
-                    "الإجراء على حسابك سيبقى سارياً. يمكنك متابعة حالة استئنافك من هنا. " +
-                        "هل تريد تسجيل الخروج فعلاً؟"
+                    S.get(R.string.logout_confirm_body) +
+                        S.get(R.string.logout_confirm_question)
                 )
             },
             confirmButton = {
                 TextButton(onClick = { showExitConfirm = false; onBackToLogin() }) {
-                    Text("نعم، خروج", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.SemiBold)
+                    Text(S.get(R.string.logout_yes), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showExitConfirm = false }) { Text("البقاء") }
+                TextButton(onClick = { showExitConfirm = false }) { Text(S.get(R.string.logout_stay)) }
             }
         )
     }
@@ -119,9 +122,9 @@ fun SuspendedScreen(
         // ── رأس الشاشة ───────────────────────────────────────────
         val headerIcon = if (mode == SuspensionMode.DEVICE) Icons.Outlined.PhonelinkErase else Icons.Outlined.Block
         val title = when {
-            mode == SuspensionMode.DEVICE -> "هذا الجهاز محظور"
-            state.account?.isPermanent == true -> "تم إيقاف حسابك نهائياً"
-            else -> "تم إيقاف حسابك مؤقتاً"
+            mode == SuspensionMode.DEVICE -> S.get(R.string.device_banned_title)
+            state.account?.isPermanent == true -> S.get(R.string.account_banned_permanently)
+            else -> S.get(R.string.account_suspended_temporarily)
         }
 
         Box(
@@ -149,7 +152,7 @@ fun SuspendedScreen(
         )
         Spacer(Modifier.height(HalaDimens.Spacing.sm))
         Text(
-            text = "وفقاً لسياسة الاستخدام في تطبيق هلا. يمكنك مراجعة التفاصيل أدناه وتقديم طلب استئناف للإدارة.",
+            text = S.get(R.string.suspension_policy_note),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -172,7 +175,7 @@ fun SuspendedScreen(
                     )
                     Spacer(Modifier.size(HalaDimens.Spacing.sm))
                 }
-                Text("تحقّق من رفع التعليق")
+                Text(S.get(R.string.check_suspension_lifted))
             }
             FormError(state.recheckMessage)
         }
@@ -188,7 +191,7 @@ fun SuspendedScreen(
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
                 state.detailsError != null -> ErrorState(
-                    message = state.detailsError ?: "تعذّر جلب التفاصيل",
+                    message = state.detailsError ?: S.get(R.string.err_load_details_failed),
                     onRetry = { viewModel.loadDeviceBan() }
                 )
                 state.device != null -> DeviceDetailsCard(state.device!!)
@@ -224,14 +227,14 @@ fun SuspendedScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextLink(text = "شروط الاستخدام", onClick = onOpenTerms)
+            TextLink(text = S.get(R.string.legal_terms_of_use), onClick = onOpenTerms)
             Text("  •  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            TextLink(text = "سياسة الخصوصية", onClick = onOpenPrivacy)
+            TextLink(text = S.get(R.string.legal_privacy_policy), onClick = onOpenPrivacy)
             Text("  •  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            TextLink(text = "اتصل بنا", onClick = onOpenContact)
+            TextLink(text = S.get(R.string.premium_contact_us), onClick = onOpenContact)
             Text("  •  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
             TextLink(
-                text = "إنستا",
+                text = S.get(R.string.social_instagram_short),
                 onClick = {
                     runCatching {
                         context.startActivity(
@@ -251,7 +254,7 @@ fun SuspendedScreen(
         // زر ثانوي غير بارز — تسجيل الخروج
         TextButton(onClick = { showExitConfirm = true }) {
             Text(
-                text = "تسجيل خروج",
+                text = S.get(R.string.action_sign_out),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -261,7 +264,7 @@ fun SuspendedScreen(
 
 @Composable
 private fun PreviousAppealsCard(appeals: List<com.chathala.hala.feature.settings.data.AppealItem>) {
-    DetailCard(icon = Icons.Filled.Gavel, heading = "طلباتي السابقة") {
+    DetailCard(icon = Icons.Filled.Gavel, heading = S.get(R.string.my_previous_requests)) {
         appeals.forEachIndexed { index, a ->
             if (index > 0) Spacer(Modifier.height(HalaDimens.Spacing.sm))
             val (statusLabel, statusColor) = com.chathala.hala.feature.settings.ui.account
@@ -273,7 +276,7 @@ private fun PreviousAppealsCard(appeals: List<com.chathala.hala.feature.settings
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = a.reason?.takeIf { it.isNotBlank() } ?: "استئناف",
+                        text = a.reason?.takeIf { it.isNotBlank() } ?: S.get(R.string.action_appeal),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1
@@ -305,24 +308,24 @@ private fun PreviousAppealsCard(appeals: List<com.chathala.hala.feature.settings
 @Composable
 private fun AccountDetailsCard(state: SuspendedUiState) {
     val info = state.account
-    DetailCard(icon = Icons.Filled.Gavel, heading = "تفاصيل الإجراء") {
-        info?.name?.takeIf { it.isNotBlank() }?.let { DetailRow("الاسم", it) }
-        info?.email?.takeIf { it.isNotBlank() }?.let { DetailRow("البريد", it) }
-        info?.userId?.takeIf { it.isNotBlank() }?.let { DetailRow("المعرّف", it) }
-        DetailRow("نوع الإجراء", accountActionLabel(info?.isPermanent == true, info?.level ?: 0))
-        DetailRow("السبب", info?.reason?.takeIf { it.isNotBlank() } ?: "مخالفة سياسة الاستخدام")
+    DetailCard(icon = Icons.Filled.Gavel, heading = S.get(R.string.action_details_title)) {
+        info?.name?.takeIf { it.isNotBlank() }?.let { DetailRow(S.get(R.string.label_name), it) }
+        info?.email?.takeIf { it.isNotBlank() }?.let { DetailRow(S.get(R.string.label_email), it) }
+        info?.userId?.takeIf { it.isNotBlank() }?.let { DetailRow(S.get(R.string.label_id), it) }
+        DetailRow(S.get(R.string.label_action_type), accountActionLabel(info?.isPermanent == true, info?.level ?: 0))
+        DetailRow(S.get(R.string.label_reason), info?.reason?.takeIf { it.isNotBlank() } ?: S.get(R.string.violation_policy_breach))
         if (info?.isPermanent == false && !info.suspendedUntil.isNullOrBlank()) {
-            DetailRow("ينتهي في", formatDate(info.suspendedUntil))
+            DetailRow(S.get(R.string.label_expires_on), formatDate(info.suspendedUntil))
         }
-        if ((info?.level ?: 0) > 0) DetailRow("درجة المخالفة", "${info?.level} / 5")
+        if ((info?.level ?: 0) > 0) DetailRow(S.get(R.string.label_violation_severity), "${info?.level} / 5")
     }
 }
 
 /** اسم الإجراء حسب النوع: حظر دائم / إيقاف مؤقت / تقييد. */
 private fun accountActionLabel(isPermanent: Boolean, level: Int): String = when {
-    isPermanent -> "حظر دائم"
-    level <= 1 -> "تقييد مؤقت"
-    else -> "إيقاف مؤقت"
+    isPermanent -> S.get(R.string.action_permanent_ban)
+    level <= 1 -> S.get(R.string.action_temporary_restriction)
+    else -> S.get(R.string.action_temporary_suspension)
 }
 
 @Composable
@@ -330,28 +333,28 @@ private fun DeviceDetailsCard(device: DeviceBanData) {
     val acc = device.originalAccount
     Column {
         // بطاقة الحساب السابق المرتبط بالجهاز
-        DetailCard(icon = Icons.Filled.Person, heading = "الحساب السابق المرتبط بالجهاز") {
+        DetailCard(icon = Icons.Filled.Person, heading = S.get(R.string.device_previous_account)) {
             if (acc?.maskedName.isNullOrBlank() && acc?.maskedEmail.isNullOrBlank()) {
                 Text(
-                    text = "هذا الجهاز مرتبط بحساب سابق تم إيقافه.",
+                    text = S.get(R.string.device_previous_account_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                acc?.maskedName?.takeIf { it.isNotBlank() }?.let { DetailRow("الاسم", it) }
-                acc?.maskedEmail?.takeIf { it.isNotBlank() }?.let { DetailRow("البريد", it) }
-                acc?.halaId?.takeIf { it.isNotBlank() }?.let { DetailRow("المعرّف", it) }
-                acc?.accountCreatedAt?.let { DetailRow("تاريخ إنشاء الحساب", formatDate(it)) }
+                acc?.maskedName?.takeIf { it.isNotBlank() }?.let { DetailRow(S.get(R.string.label_name), it) }
+                acc?.maskedEmail?.takeIf { it.isNotBlank() }?.let { DetailRow(S.get(R.string.label_email), it) }
+                acc?.halaId?.takeIf { it.isNotBlank() }?.let { DetailRow(S.get(R.string.label_id), it) }
+                acc?.accountCreatedAt?.let { DetailRow(S.get(R.string.label_account_created), formatDate(it)) }
             }
         }
 
         Spacer(Modifier.height(HalaDimens.Spacing.lg))
 
         // بطاقة تفاصيل الحظر
-        DetailCard(icon = Icons.Outlined.Block, heading = "تفاصيل الحظر") {
-            DetailRow("سبب الحظر", device.reason?.takeIf { it.isNotBlank() } ?: "مخالفة سياسة الاستخدام")
-            device.bannedAt?.let { DetailRow("تاريخ الحظر", formatDate(it)) }
-            device.bannedBy?.let { DetailRow("جهة الحظر", bannedByLabel(it)) }
+        DetailCard(icon = Icons.Outlined.Block, heading = S.get(R.string.ban_details_title)) {
+            DetailRow(S.get(R.string.label_ban_reason), device.reason?.takeIf { it.isNotBlank() } ?: S.get(R.string.violation_policy_breach))
+            device.bannedAt?.let { DetailRow(S.get(R.string.label_ban_date), formatDate(it)) }
+            device.bannedBy?.let { DetailRow(S.get(R.string.label_ban_source), bannedByLabel(it)) }
         }
 
         Spacer(Modifier.height(HalaDimens.Spacing.lg))
@@ -372,8 +375,8 @@ private fun DeviceDetailsCard(device: DeviceBanData) {
                 )
                 Spacer(Modifier.size(HalaDimens.Spacing.sm))
                 Text(
-                    text = "لا يمكن إنشاء حساب جديد من هذا الجهاز — فهو مرتبط بالحساب السابق. " +
-                        "إذا كنت ترى أن الحظر بالخطأ، قدّم استئنافاً وسيراجعه الفريق.",
+                    text = S.get(R.string.device_no_new_account) +
+                        S.get(R.string.device_appeal_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -384,9 +387,9 @@ private fun DeviceDetailsCard(device: DeviceBanData) {
 
 /** يحوّل قيمة bannedBy إلى نص عربي واضح. */
 private fun bannedByLabel(value: String): String = when (value) {
-    "admin" -> "من الإدارة"
-    "auto" -> "تلقائي من النظام"
-    "spam_system" -> "نظام مكافحة الإزعاج"
+    "admin" -> S.get(R.string.ban_source_admin)
+    "auto" -> S.get(R.string.ban_source_system)
+    "spam_system" -> S.get(R.string.ban_source_antispam)
     else -> value
 }
 
@@ -460,9 +463,9 @@ private fun AppealForm(
     var reason by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
 
-    DetailCard(icon = Icons.Filled.Gavel, heading = "تقديم استئناف") {
+    DetailCard(icon = Icons.Filled.Gavel, heading = S.get(R.string.submit_appeal_title)) {
         Text(
-            text = "اشرح للإدارة سبب اعتقادك أن القرار غير صحيح. سيتم الرد عبر التطبيق عند الحاجة.",
+            text = S.get(R.string.submit_appeal_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -472,7 +475,7 @@ private fun AppealForm(
             HalaTextField(
                 value = email,
                 onValueChange = { email = it; onClearError() },
-                label = "البريد للتواصل (اختياري)",
+                label = S.get(R.string.appeal_email_optional),
                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
             )
             Spacer(Modifier.height(HalaDimens.Spacing.md))
@@ -481,7 +484,7 @@ private fun AppealForm(
         HalaTextField(
             value = reason,
             onValueChange = { reason = it; onClearError() },
-            label = "سبب الاستئناف",
+            label = S.get(R.string.appeal_reason_label),
             singleLine = false
         )
 
@@ -489,7 +492,7 @@ private fun AppealForm(
 
         Spacer(Modifier.height(HalaDimens.Spacing.md))
         HalaPrimaryButton(
-            text = "إرسال الاستئناف",
+            text = S.get(R.string.appeal_submit),
             loading = submitting,
             enabled = reason.isNotBlank(),
             onClick = { onSubmit(reason, email.ifBlank { null }) }
@@ -519,7 +522,7 @@ private fun AppealSentCard(message: String?) {
             )
             Spacer(Modifier.height(HalaDimens.Spacing.md))
             Text(
-                text = message ?: "تم إرسال الاستئناف. سيتم مراجعته والرد عند الحاجة.",
+                text = message ?: S.get(R.string.appeal_sent_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
@@ -543,7 +546,7 @@ private fun WelcomeBackDialog(onEnter: () -> Unit) {
         },
         title = {
             Text(
-                text = "تم رفع التعليق ✓",
+                text = S.get(R.string.suspension_lifted),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -552,9 +555,9 @@ private fun WelcomeBackDialog(onEnter: () -> Unit) {
         },
         text = {
             Text(
-                text = "مرحباً بعودتك إلى هلا 👋\n\n" +
-                    "تم تفعيل حسابك مجدداً. نذكّرك بالالتزام بسياسة استخدام التطبيق " +
-                    "والتعامل باحترام مع الآخرين — التزامك يحمي حسابك من الإيقاف مستقبلاً.",
+                text = S.get(R.string.welcome_back_hala) +
+                    S.get(R.string.welcome_back_body) +
+                    S.get(R.string.welcome_back_body_tail),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -563,7 +566,7 @@ private fun WelcomeBackDialog(onEnter: () -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = onEnter) {
-                Text("الدخول للتطبيق", fontWeight = FontWeight.SemiBold)
+                Text(S.get(R.string.enter_the_app), fontWeight = FontWeight.SemiBold)
             }
         }
     )
@@ -571,7 +574,7 @@ private fun WelcomeBackDialog(onEnter: () -> Unit) {
 
 /** يحوّل تاريخ ISO إلى صيغة عربية مختصرة؛ يرجّع القيمة كما هي إن تعذّر التحليل. */
 private fun formatDate(iso: String?): String {
-    if (iso.isNullOrBlank()) return "غير محدد"
+    if (iso.isNullOrBlank()) return S.get(R.string.label_unspecified)
     return try {
         val dt = OffsetDateTime.parse(iso)
         dt.format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("ar")))

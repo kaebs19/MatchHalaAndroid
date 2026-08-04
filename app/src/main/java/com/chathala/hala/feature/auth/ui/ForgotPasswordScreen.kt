@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.ui
 
+import com.chathala.hala.core.i18n.S
+
 import android.util.Patterns
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -13,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,14 +44,14 @@ fun ForgotPasswordScreen(
     }
 
     AuthScaffold(
-        title = stringResource(R.string.forgot_password_title),
-        subtitle = stringResource(R.string.forgot_password_subtitle),
+        title = S.get(R.string.forgot_password_title),
+        subtitle = S.get(R.string.forgot_password_subtitle),
         onBack = onBack
     ) {
         HalaTextField(
             value = email,
             onValueChange = { email = it; emailError = null },
-            label = stringResource(R.string.field_email),
+            label = S.get(R.string.field_email),
             keyboardType = KeyboardType.Email,
             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
             isError = emailError != null,
@@ -62,13 +63,13 @@ fun ForgotPasswordScreen(
         Spacer(Modifier.height(24.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.btn_send_code),
+            text = S.get(R.string.btn_send_code),
             loading = state.loading,
             onClick = {
                 val emailLocal = email.trim()
                 emailError = when {
-                    emailLocal.isEmpty() -> "البريد الإلكتروني مطلوب"
-                    !Patterns.EMAIL_ADDRESS.matcher(emailLocal).matches() -> "البريد الإلكتروني غير صحيح"
+                    emailLocal.isEmpty() -> S.get(R.string.valid_email_required)
+                    !Patterns.EMAIL_ADDRESS.matcher(emailLocal).matches() -> S.get(R.string.valid_email_invalid)
                     else -> null
                 }
                 if (emailError == null) {

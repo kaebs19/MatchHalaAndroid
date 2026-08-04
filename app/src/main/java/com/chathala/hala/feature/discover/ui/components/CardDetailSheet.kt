@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -102,7 +105,7 @@ fun CardDetailSheet(
                         )
                         Spacer(Modifier.size(6.dp))
                         Text(
-                            text = "متصل الآن",
+                            text = S.get(R.string.status_online_now),
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White
                         )
@@ -116,8 +119,8 @@ fun CardDetailSheet(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = buildString {
-                        append(card.name ?: "مستخدم")
-                        if (age != null) append("، $age")
+                        append(card.name ?: S.get(R.string.label_user))
+                        if (age != null) append(S.get(R.string.separator_age, age.toString()))
                     },
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface,
@@ -150,7 +153,7 @@ fun CardDetailSheet(
                 }
                 card.distance?.let {
                     if (isNotEmpty()) append(" • ")
-                    append("${it.toInt()} كم")
+                    append(S.get(R.string.distance_km, it.toInt()))
                 }
             }
             if (subtitle.isNotEmpty()) {
@@ -183,7 +186,7 @@ fun CardDetailSheet(
                 OutlinedTextField(
                     value = greeting,
                     onValueChange = { greeting = it },
-                    placeholder = { Text("اكتب رسالتك…") },
+                    placeholder = { Text(S.get(R.string.discover_write_message)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     maxLines = 4,
@@ -201,7 +204,7 @@ fun CardDetailSheet(
                         enabled = !sending,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("إلغاء")
+                        Text(S.get(R.string.action_cancel))
                     }
                     Button(
                         onClick = { onSendRequest(greeting.trim().ifBlank { null }) },
@@ -225,7 +228,7 @@ fun CardDetailSheet(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(Modifier.size(8.dp))
-                            Text("إرسال طلب محادثة")
+                            Text(S.get(R.string.discover_send_request))
                         }
                     }
                 }
@@ -238,7 +241,7 @@ fun CardDetailSheet(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("✓  تم إرسال الطلب", color = MaterialTheme.colorScheme.onSurface)
+                    Text(S.get(R.string.discover_request_sent), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -261,7 +264,7 @@ fun CardDetailSheet(
                     )
                     Spacer(Modifier.size(6.dp))
                     Text(
-                        text = if (alreadyReported) "✓ تم الإبلاغ" else "الإبلاغ",
+                        text = if (alreadyReported) S.get(R.string.discover_reported) else S.get(R.string.action_report_short),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -286,7 +289,7 @@ fun CardDetailSheet(
                         )
                         Spacer(Modifier.size(6.dp))
                         Text(
-                            text = "حظر",
+                            text = S.get(R.string.action_block),
                             color = MaterialTheme.colorScheme.error
                         )
                     }

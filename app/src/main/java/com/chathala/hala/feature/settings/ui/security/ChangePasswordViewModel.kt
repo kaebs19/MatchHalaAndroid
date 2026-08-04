@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.security
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -37,7 +40,7 @@ class ChangePasswordViewModel(private val repo: SettingsRepository) : ViewModel(
 
     fun submit() {
         val s = _state.value
-        val currentErr = if (s.current.isBlank()) "كلمة المرور الحالية مطلوبة" else null
+        val currentErr = if (s.current.isBlank()) S.get(R.string.valid_current_password_required) else null
         val newErr = Validators.password(s.new)
         val confirmErr = Validators.passwordConfirm(s.new, s.confirm)
         if (currentErr != null || newErr != null || confirmErr != null) {

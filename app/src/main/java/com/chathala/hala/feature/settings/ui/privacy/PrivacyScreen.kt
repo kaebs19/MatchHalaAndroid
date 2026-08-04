@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.privacy
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,7 +49,7 @@ fun PrivacyScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         SettingsScaffold(
-            title = stringResource(R.string.privacy_title),
+            title = S.get(R.string.privacy_title),
             onBack = onBack
         ) {
             when {
@@ -69,15 +70,15 @@ fun PrivacyScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         ToggleRow(
-                            title = stringResource(R.string.privacy_show_distance),
-                            subtitle = stringResource(R.string.privacy_show_distance_desc),
+                            title = S.get(R.string.privacy_show_distance),
+                            subtitle = S.get(R.string.privacy_show_distance_desc),
                             checked = d.showDistance == true,
                             enabled = !state.updating,
                             onChange = viewModel::toggleDistance
                         )
                         ToggleRow(
-                            title = stringResource(R.string.privacy_stealth),
-                            subtitle = stringResource(R.string.privacy_stealth_desc),
+                            title = S.get(R.string.privacy_stealth),
+                            subtitle = S.get(R.string.privacy_stealth_desc),
                             checked = d.stealthMode == true,
                             enabled = !state.updating,
                             onChange = viewModel::toggleStealth
@@ -88,26 +89,26 @@ fun PrivacyScreen(
                             onSelect = viewModel::setFriendRequests
                         )
                         ReadOnlyRow(
-                            title = stringResource(R.string.privacy_profile_visibility),
+                            title = S.get(R.string.privacy_profile_visibility),
                             value = when (d.profileVisibility) {
-                                "public" -> stringResource(R.string.privacy_visibility_public)
-                                "private" -> stringResource(R.string.privacy_visibility_private)
+                                "public" -> S.get(R.string.privacy_visibility_public)
+                                "private" -> S.get(R.string.privacy_visibility_private)
                                 else -> d.profileVisibility ?: "-"
                             }
                         )
                         ReadOnlyRow(
-                            title = stringResource(R.string.privacy_last_seen),
+                            title = S.get(R.string.privacy_last_seen),
                             value = if (d.showLastSeen == true)
-                                stringResource(R.string.enabled)
+                                S.get(R.string.enabled)
                             else
-                                stringResource(R.string.disabled)
+                                S.get(R.string.disabled)
                         )
                         ReadOnlyRow(
-                            title = stringResource(R.string.privacy_notification_sound),
+                            title = S.get(R.string.privacy_notification_sound),
                             value = if (d.notificationSound == true)
-                                stringResource(R.string.enabled)
+                                S.get(R.string.enabled)
                             else
-                                stringResource(R.string.disabled)
+                                S.get(R.string.disabled)
                         )
                     }
                 }
@@ -167,9 +168,9 @@ private fun FriendRequestsSelector(
     onSelect: (String) -> Unit
 ) {
     val options = listOf(
-        "everyone" to "الجميع",
-        "contacts" to "من حادثتهم فقط",
-        "nobody" to "لا أحد"
+        "everyone" to S.get(R.string.privacy_everyone),
+        "contacts" to S.get(R.string.privacy_chatted_only),
+        "nobody" to S.get(R.string.privacy_nobody)
     )
     Column(
         modifier = Modifier
@@ -179,7 +180,7 @@ private fun FriendRequestsSelector(
             .padding(16.dp)
     ) {
         Text(
-            text = "من يستطيع إضافتي صديقاً؟",
+            text = S.get(R.string.privacy_who_can_add),
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onSurface
         )

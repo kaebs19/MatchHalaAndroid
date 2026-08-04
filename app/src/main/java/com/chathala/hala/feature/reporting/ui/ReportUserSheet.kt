@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.reporting.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -90,12 +93,12 @@ fun ReportUserSheet(
                 Spacer(Modifier.size(12.dp))
                 Column {
                     Text(
-                        text = "الإبلاغ عن ${targetUserName ?: "المستخدم"}",
+                        text = S.get(R.string.report_user_named, targetUserName ?: S.get(R.string.label_user)),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "بلاغك سري — فريقنا يراجع كل بلاغ",
+                        text = S.get(R.string.report_confidential),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -105,7 +108,7 @@ fun ReportUserSheet(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                text = "اختر سبب البلاغ",
+                text = S.get(R.string.report_choose_reason),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -129,7 +132,7 @@ fun ReportUserSheet(
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                placeholder = { Text("تفاصيل إضافية (اختياري)") },
+                placeholder = { Text(S.get(R.string.report_extra_details)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
@@ -169,7 +172,7 @@ fun ReportUserSheet(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text("إرسال البلاغ", fontWeight = FontWeight.Bold)
+                    Text(S.get(R.string.report_submit), fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -204,7 +207,7 @@ private fun ReasonRow(
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Text(
-            text = reason.displayAr,
+            text = reason.label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)

@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
@@ -65,34 +66,34 @@ fun ContentPolicyScreen(
     val rules = listOf(
         PolicyRule(
             Icons.Filled.NoAdultContent,
-            "المحتوى الجنسي والإباحي",
-            "يُمنع نشر أو إرسال أي صور أو فيديو أو نصوص جنسية أو إباحية."
+            S.get(R.string.policy_item_sexual_title),
+            S.get(R.string.policy_item_sexual_desc)
         ),
         PolicyRule(
             Icons.Filled.ChildCare,
-            "حماية الأطفال",
-            "أي محتوى يتعلّق بإساءة معاملة القُصّر أو استغلالهم يؤدي إلى حظر دائم وإبلاغ الجهات المختصّة.",
+            S.get(R.string.policy_item_children_title),
+            S.get(R.string.policy_item_children_desc),
             severe = true
         ),
         PolicyRule(
             Icons.Filled.Block,
-            "الأسماء والصور المسيئة",
-            "اسم المستخدم أو صورة الملف ذات الطابع الجنسي أو الإباحي تُعرّض الحساب للحظر."
+            S.get(R.string.policy_item_names_title),
+            S.get(R.string.policy_item_names_desc)
         ),
         PolicyRule(
             Icons.Outlined.Mosque,
-            "الإساءة الدينية والطائفية",
-            "يُمنع ازدراء الأديان أو إثارة النعرات الطائفية والإساءة للمعتقدات."
+            S.get(R.string.policy_item_religious_title),
+            S.get(R.string.policy_item_religious_desc)
         ),
         PolicyRule(
             Icons.Filled.Gavel,
-            "المحتوى السياسي المثير للفتنة",
-            "يُمنع الترويج للعنف أو الكراهية أو إثارة الفتن لأغراض سياسية."
+            S.get(R.string.policy_item_political_title),
+            S.get(R.string.policy_item_political_desc)
         ),
         PolicyRule(
             Icons.Filled.ReportGmailerrorred,
-            "العنف والكراهية والتنمّر",
-            "يُمنع التهديد والتحرّش وخطاب الكراهية والتنمّر بكل أشكاله."
+            S.get(R.string.policy_item_violence_title),
+            S.get(R.string.policy_item_violence_desc)
         )
     )
 
@@ -120,14 +121,14 @@ fun ContentPolicyScreen(
         }
         Spacer(Modifier.height(16.dp))
         Text(
-            text = stringResource(R.string.policy_title),
+            text = S.get(R.string.policy_title),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = stringResource(R.string.policy_subtitle),
+            text = S.get(R.string.policy_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -141,7 +142,7 @@ fun ContentPolicyScreen(
 
         Spacer(Modifier.height(6.dp))
         Text(
-            text = stringResource(R.string.policy_footer),
+            text = S.get(R.string.policy_footer),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier.padding(horizontal = 4.dp)
@@ -166,7 +167,7 @@ fun ContentPolicyScreen(
             )
             Spacer(Modifier.size(4.dp))
             Text(
-                text = stringResource(R.string.policy_check),
+                text = S.get(R.string.policy_check),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -175,7 +176,7 @@ fun ContentPolicyScreen(
         Spacer(Modifier.height(20.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.policy_agree),
+            text = S.get(R.string.policy_agree),
             enabled = checked,
             onClick = onAgree
         )
@@ -187,7 +188,7 @@ fun ContentPolicyScreen(
         ) {
             TextButton(onClick = { showDeclineDialog = true }) {
                 Text(
-                    text = stringResource(R.string.policy_decline),
+                    text = S.get(R.string.policy_decline),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -205,22 +206,22 @@ fun ContentPolicyScreen(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text(stringResource(R.string.policy_decline_title)) },
-            text = { Text(stringResource(R.string.policy_decline_message)) },
+            title = { Text(S.get(R.string.policy_decline_title)) },
+            text = { Text(S.get(R.string.policy_decline_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDeclineDialog = false
                     onDecline()
                 }) {
                     Text(
-                        stringResource(R.string.policy_decline_confirm),
+                        S.get(R.string.policy_decline_confirm),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeclineDialog = false }) {
-                    Text(stringResource(R.string.policy_back))
+                    Text(S.get(R.string.policy_back))
                 }
             }
         )

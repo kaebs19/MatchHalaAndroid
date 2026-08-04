@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -197,7 +200,7 @@ fun SwipeCardView(
         if (photoUrl != null) {
             AsyncImage(
                 model = photoUrl,
-                contentDescription = "صورة ${card.name ?: "المستخدم"}",
+                contentDescription = S.get(R.string.photo_of_named, card.name ?: S.get(R.string.label_user)),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -298,8 +301,8 @@ private fun InfoOverlay(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = buildString {
-                    append(card.name ?: "مستخدم")
-                    if (age != null) append("، $age")
+                    append(card.name ?: S.get(R.string.label_user))
+                    if (age != null) append(S.get(R.string.separator_age, age.toString()))
                 },
                 color = Color.White,
                 fontSize = 26.sp,
@@ -340,11 +343,11 @@ private fun InfoOverlay(
 
         val locationText = buildString {
             val c = com.chathala.hala.core.data.Countries.byCode(card.country)
-            if (c != null) append("${c.flag} ${c.nameAr}")
+            if (c != null) append("${c.flag} ${c.name}")
             else if (!card.country.isNullOrBlank()) append(card.country)
             card.distance?.let {
                 if (isNotEmpty()) append(" • ")
-                append("${it.toInt()} كم")
+                append(S.get(R.string.distance_km, it.toInt()))
             }
         }
         if (locationText.isNotEmpty()) {
@@ -393,7 +396,7 @@ private fun NearbyPill() {
         )
         Spacer(Modifier.width(4.dp))
         Text(
-            text = "بالقرب منك",
+            text = S.get(R.string.discover_near_you),
             color = Color.White,
             fontSize = 11.sp
         )
@@ -417,7 +420,7 @@ private fun OnlinePill() {
         )
         Spacer(Modifier.width(6.dp))
         Text(
-            text = "متصل",
+            text = S.get(R.string.status_online),
             color = Color.White,
             fontSize = 11.sp
         )

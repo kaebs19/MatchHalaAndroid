@@ -1,5 +1,9 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.R
+
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -88,7 +92,7 @@ fun QrCodeSheet(
             }
             Spacer(Modifier.size(16.dp))
             Text(
-                text = androidx.compose.ui.res.stringResource(com.chathala.hala.R.string.qr_share_hint),
+                text = S.get(com.chathala.hala.R.string.qr_share_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 8.dp)

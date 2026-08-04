@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.contact
 
+import com.chathala.hala.core.i18n.S
+
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -44,7 +45,7 @@ fun ContactScreen(onBack: () -> Unit) {
     }
 
     SettingsScaffold(
-        title = stringResource(R.string.contact_title),
+        title = S.get(R.string.contact_title),
         onBack = onBack
     ) {
         Column(
@@ -53,12 +54,12 @@ fun ContactScreen(onBack: () -> Unit) {
         ) {
             // مقدمة
             Text(
-                text = "نحن هنا لمساعدتك",
+                text = S.get(R.string.contact_help_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "تواصل مع فريق هلا عبر القنوات التالية، وسنردّ عليك في أقرب وقت.",
+                text = S.get(R.string.contact_help_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -67,7 +68,7 @@ fun ContactScreen(onBack: () -> Unit) {
             ContactRow(
                 icon = Icons.Filled.Email,
                 iconColor = Color(0xFFE85A9B),
-                label = stringResource(R.string.contact_email),
+                label = S.get(R.string.contact_email),
                 value = OfficialContacts.EMAIL,
                 onClick = {
                     open(Intent(Intent.ACTION_SENDTO, "mailto:${OfficialContacts.EMAIL}".toUri()))
@@ -77,7 +78,7 @@ fun ContactScreen(onBack: () -> Unit) {
             ContactRow(
                 icon = Icons.Filled.Language,
                 iconColor = Color(0xFF2196F3),
-                label = stringResource(R.string.contact_website),
+                label = S.get(R.string.contact_website),
                 value = "www.chathala.com",
                 onClick = {
                     open(Intent(Intent.ACTION_VIEW, OfficialContacts.WEBSITE.toUri()))
@@ -87,7 +88,7 @@ fun ContactScreen(onBack: () -> Unit) {
             ContactRow(
                 icon = Icons.Filled.CameraAlt,
                 iconColor = Color(0xFFC13584),
-                label = "إنستغرام",
+                label = S.get(R.string.social_instagram),
                 value = "@hala.chat",
                 onClick = {
                     open(Intent(Intent.ACTION_VIEW, OfficialContacts.INSTAGRAM.toUri()))
@@ -97,7 +98,7 @@ fun ContactScreen(onBack: () -> Unit) {
             ContactRow(
                 icon = Icons.Filled.Facebook,
                 iconColor = Color(0xFF1877F2),
-                label = "فيسبوك",
+                label = S.get(R.string.social_facebook),
                 value = "Halachatapp",
                 onClick = {
                     open(Intent(Intent.ACTION_VIEW, OfficialContacts.FACEBOOK.toUri()))

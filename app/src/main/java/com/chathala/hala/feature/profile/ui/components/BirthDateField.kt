@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
@@ -72,7 +73,7 @@ fun BirthDateField(
             )
             Text(
                 text = selected?.let { DateUtils.formatDisplay(it) }
-                    ?: stringResource(R.string.field_birthdate),
+                    ?: S.get(R.string.field_birthdate),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = if (selected != null) FontWeight.Medium else FontWeight.Normal
                 ),
@@ -114,10 +115,10 @@ fun BirthDateField(
                         onSelect(cal.time)
                     }
                     dialogOpen = false
-                }) { Text("تأكيد") }
+                }) { Text(S.get(R.string.action_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { dialogOpen = false }) { Text("إلغاء") }
+                TextButton(onClick = { dialogOpen = false }) { Text(S.get(R.string.action_cancel)) }
             }
         ) {
             DatePicker(state = state)

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.content
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +54,7 @@ fun ContentPreferencesScreen(
 ) {
     val enabled by viewModel.sensitiveContentEnabled.collectAsStateWithLifecycle(initialValue = false)
 
-    SettingsScaffold(title = "المحتوى الحساس", onBack = onBack, scrollable = false) {
+    SettingsScaffold(title = S.get(R.string.settings_sensitive_content), onBack = onBack, scrollable = false) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,7 +78,7 @@ fun ContentPreferencesScreen(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                text = "عرض المحتوى الحساس",
+                text = S.get(R.string.content_show_sensitive),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
@@ -84,7 +87,7 @@ fun ContentPreferencesScreen(
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "تطبيقنا يحجب تلقائياً الكلمات الجنسية في المحادثات لحمايتك.\nيمكنك (لو كنت بالغاً) السماح بعرضها بضغطة واحدة عند الحاجة.",
+                text = S.get(R.string.content_show_sensitive_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -106,7 +109,7 @@ fun ContentPreferencesScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "الميزة مفعّلة. يمكنك الكشف عن المحتوى المحجوب بضغطة.",
+                            text = S.get(R.string.content_enabled_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF4CAF50),
                             modifier = Modifier.weight(1f),
@@ -140,7 +143,7 @@ fun ContentPreferencesScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "السماح بالعرض",
+                            text = S.get(R.string.content_allow_display),
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -153,7 +156,7 @@ fun ContentPreferencesScreen(
                         )
                     }
                     Text(
-                        text = "اضغط للتفعيل/التعطيل",
+                        text = S.get(R.string.content_tap_toggle),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -171,29 +174,29 @@ fun ContentPreferencesScreen(
             InfoCard(
                 icon = Icons.Filled.Shield,
                 iconTint = Color(0xFF2196F3),
-                title = "حمايتك أولوية",
-                description = "الحظر افتراضي. التفعيل اختياري بضغطة منك فقط."
+                title = S.get(R.string.content_protection_title),
+                description = S.get(R.string.content_protection_desc)
             )
             Spacer(Modifier.height(8.dp))
             InfoCard(
                 icon = Icons.Filled.People,
                 iconTint = Color(0xFFE53935),
-                title = "للبالغين فقط (+18)",
-                description = "نتحقق من العمر بناءً على تاريخ ميلادك المحفوظ."
+                title = S.get(R.string.content_adults_only),
+                description = S.get(R.string.content_adults_only_desc)
             )
             Spacer(Modifier.height(8.dp))
             InfoCard(
                 icon = Icons.Filled.Loop,
                 iconTint = Color(0xFF43A047),
-                title = "يمكنك الإلغاء أي وقت",
-                description = "أطفئ التوجيل وستعودون الكلمات للحجب فوراً."
+                title = S.get(R.string.content_cancel_anytime),
+                description = S.get(R.string.content_cancel_anytime_desc)
             )
             Spacer(Modifier.height(8.dp))
             InfoCard(
                 icon = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 iconTint = Color(0xFFF57C00),
-                title = "روابط خارجية تبقى محجوبة",
-                description = "حسابات سناب/إنستا/واتساب تبقى دائماً محجوبة لحمايتك."
+                title = S.get(R.string.content_external_links_blocked),
+                description = S.get(R.string.content_external_links_desc)
             )
 
             Spacer(Modifier.height(32.dp))

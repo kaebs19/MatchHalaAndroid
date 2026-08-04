@@ -135,6 +135,8 @@
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
     <string name="settings_theme_title">اختر المظهر</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_language_title">اختر اللغة</string>
     <string name="settings_section_docs">المستندات</string>
     <string name="settings_section_about">عن التطبيق</string>
     <string name="settings_version">الإصدار</string>
@@ -334,4 +336,944 @@
     <string name="policy_decline_message">لا يمكن استخدام التطبيق دون الموافقة على سياسة المحتوى. سيتم تسجيل خروجك.</string>
     <string name="policy_decline_confirm">خروج</string>
     <string name="policy_back">رجوع</string>
+
+    <!-- ═══ نصوص مُرحَّلة من الكود (auto-extracted) ═══ -->
+
+    <!-- com/chathala/hala/core/network/ErrorMessages.kt -->
+    <string name="err_banned_name">الاسم غير مسموح — اختر اسماً آخر</string>
+    <string name="err_name_cooldown">يمكنك تغيير الاسم مرة كل 30 يوم فقط</string>
+    <string name="err_name_blocked">تم منعك من تغيير الاسم من قِبل الإدارة</string>
+    <string name="err_photo_blocked">تم منعك من تغيير الصورة من قِبل الإدارة</string>
+    <string name="err_photo_cooldown">انتظر دقيقة قبل تغيير الصورة مجدداً</string>
+    <string name="err_max_photos">وصلت للحد الأقصى من الصور</string>
+    <string name="err_premium_required">هذه الميزة متاحة للمشتركين فقط</string>
+    <string name="err_account_banned">تم حظر حسابك بسبب مخالفات متكررة</string>
+    <string name="err_account_suspended">حسابك معلّق مؤقتاً</string>
+    <string name="err_device_banned">هذا الجهاز محظور من استخدام التطبيق</string>
+    <string name="err_cannot_interact">لا يمكن التفاعل مع هذا المستخدم</string>
+    <string name="err_request_already_sent">أرسلت طلبك بالفعل — انتظر رد الطرف الآخر قبل إرسال رسالة أخرى</string>
+    <string name="err_chat_not_accepted">لا يمكنك الإرسال حتى تُقبل المحادثة</string>
+    <string name="err_chat_ended">انتهت هذه المحادثة — أرسل طلباً جديداً للاستئناف</string>
+    <string name="err_chat_inactive">المحادثة غير نشطة</string>
+    <string name="err_user_suspended_send">لا يمكن إرسال رسالة — المستخدم موقوف</string>
+    <string name="err_edit_window_expired">انتهت مهلة تعديل هذه الرسالة (١٥ دقيقة)</string>
+    <string name="err_edit_text_only">يمكن تعديل الرسائل النصّية فقط</string>
+    <string name="err_edit_not_owner">لا يمكنك تعديل رسالة شخص آخر</string>
+    <string name="err_edit_blocked_promo">تم حجب التعديل — لا يمكن مشاركة حسابات خارجية</string>
+    <string name="err_session_expired">انتهت جلستك — سجّل الدخول مجدداً</string>
+
+    <!-- com/chathala/hala/core/network/NetworkResult.kt -->
+    <string name="err_check_connection">تحقق من اتصالك بالإنترنت</string>
+    <string name="err_unexpected">خطأ غير متوقع</string>
+
+    <!-- com/chathala/hala/core/util/Validators.kt -->
+    <string name="valid_email_required">البريد الإلكتروني مطلوب</string>
+    <string name="valid_email_invalid">البريد الإلكتروني غير صحيح</string>
+    <string name="valid_password_required">كلمة المرور مطلوبة</string>
+    <string name="valid_password_lowercase">يجب أن تحتوي على حرف إنجليزي صغير</string>
+    <string name="valid_password_uppercase">يجب أن تحتوي على حرف إنجليزي كبير</string>
+    <string name="valid_password_digit">يجب أن تحتوي على رقم</string>
+    <string name="valid_password_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="valid_name_letters_only">الاسم يجب أن يحتوي على حروف فقط (عربية أو إنجليزية)</string>
+    <string name="valid_birthdate_required">تاريخ الميلاد مطلوب</string>
+    <string name="valid_birthdate_invalid">تاريخ الميلاد غير صحيح</string>
+
+    <!-- com/chathala/hala/core/util/Zodiac.kt -->
+    <string name="zodiac_aries">الحمل</string>
+    <string name="zodiac_taurus">الثور</string>
+    <string name="zodiac_gemini">الجوزاء</string>
+    <string name="zodiac_cancer">السرطان</string>
+    <string name="zodiac_leo">الأسد</string>
+    <string name="zodiac_virgo">العذراء</string>
+    <string name="zodiac_libra">الميزان</string>
+    <string name="zodiac_scorpio">العقرب</string>
+    <string name="zodiac_sagittarius">القوس</string>
+    <string name="zodiac_capricorn">الجدي</string>
+    <string name="zodiac_aquarius">الدلو</string>
+    <string name="zodiac_pisces">الحوت</string>
+
+    <!-- com/chathala/hala/feature/auth/data/AuthRepository.kt -->
+    <string name="auth_code_sent">تم إرسال رمز التحقق</string>
+    <string name="auth_password_changed">تم تغيير كلمة المرور</string>
+    <string name="auth_no_active_session">لا يوجد جلسة نشطة</string>
+    <string name="auth_account_deleted">تم حذف الحساب</string>
+
+    <!-- com/chathala/hala/feature/auth/data/GoogleSignInHelper.kt -->
+    <string name="google_unexpected_credential">نوع بيانات الاعتماد غير متوقع</string>
+    <string name="google_no_accounts">لا توجد حسابات Google على الجهاز. أضف حساباً من الإعدادات وحاول مجدداً.</string>
+    <string name="google_read_failed">فشل قراءة بيانات Google</string>
+    <string name="google_signin_failed">تعذّر الدخول بـ Google — حاول مجدداً</string>
+
+    <!-- com/chathala/hala/feature/auth/ui/ContentPolicyScreen.kt -->
+    <string name="policy_item_sexual_title">المحتوى الجنسي والإباحي</string>
+    <string name="policy_item_sexual_desc">يُمنع نشر أو إرسال أي صور أو فيديو أو نصوص جنسية أو إباحية.</string>
+    <string name="policy_item_children_title">حماية الأطفال</string>
+    <string name="policy_item_children_desc">أي محتوى يتعلّق بإساءة معاملة القُصّر أو استغلالهم يؤدي إلى حظر دائم وإبلاغ الجهات المختصّة.</string>
+    <string name="policy_item_names_title">الأسماء والصور المسيئة</string>
+    <string name="policy_item_names_desc">اسم المستخدم أو صورة الملف ذات الطابع الجنسي أو الإباحي تُعرّض الحساب للحظر.</string>
+    <string name="policy_item_religious_title">الإساءة الدينية والطائفية</string>
+    <string name="policy_item_religious_desc">يُمنع ازدراء الأديان أو إثارة النعرات الطائفية والإساءة للمعتقدات.</string>
+    <string name="policy_item_political_title">المحتوى السياسي المثير للفتنة</string>
+    <string name="policy_item_political_desc">يُمنع الترويج للعنف أو الكراهية أو إثارة الفتن لأغراض سياسية.</string>
+    <string name="policy_item_violence_title">العنف والكراهية والتنمّر</string>
+    <string name="policy_item_violence_desc">يُمنع التهديد والتحرّش وخطاب الكراهية والتنمّر بكل أشكاله.</string>
+
+    <!-- com/chathala/hala/feature/auth/ui/RegisterScreen.kt -->
+    <string name="err_must_agree_policy">يجب الموافقة على الشروط وسياسة الخصوصية</string>
+
+    <!-- com/chathala/hala/feature/auth/ui/ResetPasswordScreen.kt -->
+    <string name="valid_reset_code_required">رمز التحقق مطلوب</string>
+    <string name="valid_password_min6">كلمة المرور يجب أن تكون 6 أحرف على الأقل</string>
+
+    <!-- com/chathala/hala/feature/blocking/data/BlockingRepository.kt -->
+    <string name="block_user_blocked">تم حظر المستخدم</string>
+    <string name="block_user_unblocked">تم إلغاء الحظر</string>
+
+    <!-- com/chathala/hala/feature/blocking/ui/BlockedUsersScreen.kt -->
+    <string name="block_unblock_message">سيتمكن هذا المستخدم من التواصل معك مجدداً.</string>
+    <string name="block_unblock">إلغاء الحظر</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="blocked_list_title">المحظورون</string>
+    <string name="label_user">مستخدم</string>
+    <string name="blocked_empty_title">لا يوجد مستخدمون محظورون</string>
+    <string name="blocked_empty_desc">عند حظر أحد المستخدمين سيظهر هنا لإلغاء الحظر.</string>
+
+    <!-- com/chathala/hala/feature/chats/data/ConversationsRepository.kt -->
+    <string name="err_data_unavailable">بيانات غير متوفرة</string>
+    <string name="err_conversation_unavailable">المحادثة غير متوفرة</string>
+    <string name="conv_accepted">تم قبول المحادثة</string>
+    <string name="conv_rejected">تم رفض المحادثة</string>
+    <string name="conv_updated">تم التحديث</string>
+    <string name="conv_deleted">تم حذف المحادثة</string>
+    <string name="conv_ended">تم إنهاء المحادثة</string>
+    <string name="conv_request_sent">تم إرسال الطلب</string>
+    <string name="conv_mode_change_failed">فشل تغيير الوضع</string>
+
+    <!-- com/chathala/hala/feature/chats/data/DeletedAccount.kt -->
+    <string name="deleted_account_name">حساب محذوف</string>
+
+    <!-- com/chathala/hala/feature/chats/data/MessagesRepository.kt -->
+    <string name="msg_send_failed">فشل إرسال الرسالة</string>
+    <string name="msg_image_read_failed">تعذّر قراءة الصورة</string>
+    <string name="msg_image_send_failed">فشل إرسال الصورة</string>
+    <string name="msg_audio_send_failed">فشل إرسال الصوت</string>
+    <string name="msg_edit_failed">فشل تعديل الرسالة</string>
+    <string name="msg_deleted">تم الحذف</string>
+    <string name="msg_forward_failed">فشل إعادة التوجيه</string>
+    <string name="msg_reveal_failed">فشل الكشف</string>
+    <string name="appeal_submitted">تم تقديم الاستئناف، سيتم مراجعته في أقرب فرصة ممكنة</string>
+    <string name="request_submitted">تم إرسال طلبك، سيراجعه المشرف في أقرب فرصة ممكنة</string>
+
+    <!-- com/chathala/hala/feature/chats/data/PromoKeywordDetector.kt -->
+    <string name="promo_cat_snapchat">سناب شات</string>
+    <string name="promo_cat_instagram">إنستقرام</string>
+    <string name="promo_cat_whatsapp">واتساب</string>
+    <string name="promo_cat_telegram">تيليقرام</string>
+    <string name="promo_cat_tiktok">تيك توك</string>
+    <string name="promo_cat_phone">رقم هاتف</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/ChatScreen.kt -->
+    <string name="chat_title_default">محادثة</string>
+    <string name="chat_account_gone">هذا الحساب لم يعد موجوداً</string>
+    <string name="status_offline">غير متصل</string>
+    <string name="status_typing">يكتب</string>
+    <string name="status_online_now">متصل الآن</string>
+    <string name="status_online">متصل</string>
+    <string name="chat_scroll_to_bottom">النزول للأسفل</string>
+    <string name="chat_delete_from_my_list">حذف من قائمتي</string>
+    <string name="chat_delete_from_my_list_msg">سيتم حذف المحادثة من قائمتك فقط (لا يتأثر الطرف الآخر، وتعود عند أي رسالة جديدة). هل تريد المتابعة؟</string>
+    <string name="action_delete">حذف</string>
+    <string name="chat_end_for_both">إنهاء المحادثة للطرفين</string>
+    <string name="chat_end_for_both_msg">سيتم إنهاء المحادثة للطرفين مع بقاء الرسائل. لن يمكن الإرسال إلا بإرسال طلب جديد يُقبل من الطرف الآخر. هل تريد المتابعة؟</string>
+    <string name="action_end">إنهاء</string>
+    <string name="action_undo">تراجع</string>
+    <string name="chat_block_user">حظر المستخدم</string>
+    <string name="action_block">حظر</string>
+    <string name="chat_mute_notifications">كتم الإشعارات</string>
+    <string name="chat_report_user">الإبلاغ عن المستخدم</string>
+    <string name="chat_untrust">إلغاء الثقة بالمحادثة</string>
+    <string name="chat_trust">ثقة بهذه المحادثة</string>
+    <string name="chat_unread_messages">الرسائل غير المقروءة</string>
+    <string name="chat_request_rejected">تم رفض هذه المحادثة</string>
+    <string name="chat_request_expired">انتهت صلاحية الطلب</string>
+    <string name="chat_waiting_acceptance">في انتظار قبول الطرف الآخر…</string>
+    <string name="chat_accept_first">اقبل الطلب أولاً للردّ</string>
+    <string name="chat_cannot_reply_now">لا يمكن الردّ حالياً</string>
+    <string name="chat_sending">جارٍ الإرسال…</string>
+    <string name="chat_send_new_request">إرسال طلب جديد</string>
+    <string name="chat_account_restricted">حسابك مقيّد مؤقتاً</string>
+    <string name="chat_restricted_promo_msg">تم تقييد المراسلة بسبب تكرار نشر حسابات خارجية.</string>
+    <string name="chat_you_blocked_them">قمت بحظر هذا المستخدم — ألغِ الحظر للمراسلة</string>
+    <string name="chat_cannot_message_user">لا يمكنك مراسلة هذا المستخدم</string>
+    <string name="chat_cannot_message_suspended">لا يمكن مراسلة مستخدم موقوف</string>
+    <string name="chat_cannot_message_deleted">حساب محذوف — لا يمكن إرسال رسائل</string>
+    <string name="chat_messaging_locked">المراسلة مقفلة مؤقتاً</string>
+    <string name="chat_restricted_promo_short">تم تقييد المراسلة بسبب نشر حسابات خارجية</string>
+    <string name="chat_review_pending">طلب المراجعة قيد المعالجة لدى المشرف</string>
+    <string name="chat_request_review">طلب مراجعة</string>
+    <string name="chat_secret_title">محادثتك سرية</string>
+    <string name="chat_secret_desc">لا يمكن الاطلاع عليها ما لم تقم بمشاركتها</string>
+    <string name="chat_say_hello">ابدأ الحديث بقول مرحباً 👋</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/ChatViewModel.kt -->
+    <string name="chat_deleted_no_profile">حساب محذوف — لم يعد لهذا المستخدم ملف شخصي</string>
+    <string name="chat_new_request_sent">تم إرسال طلب محادثة جديد</string>
+    <string name="chat_other_ended">أنهى الطرف الآخر المحادثة</string>
+    <string name="chat_restriction_lifted">✅ تم رفع تقييد المراسلة — يمكنك الإرسال الآن</string>
+    <string name="chat_cannot_message_deleted_acc">لا يمكن مراسلة حساب محذوف</string>
+    <string name="chat_locked_promo">المراسلة مقفلة مؤقتاً بسبب نشر حسابات خارجية</string>
+    <string name="chat_cannot_reply_before_accept">لا يمكن الرد قبل قبول الطلب</string>
+    <string name="msg_forwarded">تم إعادة توجيه الرسالة</string>
+    <string name="img_load_failed_retry">تعذّر تحميل الصورة — حاول مجدداً</string>
+    <string name="msg_blocked_title">تم حجب رسالتك</string>
+    <string name="msg_blocked_desc">تم التعرف تلقائياً على مشاركة حساب خارجي. سياسة المنصة تمنع ذلك، وتكرار مشاركة حسابات أو أرقام يقيّد حسابك آلياً.</string>
+    <string name="feature_unavailable">الميزة غير متاحة حالياً</string>
+    <string name="enable_sensitive_first">فعّل عرض المحتوى الحساس من الإعدادات أولاً</string>
+    <string name="adults_only_18">هذا الخيار للبالغين فقط (+18)</string>
+    <string name="trust_enabled_msg">تم تفعيل الثقة — يُكشف المحتوى الحساس في هذه المحادثة تلقائياً</string>
+    <string name="trust_disabled_msg">تم إلغاء الثقة بهذه المحادثة</string>
+    <string name="chat_muted">تم كتم المحادثة</string>
+    <string name="chat_unmuted">تم إلغاء الكتم</string>
+    <string name="rec_start_failed">تعذّر بدء التسجيل</string>
+    <string name="rec_failed">فشل التسجيل</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ChatListItem.kt -->
+    <string name="day_today">اليوم</string>
+    <string name="day_yesterday">الأمس</string>
+    <string name="day_saturday">السبت</string>
+    <string name="day_sunday">الأحد</string>
+    <string name="day_monday">الإثنين</string>
+    <string name="day_tuesday">الثلاثاء</string>
+    <string name="day_wednesday">الأربعاء</string>
+    <string name="day_thursday">الخميس</string>
+    <string name="day_friday">الجمعة</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ChatModeDialog.kt -->
+    <string name="chatmode_delete_on_exit">حذف عند الخروج</string>
+    <string name="chatmode_delete_on_exit_desc">تُمسح الرسائل من جهازك عند إغلاق المحادثة</string>
+    <string name="chatmode_delete_24h">حذف بعد 24 ساعة</string>
+    <string name="chatmode_delete_24h_desc">تختفي الرسائل تلقائياً بعد يوم</string>
+    <string name="chatmode_keep">الاحتفاظ دائماً</string>
+    <string name="chatmode_keep_desc">الرسائل تبقى كما هي دون حذف</string>
+    <string name="chatmode_title">وضع المحادثة</string>
+    <string name="action_close">إغلاق</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/EditMessageDialog.kt -->
+    <string name="edit_message_title">تعديل الرسالة 👑</string>
+    <string name="edit_message_hint">يمكن التعديل خلال ١٥ دقيقة من الإرسال، ويظهر للطرف الآخر وسم «مُعدَّلة».</string>
+    <string name="action_saving">جارٍ الحفظ…</string>
+    <string name="action_save">حفظ</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ExternalPromoBlockedDialog.kt -->
+    <string name="label_warning">التحذير</string>
+    <string name="promo_blocked_desc">تم التعرف تلقائياً على مشاركة حساب خارجي. سياسة المنصة تمنع نشر أو طلب الحسابات والأرقام، وتكرار ذلك يقيّد حسابك تلقائياً — رسائلك أمانة، حافظ على التواصل داخل التطبيق.</string>
+    <string name="promo_auto_detect_title">كشف تلقائي</string>
+    <string name="promo_auto_detect_desc">النظام يكشف الحسابات الخارجية تلقائياً. يُرجى الالتزام بسياسة التطبيق.</string>
+    <string name="promo_trust_title">رسائلك أمانة</string>
+    <string name="promo_trust_desc">نحرص على بقاء التواصل داخل المنصة لحمايتك وحماية الطرف الآخر.</string>
+    <string name="promo_detected_words">الكلمات المكتشفة:</string>
+    <string name="promo_understood">فهمت والتزم</string>
+    <string name="promo_appeal_title">استئناف الحجب</string>
+    <string name="promo_appeal_desc">اكتب سبب استئنافك. سيتم مراجعته في أقرب فرصة ممكنة.</string>
+    <string name="promo_appeal_hint">سبب الاستئناف...</string>
+    <string name="action_send">إرسال</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ForwardSheet.kt -->
+    <string name="forward_to">إعادة توجيه إلى</string>
+    <string name="forward_no_chats">لا توجد محادثات متاحة</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/MessageBubble.kt -->
+    <string name="msg_edited">مُعدَّلة</string>
+    <string name="msg_reveal_blocked_words">كشف الكلمات المحجوبة</string>
+    <string name="msg_type_photo">📷 صورة</string>
+    <string name="msg_type_audio">🎙️ صوت</string>
+    <string name="source_camera">كاميرا</string>
+    <string name="source_gallery">معرض</string>
+    <string name="temp_photo">صورة مؤقتة</string>
+    <string name="label_expired">انتهت</string>
+    <string name="photo_expired">انتهت صلاحية الصورة</string>
+    <string name="photo_loading">جارٍ تحميل الصورة…</string>
+    <string name="photo_tap_to_view">اضغط للمشاهدة</string>
+    <string name="msg_was_deleted">🚫  تم حذف الرسالة</string>
+    <string name="action_pause">إيقاف</string>
+    <string name="action_play">تشغيل</string>
+    <string name="sensitive_content">محتوى حساس</string>
+    <string name="tap_to_reveal">اضغط للكشف عن المحتوى</string>
+    <string name="status_sending">قيد الإرسال</string>
+    <string name="status_read">تمت القراءة</string>
+    <string name="status_delivered">تم التسليم</string>
+    <string name="status_sent">أُرسلت</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/MessageContextMenu.kt -->
+    <string name="action_reply">رد</string>
+    <string name="action_copy">نسخ</string>
+    <string name="action_forward">إعادة توجيه</string>
+    <string name="action_edit">تعديل</string>
+    <string name="action_report">إبلاغ</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/MuteDialog.kt -->
+    <string name="mute_one_hour">ساعة واحدة</string>
+    <string name="mute_eight_hours">8 ساعات</string>
+    <string name="mute_one_day">يوم كامل</string>
+    <string name="mute_one_week">أسبوع</string>
+    <string name="mute_forever">للأبد</string>
+    <string name="mute_dialog_desc">اختر مدة كتم الإشعارات من هذه المحادثة</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/chat/components/ReplyPreviewBar.kt -->
+    <string name="msg_type_voice">🎙️ رسالة صوتية</string>
+    <string name="msg_type_video">🎥 فيديو</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/ChatsScreen.kt -->
+    <string name="chat_delete_title">حذف المحادثة</string>
+    <string name="chat_delete_message">سيتم حذف المحادثة من قائمتك فقط. هل تريد المتابعة؟</string>
+    <string name="search_close">إغلاق البحث</string>
+    <string name="chats_search_hint">ابحث في المحادثات…</string>
+    <string name="chats_title">المحادثات</string>
+    <string name="friends_title">الأصدقاء</string>
+    <string name="action_search">بحث</string>
+    <string name="empty_no_results">لا توجد نتائج</string>
+    <string name="empty_no_results_desc">حاول البحث بكلمة أخرى.</string>
+    <string name="chats_empty_unread">لا توجد محادثات غير مقروءة</string>
+    <string name="chats_empty_unread_desc">قرأتَ كل شيء — أحسنت!</string>
+    <string name="chats_empty_pinned">لا توجد محادثات مثبّتة</string>
+    <string name="chats_empty_pinned_desc">اسحب يميناً على أي محادثة لتثبيتها.</string>
+    <string name="chats_empty_premium">لا توجد محادثات مع مستخدمين مميزين</string>
+    <string name="chats_empty_premium_desc">ستظهر هنا المحادثات مع حاملي 👑.</string>
+    <string name="chats_empty_all">لا توجد محادثات بعد</string>
+    <string name="chats_empty_all_desc">ابدأ من شاشة الاكتشاف وابعث طلب محادثة جديد.</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/ChatsViewModel.kt -->
+    <string name="chat_unpinned">تم إلغاء التثبيت</string>
+    <string name="chat_pinned">تم تثبيت المحادثة</string>
+    <string name="deleted_no_block_needed">حساب محذوف — لا حاجة للحظر</string>
+    <string name="deleted_cannot_report">حساب محذوف — لا يمكن الإبلاغ عنه</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/components/ChatsFilterChips.kt -->
+    <string name="filter_all">الكل</string>
+    <string name="filter_unread">غير مقروءة</string>
+    <string name="filter_requests">طلبات</string>
+    <string name="filter_my_friends">أصدقائي</string>
+    <string name="filter_close">مقربون</string>
+    <string name="filter_premium">مميزون</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/components/ConversationActionsSheet.kt -->
+    <string name="label_conversation">المحادثة</string>
+    <string name="action_unpin">إلغاء التثبيت</string>
+    <string name="action_pin">تثبيت المحادثة</string>
+    <string name="action_unmute">إلغاء كتم الإشعارات</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/list/components/ConversationRow.kt -->
+    <string name="msg_type_file">📎 ملف</string>
+    <string name="chat_update_placeholder">— تحديث المحادثة</string>
+    <string name="chat_start">ابدأ المحادثة 👋</string>
+    <string name="status_active_recently">نشط مؤخراً</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/PendingRequestsScreen.kt -->
+    <string name="pending_requests_title">طلبات المحادثة</string>
+    <string name="pending_received">مستلمة</string>
+    <string name="pending_sent">مرسلة</string>
+    <string name="pending_awaiting_reply">بانتظار الرد</string>
+    <string name="pending_wants_to_talk">يريد التحدث معك</string>
+    <string name="label_new">جديد</string>
+    <string name="pending_empty_received">لا توجد طلبات مستلمة</string>
+    <string name="pending_empty_sent">لا توجد طلبات مرسلة</string>
+    <string name="pending_empty_received_desc">ستظهر هنا طلبات المحادثة الواردة إليك.</string>
+    <string name="pending_empty_sent_desc">الطلبات التي ترسلها للمستخدمين تظهر هنا حتى يتم الرد عليها.</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/PendingRequestsViewModel.kt -->
+    <string name="pending_accepted_with_greeting">تم القبول وإرسال الترحيب</string>
+    <string name="pending_accepted">تم قبول الطلب</string>
+    <string name="pending_accept_failed">فشل قبول الطلب</string>
+    <string name="pending_cancelled">تم إلغاء الطلب</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/components/GreetingDialog.kt -->
+    <string name="greeting_title">قبول مع ترحيب</string>
+    <string name="greeting_hint">مرحباً! سعيد بتواصلك…</string>
+    <string name="greeting_send_accept">إرسال وقبول</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/pending/components/PendingRequestRow.kt -->
+    <string name="action_decline">رفض</string>
+    <string name="action_accept_greet">قبول + ترحيب</string>
+    <string name="action_accept">قبول</string>
+    <string name="super_like_label">Super Like — إعجاب مميز</string>
+
+    <!-- com/chathala/hala/feature/chats/ui/request/RequestPreviewScreen.kt -->
+    <string name="request_gone_title">لم يعد هذا الطلب متاحاً</string>
+    <string name="request_gone_desc">ربما تم قبوله أو رفضه أو ألغاه الطرف الآخر.</string>
+    <string name="action_back">رجوع</string>
+    <string name="request_their_message">رسالته إليك</string>
+    <string name="request_accept_with_greeting">👋  قبول مع رسالة ترحيب</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/DiscoverScreen.kt -->
+    <string name="discover_available_100">أكثر من 100 شخص متاح</string>
+    <string name="discover_available_50">أكثر من 50 شخص متاح</string>
+    <string name="discover_available_20">أكثر من 20 شخص متاح</string>
+    <string name="discover_available_10">أكثر من 10 أشخاص متاحين</string>
+    <string name="discover_available_now">أشخاص متاحون الآن</string>
+    <string name="discover_title">اكتشف</string>
+    <string name="discover_search_users">بحث عن مستخدمين</string>
+    <string name="discover_customize_search">تخصيص البحث</string>
+    <string name="visitors_title_short">الزوار</string>
+    <string name="action_continue">متابعة</string>
+    <string name="discover_cards_finished">انتهت البطاقات</string>
+    <string name="discover_cards_finished_desc">اسحب للأسفل للتحديث أو جرّب تعديل الفلاتر</string>
+    <string name="gate_superlike_title">الإعجاب المميز للبريميوم</string>
+    <string name="gate_superlike_desc">اظهر باهتمامك الفوري واحصل على انتباه أكبر مع الإعجاب المميز. متاح لمشتركي البريميوم.</string>
+    <string name="gate_undo_title">التراجع للبريميوم</string>
+    <string name="gate_undo_desc">سحبت بالخطأ؟ بإمكان مشتركي البريميوم التراجع عن آخر حركة واستعادة البطاقة.</string>
+    <string name="gate_filters_title">الفلترة المتقدّمة للبريميوم</string>
+    <string name="gate_filters_desc">صفِّ نتائج التعارف حسب العمر والدولة والأكثر نشاطاً — الفلترة متاحة لمشتركي البريميوم.</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/DiscoverViewModel.kt -->
+    <string name="discover_chat_exists">محادثة موجودة — افتحها</string>
+    <string name="discover_liked">تم الإعجاب ❤️</string>
+    <string name="discover_new_match">تطابق جديد! 🎉</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/CardDetailSheet.kt -->
+    <string name="discover_write_message">اكتب رسالتك…</string>
+    <string name="discover_send_request">إرسال طلب محادثة</string>
+    <string name="discover_request_sent">✓  تم إرسال الطلب</string>
+    <string name="discover_reported">✓ تم الإبلاغ</string>
+    <string name="action_report_short">الإبلاغ</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/FiltersSheet.kt -->
+    <string name="filter_gender">الجنس</string>
+    <string name="gender_male_short">ذكر</string>
+    <string name="gender_female_short">أنثى</string>
+    <string name="filter_age_range">الفئة العمرية</string>
+    <string name="filter_recently_active">النشيطون مؤخراً</string>
+    <string name="filter_recently_active_desc">عرض من كانوا نشطين خلال 7 أيام</string>
+    <string name="action_reset">إعادة تعيين</string>
+    <string name="action_apply">تطبيق</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/PremiumGateDialog.kt -->
+    <string name="action_upgrade_premium">ترقية للبريميوم</string>
+    <string name="action_later">لاحقاً</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/QuickMessagesRow.kt -->
+    <string name="quick_msg_hi">مرحبا</string>
+    <string name="quick_msg_how_are_you">كيف حالك؟</string>
+    <string name="quick_msg_get_to_know">نتعرف؟</string>
+    <string name="quick_messages_label">رسائل سريعة (اضغط للإرسال)</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/SwipeActionButtons.kt -->
+    <string name="action_skip">تخطي</string>
+    <string name="action_send_message">إرسال رسالة</string>
+    <string name="action_super_like">إعجاب مميز</string>
+    <string name="action_like">إعجاب</string>
+
+    <!-- com/chathala/hala/feature/discover/ui/components/SwipeCardView.kt -->
+    <string name="discover_near_you">بالقرب منك</string>
+
+    <!-- com/chathala/hala/feature/friends/data/FriendsRepository.kt -->
+    <string name="friend_request_declined">تم رفض الطلب</string>
+    <string name="friend_removed">تمت الإزالة</string>
+
+    <!-- com/chathala/hala/feature/friends/ui/FriendsScreen.kt -->
+    <string name="friends_remove_title">إزالة صديق</string>
+    <string name="action_remove">إزالة</string>
+    <string name="friends_empty_title">لا يوجد أصدقاء بعد</string>
+    <string name="friends_empty_desc">أضف أصدقاء من ملفاتهم الشخصية لتظهر هنا.</string>
+    <string name="friend_requests_empty_title">لا توجد طلبات صداقة</string>
+    <string name="friend_requests_empty_desc">طلبات الصداقة الواردة تظهر هنا.</string>
+    <string name="friend_requests_title">طلبات الصداقة</string>
+    <string name="friend_wants_to_add">يريد إضافتك صديقاً</string>
+
+    <!-- com/chathala/hala/feature/friends/ui/FriendsViewModel.kt -->
+    <string name="friends_now_friends">أصبحتما صديقين 🎉</string>
+
+    <!-- com/chathala/hala/feature/legal/data/LegalModels.kt -->
+    <string name="legal_privacy_policy">سياسة الخصوصية</string>
+    <string name="legal_terms_of_use">شروط الاستخدام</string>
+
+    <!-- com/chathala/hala/feature/legal/ui/LegalDocScreen.kt -->
+    <string name="err_generic">حدث خطأ</string>
+    <string name="empty_no_content">لا يوجد محتوى بعد</string>
+
+    <!-- com/chathala/hala/feature/notifications/data/NotificationsRepository.kt -->
+    <string name="notif_updated_one">تم تحديث الإشعار</string>
+    <string name="notif_updated_all">تم تحديث الإشعارات</string>
+    <string name="notif_deleted_one">تم حذف الإشعار</string>
+    <string name="notif_deleted_all">تم حذف جميع الإشعارات</string>
+
+    <!-- com/chathala/hala/feature/notifications/ui/components/NotificationRow.kt -->
+    <string name="notif_official_account">هلا • حساب رسمي</string>
+    <string name="notif_new_like">إعجاب جديد</string>
+    <string name="notif_super_like">سوبر لايك</string>
+    <string name="notif_new_match">مطابقة جديدة</string>
+    <string name="notif_profile_visit">زيارة لبروفايلك</string>
+    <string name="notif_new_follower">متابع جديد</string>
+    <string name="notif_friend_request">طلب صداقة</string>
+    <string name="notif_friend_added">تمت إضافتك صديقاً</string>
+    <string name="notif_account_verification">تحقق من الحساب</string>
+    <string name="notif_admin_alert">تنبيه من الإدارة</string>
+    <string name="notif_account_suspended">تعليق الحساب</string>
+    <string name="notif_account_restricted">قيود على الحساب</string>
+    <string name="notif_security_alert">تنبيه أمني</string>
+    <string name="notif_announcement">إعلان</string>
+    <string name="notif_generic">إشعار</string>
+
+    <!-- com/chathala/hala/feature/notifications/util/NotificationFormat.kt -->
+    <string name="time_now">الآن</string>
+    <string name="time_moments_ago">قبل لحظات</string>
+    <string name="time_minute_ago">قبل دقيقة</string>
+    <string name="time_two_minutes_ago">قبل دقيقتين</string>
+    <string name="time_hour_ago">قبل ساعة</string>
+    <string name="time_two_hours_ago">قبل ساعتين</string>
+    <string name="time_yesterday">أمس</string>
+    <string name="time_two_days_ago">قبل يومين</string>
+
+    <!-- com/chathala/hala/feature/premium/data/BillingManager.kt -->
+    <string name="billing_purchase_failed">فشل الشراء</string>
+    <string name="billing_play_connect_failed">تعذّر الاتصال بمتجر Google Play</string>
+    <string name="billing_no_products">لم تُرجع أي منتجات — تأكد من تفعيلها في Console ومطابقة معرّفاتها</string>
+    <string name="billing_fetch_plans_failed">تعذّر جلب باقات الاشتراك</string>
+    <string name="billing_plan_unavailable">الباقة غير متاحة حالياً</string>
+    <string name="billing_no_offer">لا يوجد عرض متاح لهذه الباقة</string>
+    <string name="billing_verify_failed">تعذّر التحقق من الشراء — إن خُصم المبلغ سيُسترجع تلقائياً</string>
+
+    <!-- com/chathala/hala/feature/premium/data/SubscriptionModels.kt -->
+    <string name="plan_weekly">أسبوعي</string>
+    <string name="plan_monthly">شهري</string>
+    <string name="plan_quarterly">ربع سنوي</string>
+
+    <!-- com/chathala/hala/feature/premium/ui/SubscriptionScreen.kt -->
+    <string name="premium_perk_superlikes">5 إعجابات مميّزة يومياً</string>
+    <string name="premium_perk_top_placement">الظهور في المقدّمة</string>
+    <string name="premium_perk_see_likes">معرفة من أعجب بك</string>
+    <string name="premium_perk_stealth">التصفّح المخفي</string>
+    <string name="premium_perk_gold_badge">شارة ذهبية مميّزة</string>
+    <string name="premium_perk_no_ads">بدون إعلانات</string>
+    <string name="premium_title">هلا بريميوم</string>
+    <string name="premium_subtitle">افتح كل الميزات وابرز بين الأعضاء</string>
+    <string name="premium_loading_plans">جارٍ تحميل الباقات…</string>
+    <string name="premium_connecting_store">جارٍ الاتصال بالمتجر…</string>
+    <string name="premium_subscribe_now">اشترك الآن</string>
+    <string name="premium_renewal_note">يتجدّد الاشتراك تلقائياً ويمكن إلغاؤه في أي وقت من Google Play.</string>
+    <string name="premium_contact_us">اتصل بنا</string>
+
+    <!-- com/chathala/hala/feature/premium/ui/SubscriptionViewModel.kt -->
+    <string name="premium_activated">تم تفعيل اشتراكك المميّز 🎉</string>
+
+    <!-- com/chathala/hala/feature/profile/data/ProfileRepository.kt -->
+    <string name="err_no_session_signin">لا يوجد جلسة نشطة، سجّل الدخول مجدداً</string>
+    <string name="profile_data_updated">تم تحديث البيانات</string>
+    <string name="profile_photo_uploaded">تم رفع الصورة</string>
+    <string name="profile_photo_deleted">تم حذف الصورة</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/EditProfileScreen.kt -->
+    <string name="profile_photo_read_failed">تعذّرت قراءة الصورة</string>
+    <string name="profile_change_photo">تغيير الصورة</string>
+    <string name="profile_tap_change_photo">اضغط لتغيير الصورة</string>
+    <string name="profile_warning_title">تحذير هام</string>
+    <string name="profile_warning_body">أي صورة جنسية أو إباحية، أو اسم أو نبذة تحتوي ألفاظاً أو تلميحات جنسية — </string>
+    <string name="profile_warning_tail">يُعرّض حسابك للحظر النهائي دون إنذار.</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/EditProfileViewModel.kt -->
+    <string name="profile_photo_updated">تم تحديث الصورة</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/ProfileScreen.kt -->
+    <string name="action_copied">تم النسخ</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/BirthDateField.kt -->
+    <string name="action_confirm">تأكيد</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/CountryPicker.kt -->
+    <string name="action_search_hint">بحث…</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/PremiumBanner.kt -->
+    <string name="action_upgrade">ترقية</string>
+
+    <!-- com/chathala/hala/feature/profile/ui/components/VerificationCard.kt -->
+    <string name="verify_verified">موثّق</string>
+    <string name="verify_verified_desc">تم التحقق من حسابك بنجاح</string>
+    <string name="verify_pending">قيد المراجعة</string>
+    <string name="verify_pending_desc">طلب التوثيق قيد المراجعة من الإدارة</string>
+    <string name="verify_rejected">مرفوض</string>
+    <string name="verify_rejected_desc">لم يتم قبول طلب التوثيق — حاول مرة أخرى</string>
+    <string name="verify_unverified">غير موثّق</string>
+    <string name="verify_unverified_desc">وثّق حسابك لبناء الثقة مع الآخرين</string>
+
+    <!-- com/chathala/hala/feature/push/HalaNotificationChannels.kt -->
+    <string name="channel_social_name">التفاعلات</string>
+    <string name="channel_social_desc">إشعارات الإعجابات والمطابقات وزيارات البروفايل</string>
+    <string name="channel_messages_name">الرسائل</string>
+    <string name="channel_messages_desc">إشعارات الرسائل الواردة من المحادثات</string>
+    <string name="channel_system_name">تنبيهات النظام</string>
+    <string name="channel_system_desc">تنبيهات الحساب والأمان والتحقق</string>
+
+    <!-- com/chathala/hala/feature/reporting/data/ReportApiModels.kt -->
+    <string name="report_reason_spam">محتوى إزعاجي / سبام</string>
+    <string name="report_reason_inappropriate">محتوى غير لائق</string>
+    <string name="report_reason_harassment">مضايقة أو إساءة</string>
+    <string name="report_reason_fake">حساب مزيّف</string>
+    <string name="report_reason_other">سبب آخر</string>
+
+    <!-- com/chathala/hala/feature/reporting/data/ReportRepository.kt -->
+    <string name="report_sent">تم إرسال البلاغ</string>
+
+    <!-- com/chathala/hala/feature/reporting/ui/ReportUserSheet.kt -->
+    <string name="report_confidential">بلاغك سري — فريقنا يراجع كل بلاغ</string>
+    <string name="report_choose_reason">اختر سبب البلاغ</string>
+    <string name="report_extra_details">تفاصيل إضافية (اختياري)</string>
+    <string name="report_submit">إرسال البلاغ</string>
+
+    <!-- com/chathala/hala/feature/settings/data/SettingsRepository.kt -->
+    <string name="settings_no_app_info">لا توجد معلومات عن التطبيق</string>
+    <string name="settings_no_contact_info">لا توجد معلومات الاتصال</string>
+    <string name="settings_enabled_toast">تم التفعيل</string>
+    <string name="settings_disabled_toast">تم التعطيل</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/SettingsScreen.kt -->
+    <string name="settings_subscription">الاشتراك</string>
+    <string name="settings_content_prefs">تفضيلات المحتوى</string>
+    <string name="settings_sensitive_content">المحتوى الحساس</string>
+    <string name="label_warning_short">تحذير</string>
+    <string name="label_restricted">مقيّد</string>
+    <string name="label_suspended">معلّق</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/about/AboutScreen.kt -->
+    <string name="about_app_name">هلا شات</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/AccountRestrictionBanner.kt -->
+    <string name="label_ended">انتهى</string>
+    <string name="violation_external_accounts">نشر أو مشاركة حسابات خارجية</string>
+    <string name="violation_policy_breach">مخالفة سياسة الاستخدام</string>
+    <string name="restriction_full_messaging">تقييد كامل للمراسلة</string>
+    <string name="action_review">مراجعة</string>
+    <string name="label_not_reviewable">غير قابلة للمراجعة</string>
+    <string name="restriction_cannot_send">لا يمكنك إرسال رسائل أو طلبات</string>
+    <string name="label_reason">السبب</string>
+    <string name="label_time_remaining">المدة المتبقية</string>
+    <string name="restriction_review_hint">إذا كنت ترى أن التقييد غير صحيح، قدّم طلب مراجعة وسيراجعه المشرف.</string>
+    <string name="restriction_not_reviewable_hint">مخالفات الصور الإباحية أو الجنسية والأسماء المخالفة غير قابلة للمراجعة.</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/AccountSettingsScreen.kt -->
+    <string name="account_standing_title">حالة حسابي</string>
+    <string name="violations_history_title">سجل المخالفات</string>
+    <string name="my_requests_title">طلباتي</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/AccountStandingScreen.kt -->
+    <string name="err_load_data_failed">تعذّر تحميل البيانات</string>
+    <string name="standing_good_title">حسابك سليم</string>
+    <string name="standing_good_desc">لا توجد قيود على حسابك. واصل الالتزام بسياسة المنصة.</string>
+    <string name="standing_warning_desc">اقتربت من حدّ التقييد. أي مخالفة جديدة قد تقيّد مراسلتك.</string>
+    <string name="standing_restricted_title">مراسلتك مقيّدة</string>
+    <string name="standing_restricted_desc">حسابك مقيّد مؤقتاً.</string>
+    <string name="standing_suspended_title">حسابك معلّق</string>
+    <string name="standing_suspended_desc">تم تعليق حسابك مؤقتاً بسبب تكرار المخالفات.</string>
+    <string name="label_unknown">غير معروف</string>
+    <string name="standing_current_cycle">المخالفات في الدورة الحالية</string>
+    <string name="standing_at_threshold">بلغت الحدّ — أي مخالفة تطبّق التصعيد التالي.</string>
+    <string name="standing_view_history">عرض سجل المخالفات ›</string>
+    <string name="standing_escalation_ladder">سُلّم التصعيد</string>
+    <string name="standing_escalation_desc">كل تقييد يرفع المدّة. التزامك يحمي حسابك من الحظر الدائم.</string>
+    <string name="label_next">التالي</string>
+    <string name="label_recovery">الاسترداد</string>
+    <string name="standing_reset_soon">سيُعاد تعيين عدّاد التقييدات قريباً.</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/MyRequestsScreen.kt -->
+    <string name="request_sent_moderator">تم إرسال طلبك، سيراجعه المشرف</string>
+    <string name="err_send_failed_try_later">تعذّر الإرسال، حاول لاحقاً</string>
+    <string name="status_pending">قيد الانتظار</string>
+    <string name="status_transferred">محوّل</string>
+    <string name="status_accepted">مقبول</string>
+    <string name="action_messaging_restriction">تقييد المراسلة</string>
+    <string name="action_account_ban">حظر الحساب</string>
+    <string name="action_device_ban">حظر الجهاز</string>
+    <string name="requests_previous">الطلبات السابقة</string>
+    <string name="requests_empty">لا توجد طلبات سابقة</string>
+    <string name="link_violations_history">⚠️ سجل المخالفات</string>
+    <string name="link_terms">📄 الشروط</string>
+    <string name="link_privacy">🔒 الخصوصية</string>
+    <string name="link_contact_us">✉️ اتصل بنا</string>
+    <string name="link_instagram">📷 إنستا</string>
+    <string name="violation_not_reviewable">هذه المخالفة غير قابلة للمراجعة</string>
+    <string name="submit_review_request">قدّم طلب مراجعة</string>
+    <string name="submit_review_desc">ابدأ محادثة مع فريق الإدارة لإعادة النظر في الإجراء المتخذ ضد حسابك.</string>
+    <string name="submit_review_hint">اكتب أول رسالة للإدارة…</string>
+    <string name="submit_request">إرسال الطلب</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/RequestDetailScreen.kt -->
+    <string name="request_details_title">تفاصيل الطلب</string>
+    <string name="err_load_request_failed">تعذّر تحميل الطلب</string>
+    <string name="request_reply_hint">اكتب ردك للمشرف…</string>
+    <string name="request_closed">تم إغلاق هذا الطلب</string>
+    <string name="request_admin_chat_banner">💬 محادثة مع الإدارة — تواصل مع المشرف لمراجعة الإجراء</string>
+    <string name="label_moderator">المشرف</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/account/ViolationsHistoryScreen.kt -->
+    <string name="violations_empty">لا توجد مخالفات مسجّلة</string>
+    <string name="violation_type_external_accounts">حسابات خارجية</string>
+    <string name="violation_type_banned_words">كلمات محظورة</string>
+    <string name="violation_posted_external_account">نشر حساب خارجي</string>
+    <string name="violation_banned_word">كلمة محظورة</string>
+    <string name="violation_photo">صورة مخالفة</string>
+    <string name="violation_name">اسم مخالف</string>
+    <string name="violation_bio">نبذة مخالفة</string>
+    <string name="violation_spam">إزعاج/سبام</string>
+    <string name="violation_report_accepted">بلاغ مقبول</string>
+    <string name="label_violation">مخالفة</string>
+    <string name="violation_detected_word">الكلمة المكتشفة: </string>
+    <string name="action_restriction">تقييد</string>
+    <string name="action_suspension">تعليق</string>
+    <string name="action_photo_deleted">حذف صورة</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/contact/ContactScreen.kt -->
+    <string name="contact_help_title">نحن هنا لمساعدتك</string>
+    <string name="contact_help_desc">تواصل مع فريق هلا عبر القنوات التالية، وسنردّ عليك في أقرب وقت.</string>
+    <string name="social_instagram">إنستغرام</string>
+    <string name="social_facebook">فيسبوك</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/content/ContentPreferencesScreen.kt -->
+    <string name="content_show_sensitive">عرض المحتوى الحساس</string>
+    <string name="content_show_sensitive_desc">تطبيقنا يحجب تلقائياً الكلمات الجنسية في المحادثات لحمايتك.\nيمكنك (لو كنت بالغاً) السماح بعرضها بضغطة واحدة عند الحاجة.</string>
+    <string name="content_enabled_desc">الميزة مفعّلة. يمكنك الكشف عن المحتوى المحجوب بضغطة.</string>
+    <string name="content_allow_display">السماح بالعرض</string>
+    <string name="content_tap_toggle">اضغط للتفعيل/التعطيل</string>
+    <string name="content_protection_title">حمايتك أولوية</string>
+    <string name="content_protection_desc">الحظر افتراضي. التفعيل اختياري بضغطة منك فقط.</string>
+    <string name="content_adults_only">للبالغين فقط (+18)</string>
+    <string name="content_adults_only_desc">نتحقق من العمر بناءً على تاريخ ميلادك المحفوظ.</string>
+    <string name="content_cancel_anytime">يمكنك الإلغاء أي وقت</string>
+    <string name="content_cancel_anytime_desc">أطفئ التوجيل وستعودون الكلمات للحجب فوراً.</string>
+    <string name="content_external_links_blocked">روابط خارجية تبقى محجوبة</string>
+    <string name="content_external_links_desc">حسابات سناب/إنستا/واتساب تبقى دائماً محجوبة لحمايتك.</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/discover/DiscoverSettingsViewModel.kt -->
+    <string name="premium_members_only">هذه الميزة للمشتركين فقط 👑</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/privacy/PrivacyScreen.kt -->
+    <string name="privacy_everyone">الجميع</string>
+    <string name="privacy_chatted_only">من حادثتهم فقط</string>
+    <string name="privacy_nobody">لا أحد</string>
+    <string name="privacy_who_can_add">من يستطيع إضافتي صديقاً؟</string>
+
+    <!-- com/chathala/hala/feature/settings/ui/security/ChangePasswordViewModel.kt -->
+    <string name="valid_current_password_required">كلمة المرور الحالية مطلوبة</string>
+
+    <!-- com/chathala/hala/feature/suspension/data/SuspensionRepository.kt -->
+    <string name="err_device_status_failed">تعذّر جلب حالة الجهاز</string>
+    <string name="err_appeal_session_expired">انتهت جلسة الاستئناف — أعد تسجيل الدخول وحاول مجدداً</string>
+    <string name="appeal_sent">تم إرسال الاستئناف</string>
+
+    <!-- com/chathala/hala/feature/suspension/ui/SuspendedScreen.kt -->
+    <string name="logout_confirm_title">تسجيل الخروج؟</string>
+    <string name="logout_confirm_body">الإجراء على حسابك سيبقى سارياً. يمكنك متابعة حالة استئنافك من هنا. </string>
+    <string name="logout_confirm_question">هل تريد تسجيل الخروج فعلاً؟</string>
+    <string name="logout_yes">نعم، خروج</string>
+    <string name="logout_stay">البقاء</string>
+    <string name="device_banned_title">هذا الجهاز محظور</string>
+    <string name="account_banned_permanently">تم إيقاف حسابك نهائياً</string>
+    <string name="account_suspended_temporarily">تم إيقاف حسابك مؤقتاً</string>
+    <string name="suspension_policy_note">وفقاً لسياسة الاستخدام في تطبيق هلا. يمكنك مراجعة التفاصيل أدناه وتقديم طلب استئناف للإدارة.</string>
+    <string name="check_suspension_lifted">تحقّق من رفع التعليق</string>
+    <string name="err_load_details_failed">تعذّر جلب التفاصيل</string>
+    <string name="social_instagram_short">إنستا</string>
+    <string name="action_sign_out">تسجيل خروج</string>
+    <string name="my_previous_requests">طلباتي السابقة</string>
+    <string name="action_appeal">استئناف</string>
+    <string name="action_details_title">تفاصيل الإجراء</string>
+    <string name="label_name">الاسم</string>
+    <string name="label_email">البريد</string>
+    <string name="label_id">المعرّف</string>
+    <string name="label_action_type">نوع الإجراء</string>
+    <string name="label_expires_on">ينتهي في</string>
+    <string name="label_violation_severity">درجة المخالفة</string>
+    <string name="action_permanent_ban">حظر دائم</string>
+    <string name="action_temporary_restriction">تقييد مؤقت</string>
+    <string name="action_temporary_suspension">إيقاف مؤقت</string>
+    <string name="device_previous_account">الحساب السابق المرتبط بالجهاز</string>
+    <string name="device_previous_account_desc">هذا الجهاز مرتبط بحساب سابق تم إيقافه.</string>
+    <string name="label_account_created">تاريخ إنشاء الحساب</string>
+    <string name="ban_details_title">تفاصيل الحظر</string>
+    <string name="label_ban_reason">سبب الحظر</string>
+    <string name="label_ban_date">تاريخ الحظر</string>
+    <string name="label_ban_source">جهة الحظر</string>
+    <string name="device_no_new_account">لا يمكن إنشاء حساب جديد من هذا الجهاز — فهو مرتبط بالحساب السابق. </string>
+    <string name="device_appeal_hint">إذا كنت ترى أن الحظر بالخطأ، قدّم استئنافاً وسيراجعه الفريق.</string>
+    <string name="ban_source_admin">من الإدارة</string>
+    <string name="ban_source_system">تلقائي من النظام</string>
+    <string name="ban_source_antispam">نظام مكافحة الإزعاج</string>
+    <string name="submit_appeal_title">تقديم استئناف</string>
+    <string name="submit_appeal_desc">اشرح للإدارة سبب اعتقادك أن القرار غير صحيح. سيتم الرد عبر التطبيق عند الحاجة.</string>
+    <string name="appeal_email_optional">البريد للتواصل (اختياري)</string>
+    <string name="appeal_reason_label">سبب الاستئناف</string>
+    <string name="appeal_submit">إرسال الاستئناف</string>
+    <string name="appeal_sent_desc">تم إرسال الاستئناف. سيتم مراجعته والرد عند الحاجة.</string>
+    <string name="suspension_lifted">تم رفع التعليق ✓</string>
+    <string name="welcome_back_hala">مرحباً بعودتك إلى هلا 👋\n\n</string>
+    <string name="welcome_back_body">تم تفعيل حسابك مجدداً. نذكّرك بالالتزام بسياسة استخدام التطبيق </string>
+    <string name="welcome_back_body_tail">والتعامل باحترام مع الآخرين — التزامك يحمي حسابك من الإيقاف مستقبلاً.</string>
+    <string name="enter_the_app">الدخول للتطبيق</string>
+    <string name="label_unspecified">غير محدد</string>
+
+    <!-- com/chathala/hala/feature/suspension/ui/SuspendedViewModel.kt -->
+    <string name="still_suspended">لا يزال حسابك معلّقاً — حاول لاحقاً</string>
+    <string name="appeal_reason_required">يُرجى كتابة سبب الاستئناف</string>
+
+    <!-- com/chathala/hala/feature/user/data/UserRepository.kt -->
+    <string name="err_unexpected_data_missing">استجابة غير متوقّعة (data مفقود)</string>
+    <string name="err_unexpected_user_missing">استجابة غير متوقّعة (user مفقود)</string>
+    <string name="err_user_data_incomplete">بيانات المستخدم غير مكتملة</string>
+
+    <!-- com/chathala/hala/feature/userprofile/data/UserProfileRepository.kt -->
+    <string name="err_profile_data_unavailable">بيانات البروفايل غير متوفرة</string>
+
+    <!-- com/chathala/hala/feature/userprofile/ui/UserProfileScreen.kt -->
+    <string name="label_this_user">هذا المستخدم</string>
+    <string name="friend_cancel_request_title">إلغاء طلب الصداقة</string>
+    <string name="friend_cancel_request">إلغاء الطلب</string>
+    <string name="friend_decline_request_title">رفض طلب الصداقة</string>
+    <string name="profile_no_new_requests">لا يستقبل طلبات جديدة</string>
+    <string name="profile_premium_only_requests">يستقبل من المشتركين فقط</string>
+    <string name="profile_basic_info">معلومات أساسية</string>
+    <string name="label_status">الحالة</string>
+    <string name="label_age">العمر</string>
+    <string name="label_member_since">عضو منذ</string>
+    <string name="profile_unblock_user">إلغاء حظر المستخدم</string>
+    <string name="profile_liked_you">أعجب بك</string>
+    <string name="profile_premium_user">مستخدم مميز</string>
+    <string name="label_location">الموقع</string>
+    <string name="profile_about_me">نبذة عني</string>
+    <string name="profile_photos">الصور</string>
+    <string name="label_friend">صديق</string>
+    <string name="label_request_sent">مُرسل</string>
+    <string name="action_add">إضافة</string>
+    <string name="label_premium">مميز</string>
+    <string name="action_message">رسالة</string>
+    <string name="label_sent_check">✓ تم الإرسال</string>
+    <string name="profile_account_deleted_desc">قام هذا المستخدم بحذف حسابه، ولم تعد بياناته متاحة</string>
+
+    <!-- com/chathala/hala/feature/userprofile/ui/UserProfileViewModel.kt -->
+    <string name="friend_request_sent">تم إرسال طلب الصداقة</string>
+
+    <!-- com/chathala/hala/feature/verification/ui/VerificationScreen.kt -->
+    <string name="verify_intro">التحقق من الحساب يُظهر شارة زرقاء بجانب اسمك في التطبيق ويُعطيك ثقة أكبر مع المستخدمين.</string>
+    <string name="verify_submit_request">إرسال طلب التوثيق</string>
+    <string name="verify_title">التوثيق</string>
+    <string name="verify_done_title">تم توثيق حسابك</string>
+    <string name="verify_done_desc">يظهر أمام اسمك علامة توثيق زرقاء ✓</string>
+    <string name="verify_pending_title">طلبك قيد المراجعة</string>
+    <string name="verify_pending_note">سنرسل لك إشعار عند اكتمال المراجعة (خلال 24-48 ساعة)</string>
+    <string name="verify_rejected_title">تم رفض الطلب السابق</string>
+    <string name="verify_rejected_note">يمكنك إعادة إرسال صورة سيلفي واضحة وجديدة</string>
+    <string name="verify_not_yet_title">غير موثّق بعد</string>
+    <string name="verify_not_yet_desc">أرسل صورة سيلفي للحصول على علامة التوثيق</string>
+    <string name="verify_choose_selfie">اختر صورة سيلفي</string>
+    <string name="verify_selfie_hint">صورة واضحة لوجهك بدون نظارات أو قناع</string>
+    <string name="verify_tap_change_photo">اضغط على الصورة لاختيار أخرى</string>
+
+    <!-- com/chathala/hala/feature/visitors/ui/VisitorsScreen.kt -->
+    <string name="visitors_title">زوّار ملفك</string>
+    <string name="visitors_reveal_title">اكشف زوّار ملفك</string>
+    <string name="visitors_reveal_desc">اشترك في بريميوم لمعرفة من زارك</string>
+    <string name="visitors_empty_title">لا يوجد زوّار بعد</string>
+    <string name="visitors_empty_desc">عندما يزور أحدهم ملفك سيظهر هنا.</string>
+
+    <!-- com/chathala/hala/ui/components/HalaAsyncImage.kt -->
+    <string name="err_image_load_failed">تعذّر تحميل الصورة</string>
+
+    <!-- ═══ نصوص ذات متغيّرات ═══ -->
+    <string name="err_generic_code">حدث خطأ (%1$s)</string>
+    <string name="valid_password_min_chars">كلمة المرور يجب أن تكون %1$d أحرف على الأقل</string>
+    <string name="valid_name_min_chars">الاسم يجب أن يكون %1$d حرفين على الأقل</string>
+    <string name="valid_name_max_chars">الاسم يجب أن لا يتجاوز %1$d حرفاً</string>
+    <string name="valid_min_age">يجب أن يكون عمرك %1$d سنة على الأقل</string>
+    <string name="block_unblock_named">إلغاء حظر %1$s</string>
+    <string name="chat_promo_warning">مشاركة %1$s قد تُحجَب رسالتك وتُسجَّل مخالفة</string>
+    <string name="chat_block_confirm_named">هل أنت متأكد من حظر %1$s؟ لن يتمكن من مراسلتك أو رؤية ملفك.</string>
+    <string name="chat_can_send_after">يمكنك الإرسال بعد %1$d ساعة</string>
+    <string name="chat_locked_send_after">المراسلة مقفلة — يمكنك الإرسال بعد %1$d ساعة</string>
+    <string name="duration_seconds_short">%1$dث</string>
+    <string name="photo_hides_in">يُخفى بعد %1$dث</string>
+    <string name="photo_opened_disappears">فُتحت — تختفي بعد %1$d ثانية</string>
+    <string name="photo_not_opened">لم تُفتح بعد · %1$dث</string>
+    <string name="photo_disappears_in">صورة تختفي خلال %1$dث</string>
+    <string name="reply_to_named">الرد على %1$s</string>
+    <string name="greeting_write_to">اكتب رسالة ترحيب تُرسل فور القبول إلى %1$s</string>
+    <string name="discover_liked_named">تم الإعجاب بـ %1$s ❤️</string>
+    <string name="separator_age">، %1$s</string>
+    <string name="distance_km">%1$d كم</string>
+    <string name="distance_km_bullet">• %1$d كم</string>
+    <string name="filter_age_range_value">%1$d – %2$d سنة</string>
+    <string name="photo_of_named">صورة %1$s</string>
+    <string name="friends_remove_confirm">هل أنت متأكد من إزالة %1$s من قائمة أصدقائك؟</string>
+    <string name="friend_cancel_confirm">هل أنت متأكد من إلغاء طلب الصداقة المُرسل إلى %1$s؟</string>
+    <string name="friend_decline_confirm">هل أنت متأكد من رفض طلب الصداقة من %1$s؟</string>
+    <string name="restriction_days_time">%1$d يوم %2$s</string>
+    <string name="standing_hours_until_lift">يتبقّى %1$d ساعة على رفع التقييد.</string>
+    <string name="standing_remaining_before">تبقّى %1$d قبل التقييد.</string>
+    <string name="standing_reset_after_days">سيُعاد تعيين عدّاد التقييدات خلال %1$d يوم من الالتزام.</string>
+    <string name="request_admin_note">ملاحظة المشرف: %1$s</string>
+    <string name="profile_age_years_value">%1$d سنة</string>
+    <string name="message_to_named">رسالة إلى %1$s</string>
+    <string name="report_user_named">الإبلاغ عن %1$s</string>
+
+    <!-- صيغ الجمع: العربية لها ستّ صيغ، الإنجليزية اثنتان — يختارها النظام تلقائياً -->
+    <plurals name="blocked_users_count">
+        <item quantity="zero">لا يوجد مستخدمون</item>
+        <item quantity="one">مستخدم واحد</item>
+        <item quantity="two">مستخدمان</item>
+        <item quantity="few">%1$d مستخدمين</item>
+        <item quantity="many">%1$d مستخدماً</item>
+        <item quantity="other">%1$d مستخدم</item>
+    </plurals>
+    <plurals name="chat_new_messages">
+        <item quantity="zero">لا رسائل جديدة</item>
+        <item quantity="one">رسالة جديدة</item>
+        <item quantity="two">رسالتان جديدتان</item>
+        <item quantity="few">%1$d رسائل جديدة</item>
+        <item quantity="many">%1$d رسالة جديدة</item>
+        <item quantity="other">%1$d رسالة جديدة</item>
+    </plurals>
+    <plurals name="duration_hours">
+        <item quantity="zero">أقل من ساعة</item>
+        <item quantity="one">ساعة</item>
+        <item quantity="two">ساعتان</item>
+        <item quantity="few">%1$d ساعات</item>
+        <item quantity="many">%1$d ساعة</item>
+        <item quantity="other">%1$d ساعة</item>
+    </plurals>
+    <plurals name="time_minutes_ago">
+        <item quantity="zero">الآن</item>
+        <item quantity="one">قبل دقيقة</item>
+        <item quantity="two">قبل دقيقتين</item>
+        <item quantity="few">قبل %1$d دقائق</item>
+        <item quantity="many">قبل %1$d دقيقة</item>
+        <item quantity="other">قبل %1$d دقيقة</item>
+    </plurals>
+    <plurals name="time_hours_ago">
+        <item quantity="zero">الآن</item>
+        <item quantity="one">قبل ساعة</item>
+        <item quantity="two">قبل ساعتين</item>
+        <item quantity="few">قبل %1$d ساعات</item>
+        <item quantity="many">قبل %1$d ساعة</item>
+        <item quantity="other">قبل %1$d ساعة</item>
+    </plurals>
+    <plurals name="time_days_ago">
+        <item quantity="zero">اليوم</item>
+        <item quantity="one">أمس</item>
+        <item quantity="two">قبل يومين</item>
+        <item quantity="few">قبل %1$d أيام</item>
+        <item quantity="many">قبل %1$d يوماً</item>
+        <item quantity="other">قبل %1$d يوم</item>
+    </plurals>
+    <plurals name="visitors_count">
+        <item quantity="zero">لا زيارات</item>
+        <item quantity="one">زيارة واحدة</item>
+        <item quantity="two">زيارتان</item>
+        <item quantity="few">%1$d زيارات</item>
+        <item quantity="many">%1$d زيارة</item>
+        <item quantity="other">%1$d زيارة</item>
+    </plurals>
+    <plurals name="visitors_people_count">
+        <item quantity="zero">لا أحد زار ملفك</item>
+        <item quantity="one">شخص واحد زار ملفك</item>
+        <item quantity="two">شخصان زارا ملفك</item>
+        <item quantity="few">%1$d أشخاص زاروا ملفك</item>
+        <item quantity="many">%1$d شخصاً زاروا ملفك</item>
+        <item quantity="other">%1$d شخص زار ملفك</item>
+    </plurals>
+    <string name="report_reason_other_short">أخرى</string>
 </resources>

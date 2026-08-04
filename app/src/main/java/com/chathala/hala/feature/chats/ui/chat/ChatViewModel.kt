@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -298,7 +301,7 @@ class ChatViewModel(
 
     /** الضغط على أفاتار/اسم حساب محذوف — لا ملف شخصي يُفتح. */
     fun notifyOtherAccountDeleted() {
-        _message.tryEmit("حساب محذوف — لم يعد لهذا المستخدم ملف شخصي")
+        _message.tryEmit(S.get(R.string.chat_deleted_no_profile))
     }
 
     // ── Report ────────────────────────────────────────────────────
@@ -380,7 +383,7 @@ class ChatViewModel(
             when (val r = conversationsRepo.requestConversation(targetId)) {
                 is NetworkResult.Success -> {
                     _state.update { it.copy(reopening = false, conversationStatus = "pending", isCreator = true) }
-                    _message.tryEmit("تم إرسال طلب محادثة جديد")
+                    _message.tryEmit(S.get(R.string.chat_new_request_sent))
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(reopening = false) }
@@ -523,7 +526,7 @@ class ChatViewModel(
                 val convId = evt.json.optString("conversationId")
                 if (convId != conversationId) return
                 _state.update { it.copy(conversationStatus = "cancelled") }
-                _message.tryEmit("أنهى الطرف الآخر المحادثة")
+                _message.tryEmit(S.get(R.string.chat_other_ended))
             }
             is SocketEvent.PhotoViewed -> {
                 // الطرف الآخر شاهد صورتي المؤقتة → ابدأ مؤقّت الحذف عند المرسِل
@@ -559,7 +562,7 @@ class ChatViewModel(
                 // رُفِع تقييد المراسلة فوراً → ألغِ القفل وأبلغ المستخدم
                 if (_state.value.messagingRestriction != null) {
                     _state.update { it.copy(messagingRestriction = null) }
-                    _message.tryEmit("✅ تم رفع تقييد المراسلة — يمكنك الإرسال الآن")
+                    _message.tryEmit(S.get(R.string.chat_restriction_lifted))
                 }
             }
             else -> Unit
@@ -692,24 +695,24 @@ class ChatViewModel(
         if (content.isBlank() || _state.value.sending) return
         // الطرف الآخر حذف حسابه → لا مراسلة
         if (_state.value.otherUserDeleted) {
-            _message.tryEmit("لا يمكن مراسلة حساب محذوف")
+            _message.tryEmit(S.get(R.string.chat_cannot_message_deleted_acc))
             return
         }
         // الطرف الآخر موقوف → منع الإرسال نهائياً
         if (_state.value.otherUserSuspended) {
-            _message.tryEmit("لا يمكن مراسلة مستخدم موقوف")
+            _message.tryEmit(S.get(R.string.chat_cannot_message_suspended))
             return
         }
         // مقيّد بسبب نشر حسابات خارجية → منع الإرسال نهائياً
         _state.value.messagingRestriction?.let { r ->
             _message.tryEmit(
-                r.hoursLeft?.let { "المراسلة مقفلة — يمكنك الإرسال بعد $it ساعة" }
-                    ?: "المراسلة مقفلة مؤقتاً بسبب نشر حسابات خارجية"
+                r.hoursLeft?.let { S.get(R.string.chat_locked_send_after, it) }
+                    ?: S.get(R.string.chat_locked_promo)
             )
             return
         }
         if (!_state.value.canSend) {
-            _message.tryEmit("لا يمكن الرد قبل قبول الطلب")
+            _message.tryEmit(S.get(R.string.chat_cannot_reply_before_accept))
             return
         }
 
@@ -957,7 +960,7 @@ class ChatViewModel(
         viewModelScope.launch {
             val r = messagesRepo.forwardMessage(target.id, targetConversationId)
             when (r) {
-                is NetworkResult.Success -> _message.tryEmit("تم إعادة توجيه الرسالة")
+                is NetworkResult.Success -> _message.tryEmit(S.get(R.string.msg_forwarded))
                 is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
             }
         }
@@ -991,8 +994,8 @@ class ChatViewModel(
     private fun isMessagingLocked(): Boolean {
         val r = _state.value.messagingRestriction ?: return false
         _message.tryEmit(
-            r.hoursLeft?.let { "المراسلة مقفلة — يمكنك الإرسال بعد $it ساعة" }
-                ?: "المراسلة مقفلة مؤقتاً بسبب نشر حسابات خارجية"
+            r.hoursLeft?.let { S.get(R.string.chat_locked_send_after, it) }
+                ?: S.get(R.string.chat_locked_promo)
         )
         return true
     }
@@ -1104,7 +1107,7 @@ class ChatViewModel(
             messagesRepo.viewDisappearingPhoto(message.id)
             if (!ready) {
                 _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
-                _message.tryEmit("تعذّر تحميل الصورة — حاول مجدداً")
+                _message.tryEmit(S.get(R.string.img_load_failed_retry))
                 return@launch
             }
             // 3) الآن فقط يبدأ العدّ التنازلي
@@ -1170,8 +1173,8 @@ class ChatViewModel(
         _state.update {
             it.copy(
                 externalPromoDialog = ExternalPromoBlockedInfo(
-                    title = "تم حجب رسالتك",
-                    message = "تم التعرف تلقائياً على مشاركة حساب خارجي. سياسة المنصة تمنع ذلك، وتكرار مشاركة حسابات أو أرقام يقيّد حسابك آلياً.",
+                    title = S.get(R.string.msg_blocked_title),
+                    message = S.get(R.string.msg_blocked_desc),
                     categories = categories,
                     severity = "repeated"
                 )
@@ -1205,11 +1208,11 @@ class ChatViewModel(
                     val code = result.message
                     when {
                         code?.contains("FEATURE_DISABLED") == true ->
-                            _message.tryEmit("الميزة غير متاحة حالياً")
+                            _message.tryEmit(S.get(R.string.feature_unavailable))
                         code?.contains("USER_SETTING_DISABLED") == true ->
-                            _message.tryEmit("فعّل عرض المحتوى الحساس من الإعدادات أولاً")
+                            _message.tryEmit(S.get(R.string.enable_sensitive_first))
                         code?.contains("AGE_RESTRICTED") == true ->
-                            _message.tryEmit("هذا الخيار للبالغين فقط (+18)")
+                            _message.tryEmit(S.get(R.string.adults_only_18))
                         else -> _message.tryEmit(ErrorMessages.friendly(result))
                     }
                 }
@@ -1231,10 +1234,10 @@ class ChatViewModel(
                 _state.value.messages.filter { m ->
                     m.hasFlaggedContent == true && m.sender?.id != selfId
                 }.forEach { m -> revealSensitiveMessage(m) }
-                _message.tryEmit("تم تفعيل الثقة — يُكشف المحتوى الحساس في هذه المحادثة تلقائياً")
+                _message.tryEmit(S.get(R.string.trust_enabled_msg))
             } else {
                 appPreferences.untrustConversation(conversationId)
-                _message.tryEmit("تم إلغاء الثقة بهذه المحادثة")
+                _message.tryEmit(S.get(R.string.trust_disabled_msg))
             }
             // state يتحدث تلقائياً عبر الـ Flow collector في init
         }
@@ -1258,7 +1261,7 @@ class ChatViewModel(
             _state.update { it.copy(muteWorking = false) }
             when (r) {
                 is NetworkResult.Success -> {
-                    _message.tryEmit(if (r.data) "تم كتم المحادثة" else "تم إلغاء الكتم")
+                    _message.tryEmit(if (r.data) S.get(R.string.chat_muted) else S.get(R.string.chat_unmuted))
                     // حدّث بيانات المستخدم لتنعكس mute indicator فوراً في قائمة المحادثات
                     runCatching { userRepo.refresh() }
                 }
@@ -1328,7 +1331,7 @@ class ChatViewModel(
                 }
             },
             onFailure = { err ->
-                _message.tryEmit(err.message ?: "تعذّر بدء التسجيل")
+                _message.tryEmit(err.message ?: S.get(R.string.rec_start_failed))
             }
         )
     }
@@ -1380,7 +1383,7 @@ class ChatViewModel(
                 }
             },
             onFailure = { err ->
-                _message.tryEmit(err.message ?: "فشل التسجيل")
+                _message.tryEmit(err.message ?: S.get(R.string.rec_failed))
             }
         )
     }

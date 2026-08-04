@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -47,7 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -87,7 +88,7 @@ fun EditProfileScreen(
                     fieldName = "profileImage"
                 )
                 if (part != null) viewModel.uploadPhoto(part)
-                else context.showToast("تعذّرت قراءة الصورة")
+                else context.showToast(S.get(R.string.profile_photo_read_failed))
             }
         }
     }
@@ -114,22 +115,22 @@ fun EditProfileScreen(
     if (showDiscardDialog) {
         AlertDialog(
             onDismissRequest = { showDiscardDialog = false },
-            title = { Text(stringResource(R.string.edit_profile_discard_title)) },
-            text = { Text(stringResource(R.string.edit_profile_discard_message)) },
+            title = { Text(S.get(R.string.edit_profile_discard_title)) },
+            text = { Text(S.get(R.string.edit_profile_discard_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDiscardDialog = false
                     onBack()
                 }) {
                     Text(
-                        text = stringResource(R.string.edit_profile_discard_confirm),
+                        text = S.get(R.string.edit_profile_discard_confirm),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDiscardDialog = false }) {
-                    Text(stringResource(R.string.edit_profile_discard_cancel))
+                    Text(S.get(R.string.edit_profile_discard_cancel))
                 }
             }
         )
@@ -155,14 +156,14 @@ fun EditProfileScreen(
                 )
             }
             Text(
-                text = stringResource(R.string.edit_profile_title),
+                text = S.get(R.string.edit_profile_title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(start = 8.dp).weight(1f)
             )
             if (state.hasImage) {
                 com.chathala.hala.ui.components.TextLink(
-                    text = stringResource(R.string.edit_profile_delete_photo),
+                    text = S.get(R.string.edit_profile_delete_photo),
                     onClick = { viewModel.deletePhoto() },
                     modifier = Modifier.padding(end = 8.dp)
                 )
@@ -193,37 +194,37 @@ fun EditProfileScreen(
             HalaTextField(
                 value = state.name,
                 onValueChange = viewModel::setName,
-                label = stringResource(R.string.field_name),
+                label = S.get(R.string.field_name),
                 leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) }
             )
 
             HalaTextField(
                 value = state.bio,
                 onValueChange = viewModel::setBio,
-                label = stringResource(R.string.profile_section_bio),
+                label = S.get(R.string.profile_section_bio),
                 leadingIcon = { Icon(Icons.Filled.Description, contentDescription = null) },
                 singleLine = false
             )
 
-            SectionLabel(stringResource(R.string.field_gender))
+            SectionLabel(S.get(R.string.field_gender))
             GenderSelector(
                 selected = state.gender,
                 onSelect = viewModel::setGender
             )
 
-            SectionLabel(stringResource(R.string.field_birthdate))
+            SectionLabel(S.get(R.string.field_birthdate))
             BirthDateField(
                 selected = state.birthDate,
                 onSelect = viewModel::setBirthDate
             )
 
-            SectionLabel(stringResource(R.string.field_country))
+            SectionLabel(S.get(R.string.field_country))
             CountryField(
                 selected = state.country?.let { code -> Countries.list.firstOrNull { it.code == code } },
                 onSelect = { c: Country -> viewModel.setCountry(c.code) }
             )
 
-            SectionLabel(stringResource(R.string.field_interests))
+            SectionLabel(S.get(R.string.field_interests))
             if (state.loadingInterests) {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
@@ -247,7 +248,7 @@ fun EditProfileScreen(
             Spacer(Modifier.height(8.dp))
 
             HalaPrimaryButton(
-                text = stringResource(R.string.edit_profile_save),
+                text = S.get(R.string.edit_profile_save),
                 loading = state.saving,
                 onClick = { viewModel.save() }
             )
@@ -320,7 +321,7 @@ private fun EditablePhoto(
             ) {
                 Icon(
                     imageVector = Icons.Filled.PhotoCamera,
-                    contentDescription = "تغيير الصورة",
+                    contentDescription = S.get(R.string.profile_change_photo),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(18.dp)
                 )
@@ -328,7 +329,7 @@ private fun EditablePhoto(
         }
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "اضغط لتغيير الصورة",
+            text = S.get(R.string.profile_tap_change_photo),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -365,14 +366,14 @@ private fun ContentWarningCard() {
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "تحذير هام",
+                text = S.get(R.string.profile_warning_title),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                 color = warn
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "أي صورة جنسية أو إباحية، أو اسم أو نبذة تحتوي ألفاظاً أو تلميحات جنسية — " +
-                    "يُعرّض حسابك للحظر النهائي دون إنذار.",
+                text = S.get(R.string.profile_warning_body) +
+                    S.get(R.string.profile_warning_tail),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 18.sp

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.premium.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -53,12 +56,12 @@ private val GoldDark = Color(0xFFFFA726)
 
 /** مزايا الاشتراك المميّز المعروضة في الشاشة. */
 private val premiumBenefits = listOf(
-    "5 إعجابات مميّزة يومياً",
-    "الظهور في المقدّمة",
-    "معرفة من أعجب بك",
-    "التصفّح المخفي",
-    "شارة ذهبية مميّزة",
-    "بدون إعلانات"
+    S.get(R.string.premium_perk_superlikes),
+    S.get(R.string.premium_perk_top_placement),
+    S.get(R.string.premium_perk_see_likes),
+    S.get(R.string.premium_perk_stealth),
+    S.get(R.string.premium_perk_gold_badge),
+    S.get(R.string.premium_perk_no_ads)
 )
 
 @Composable
@@ -94,7 +97,7 @@ fun SubscriptionScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = S.get(R.string.action_back))
                 }
             }
 
@@ -119,13 +122,13 @@ fun SubscriptionScreen(
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = "هلا بريميوم",
+                    text = S.get(R.string.premium_title),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "افتح كل الميزات وابرز بين الأعضاء",
+                    text = S.get(R.string.premium_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -166,7 +169,7 @@ fun SubscriptionScreen(
             ) {
                 if (state.plans.isEmpty()) {
                     Text(
-                        text = if (state.connected) "جارٍ تحميل الباقات…" else "جارٍ الاتصال بالمتجر…",
+                        text = if (state.connected) S.get(R.string.premium_loading_plans) else S.get(R.string.premium_connecting_store),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.fillMaxWidth(),
@@ -175,7 +178,7 @@ fun SubscriptionScreen(
                 } else {
                     state.plans.forEach { option ->
                         PlanCard(
-                            title = option.plan.titleAr,
+                            title = option.plan.title,
                             price = option.formattedPrice,
                             selected = state.selectedPlan == option.plan,
                             onClick = { viewModel.selectPlan(option.plan) }
@@ -189,7 +192,7 @@ fun SubscriptionScreen(
             // زر الاشتراك
             Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
                 HalaPrimaryButton(
-                    text = "اشترك الآن",
+                    text = S.get(R.string.premium_subscribe_now),
                     onClick = { activity?.let { viewModel.purchase(it) } },
                     loading = state.purchasing,
                     enabled = state.plans.isNotEmpty() && activity != null
@@ -198,7 +201,7 @@ fun SubscriptionScreen(
 
             Spacer(Modifier.height(12.dp))
             Text(
-                text = "يتجدّد الاشتراك تلقائياً ويمكن إلغاؤه في أي وقت من Google Play.",
+                text = S.get(R.string.premium_renewal_note),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -212,11 +215,11 @@ fun SubscriptionScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                LinkText("شروط الاستخدام", onOpenTerms)
+                LinkText(S.get(R.string.legal_terms_of_use), onOpenTerms)
                 LinkDot()
-                LinkText("سياسة الخصوصية", onOpenPrivacy)
+                LinkText(S.get(R.string.legal_privacy_policy), onOpenPrivacy)
                 LinkDot()
-                LinkText("اتصل بنا", onOpenContact)
+                LinkText(S.get(R.string.premium_contact_us), onOpenContact)
             }
         }
 

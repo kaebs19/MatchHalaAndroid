@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.account
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -99,7 +102,7 @@ fun ViolationsHistoryScreen(
         else state.violations.filter { it.type == filter }
     }
 
-    SettingsScaffold(title = "سجل المخالفات", onBack = onBack) {
+    SettingsScaffold(title = S.get(R.string.violations_history_title), onBack = onBack) {
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 state.loading -> CircularProgressIndicator(
@@ -112,7 +115,7 @@ fun ViolationsHistoryScreen(
                     Text("🎉", style = MaterialTheme.typography.displaySmall)
                     Spacer(Modifier.size(8.dp))
                     Text(
-                        "لا توجد مخالفات مسجّلة",
+                        S.get(R.string.violations_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -126,10 +129,10 @@ fun ViolationsHistoryScreen(
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        FilterChip("الكل", filter == null) { filter = null }
-                        FilterChip("حسابات خارجية", filter == "external_promo") { filter = "external_promo" }
-                        FilterChip("كلمات محظورة", filter == "banned_word") { filter = "banned_word" }
-                        FilterChip("أخرى", filter == "other") { filter = "other" }
+                        FilterChip(S.get(R.string.filter_all), filter == null) { filter = null }
+                        FilterChip(S.get(R.string.violation_type_external_accounts), filter == "external_promo") { filter = "external_promo" }
+                        FilterChip(S.get(R.string.violation_type_banned_words), filter == "banned_word") { filter = "banned_word" }
+                        FilterChip(S.get(R.string.report_reason_other_short), filter == "other") { filter = "other" }
                     }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -171,14 +174,14 @@ private fun ViolationRow(v: ViolationEntry) {
         else -> Pair("⚠️", Color(0xFF9E9E9E))
     }
     val typeLabel = when (v.type) {
-        "external_promo" -> "نشر حساب خارجي"
-        "banned_word" -> "كلمة محظورة"
-        "photo" -> "صورة مخالفة"
-        "name" -> "اسم مخالف"
-        "bio" -> "نبذة مخالفة"
-        "spam" -> "إزعاج/سبام"
-        "report" -> "بلاغ مقبول"
-        else -> "مخالفة"
+        "external_promo" -> S.get(R.string.violation_posted_external_account)
+        "banned_word" -> S.get(R.string.violation_banned_word)
+        "photo" -> S.get(R.string.violation_photo)
+        "name" -> S.get(R.string.violation_name)
+        "bio" -> S.get(R.string.violation_bio)
+        "spam" -> S.get(R.string.violation_spam)
+        "report" -> S.get(R.string.violation_report_accepted)
+        else -> S.get(R.string.label_violation)
     }
 
     Column(
@@ -215,7 +218,7 @@ private fun ViolationRow(v: ViolationEntry) {
             Spacer(Modifier.size(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "الكلمة المكتشفة: ",
+                    S.get(R.string.violation_detected_word),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -236,11 +239,11 @@ private fun ViolationRow(v: ViolationEntry) {
 @Composable
 private fun ActionBadge(action: String?) {
     val (label, color) = when (action) {
-        "warning" -> Pair("تحذير", Color(0xFFFFB300))
-        "restricted" -> Pair("تقييد", Color(0xFFFF8C00))
-        "suspended" -> Pair("تعليق", Color(0xFFE53935))
-        "banned" -> Pair("حظر", Color(0xFFB71C1C))
-        "photo_removed" -> Pair("حذف صورة", Color(0xFF8E24AA))
+        "warning" -> Pair(S.get(R.string.label_warning_short), Color(0xFFFFB300))
+        "restricted" -> Pair(S.get(R.string.action_restriction), Color(0xFFFF8C00))
+        "suspended" -> Pair(S.get(R.string.action_suspension), Color(0xFFE53935))
+        "banned" -> Pair(S.get(R.string.action_block), Color(0xFFB71C1C))
+        "photo_removed" -> Pair(S.get(R.string.action_photo_deleted), Color(0xFF8E24AA))
         else -> return
     }
     Text(

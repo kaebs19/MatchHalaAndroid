@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.discover.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -44,7 +47,7 @@ class DiscoverRepository(
             latitude = latitude,
             longitude = longitude
         )
-        resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
     }
 
     /** يُرجع conversationId (جديد أو موجود) — ليفتح المستخدم المحادثة بعدها. */
@@ -142,7 +145,7 @@ class DiscoverRepository(
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui.discover
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,7 +74,7 @@ fun DiscoverSettingsScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         SettingsScaffold(
-            title = stringResource(R.string.discover_settings_title),
+            title = S.get(R.string.discover_settings_title),
             onBack = onBack
         ) {
             when {
@@ -95,12 +96,12 @@ fun DiscoverSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // ── قسم: ظهور ملفي ──
-                        SectionLabel(stringResource(R.string.discover_section_visibility))
+                        SectionLabel(S.get(R.string.discover_section_visibility))
 
                         DiscoverToggle(
                             icon = Icons.Filled.VisibilityOff,
-                            title = stringResource(R.string.discover_hide_profile_title),
-                            subtitle = stringResource(R.string.discover_hide_profile_desc),
+                            title = S.get(R.string.discover_hide_profile_title),
+                            subtitle = S.get(R.string.discover_hide_profile_desc),
                             checked = d.stealthMode == true,
                             enabled = enabled,
                             premium = true,
@@ -110,8 +111,8 @@ fun DiscoverSettingsScreen(
                         )
                         DiscoverToggle(
                             icon = Icons.Filled.Cake,
-                            title = stringResource(R.string.discover_hide_age_title),
-                            subtitle = stringResource(R.string.discover_hide_age_desc),
+                            title = S.get(R.string.discover_hide_age_title),
+                            subtitle = S.get(R.string.discover_hide_age_desc),
                             checked = d.showAge == false,
                             enabled = enabled,
                             // المفتاح = إخفاء العمر → القيمة على الخادم = showAge (معكوسة)
@@ -119,8 +120,8 @@ fun DiscoverSettingsScreen(
                         )
                         DiscoverToggle(
                             icon = Icons.Filled.Public,
-                            title = stringResource(R.string.discover_hide_country_title),
-                            subtitle = stringResource(R.string.discover_hide_country_desc),
+                            title = S.get(R.string.discover_hide_country_title),
+                            subtitle = S.get(R.string.discover_hide_country_desc),
                             checked = d.showCountry == false,
                             enabled = enabled,
                             onChange = { viewModel.toggle(DiscoverPref.SHOW_COUNTRY, !it) }
@@ -129,11 +130,11 @@ fun DiscoverSettingsScreen(
                         val paused = d.discoveryPaused?.enabled == true
                         DiscoverToggle(
                             icon = Icons.Filled.PauseCircle,
-                            title = stringResource(R.string.discover_pause_title),
+                            title = S.get(R.string.discover_pause_title),
                             subtitle = if (paused)
-                                stringResource(R.string.discover_pause_active_desc)
+                                S.get(R.string.discover_pause_active_desc)
                             else
-                                stringResource(R.string.discover_pause_desc),
+                                S.get(R.string.discover_pause_desc),
                             checked = paused,
                             enabled = enabled,
                             premium = true,
@@ -152,12 +153,12 @@ fun DiscoverSettingsScreen(
                         Spacer(Modifier.height(4.dp))
 
                         // ── قسم: طلبات المحادثة ──
-                        SectionLabel(stringResource(R.string.discover_section_requests))
+                        SectionLabel(S.get(R.string.discover_section_requests))
 
                         DiscoverToggle(
                             icon = Icons.Filled.MarkEmailRead,
-                            title = stringResource(R.string.discover_stop_requests_title),
-                            subtitle = stringResource(R.string.discover_stop_requests_desc),
+                            title = S.get(R.string.discover_stop_requests_title),
+                            subtitle = S.get(R.string.discover_stop_requests_desc),
                             checked = d.acceptingRequests == false,
                             enabled = enabled,
                             // المفتاح = إيقاف الدعوات → القيمة على الخادم = acceptingRequests (معكوسة)
@@ -165,8 +166,8 @@ fun DiscoverSettingsScreen(
                         )
                         DiscoverToggle(
                             icon = Icons.Filled.WorkspacePremium,
-                            title = stringResource(R.string.discover_premium_only_title),
-                            subtitle = stringResource(R.string.discover_premium_only_desc),
+                            title = S.get(R.string.discover_premium_only_title),
+                            subtitle = S.get(R.string.discover_premium_only_desc),
                             checked = d.premiumOnlyRequests == true,
                             enabled = enabled,
                             premium = true,
@@ -193,14 +194,14 @@ private fun PauseDurationDialog(
 ) {
     // (نص العنصر، المدة بالساعات أو null)
     val options = listOf(
-        stringResource(R.string.discover_pause_24h) to 24,
-        stringResource(R.string.discover_pause_3d) to 72,
-        stringResource(R.string.discover_pause_1w) to 168,
-        stringResource(R.string.discover_pause_until_resume) to null
+        S.get(R.string.discover_pause_24h) to 24,
+        S.get(R.string.discover_pause_3d) to 72,
+        S.get(R.string.discover_pause_1w) to 168,
+        S.get(R.string.discover_pause_until_resume) to null
     )
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.discover_pause_dialog_title)) },
+        title = { Text(S.get(R.string.discover_pause_dialog_title)) },
         text = {
             Column {
                 options.forEach { (label, hours) ->
@@ -219,7 +220,7 @@ private fun PauseDurationDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss) { Text(S.get(R.string.cancel)) }
         }
     )
 }
@@ -307,7 +308,7 @@ private fun PremiumBadge() {
         )
         Spacer(Modifier.size(3.dp))
         Text(
-            text = stringResource(R.string.discover_premium_badge),
+            text = S.get(R.string.discover_premium_badge),
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary
         )

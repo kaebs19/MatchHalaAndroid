@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 data class PromoKeyword(
     val pattern: String,
     val category: String,
@@ -8,17 +11,17 @@ data class PromoKeyword(
 
 object PromoKeywordDetector {
     private val builtInPatterns = listOf(
-        Pair(Regex("\\bsnap(?:chat)?\\b", RegexOption.IGNORE_CASE), "سناب شات"),
-        Pair(Regex("سناب"), "سناب شات"),
-        Pair(Regex("\\binsta(?:gram)?\\b", RegexOption.IGNORE_CASE), "إنستقرام"),
-        Pair(Regex("[أإاآ]نست"), "إنستقرام"),
-        Pair(Regex("\\bwhats?app\\b", RegexOption.IGNORE_CASE), "واتساب"),
-        Pair(Regex("واتس[اأ]?[بپ]"), "واتساب"),
-        Pair(Regex("\\btelegram\\b", RegexOption.IGNORE_CASE), "تيليقرام"),
-        Pair(Regex("ت[يى]?ل[يى]?[جغقك]رام"), "تيليقرام"),
-        Pair(Regex("\\btiktok\\b", RegexOption.IGNORE_CASE), "تيك توك"),
-        Pair(Regex("ت[يى]?ك.*?توك"), "تيك توك"),
-        Pair(Regex("\\d{8,}"), "رقم هاتف"),
+        Pair(Regex("\\bsnap(?:chat)?\\b", RegexOption.IGNORE_CASE), S.get(R.string.promo_cat_snapchat)),
+        Pair(Regex("سناب"), S.get(R.string.promo_cat_snapchat)),
+        Pair(Regex("\\binsta(?:gram)?\\b", RegexOption.IGNORE_CASE), S.get(R.string.promo_cat_instagram)),
+        Pair(Regex("[أإاآ]نست"), S.get(R.string.promo_cat_instagram)),
+        Pair(Regex("\\bwhats?app\\b", RegexOption.IGNORE_CASE), S.get(R.string.promo_cat_whatsapp)),
+        Pair(Regex("واتس[اأ]?[بپ]"), S.get(R.string.promo_cat_whatsapp)),
+        Pair(Regex("\\btelegram\\b", RegexOption.IGNORE_CASE), S.get(R.string.promo_cat_telegram)),
+        Pair(Regex("ت[يى]?ل[يى]?[جغقك]رام"), S.get(R.string.promo_cat_telegram)),
+        Pair(Regex("\\btiktok\\b", RegexOption.IGNORE_CASE), S.get(R.string.promo_cat_tiktok)),
+        Pair(Regex("ت[يى]?ك.*?توك"), S.get(R.string.promo_cat_tiktok)),
+        Pair(Regex("\\d{8,}"), S.get(R.string.promo_cat_phone)),
     )
 
     private val dynamicPatterns = mutableListOf<Pair<Regex, String>>()

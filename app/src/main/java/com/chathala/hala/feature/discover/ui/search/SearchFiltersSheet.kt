@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.discover.ui.search
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
@@ -68,20 +69,20 @@ fun SearchFiltersSheet(
                 .padding(bottom = 24.dp)
         ) {
             Text(
-                text = stringResource(R.string.search_filters_title),
+                text = S.get(R.string.search_filters_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(Modifier.height(20.dp))
 
             // ── الجنس ──
-            FilterLabel(stringResource(R.string.search_filter_gender))
+            FilterLabel(S.get(R.string.search_filter_gender))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 data class Opt(val g: SearchGender, val label: String)
                 listOf(
-                    Opt(SearchGender.ALL, stringResource(R.string.search_gender_all)),
-                    Opt(SearchGender.MALE, stringResource(R.string.search_gender_male)),
-                    Opt(SearchGender.FEMALE, stringResource(R.string.search_gender_female))
+                    Opt(SearchGender.ALL, S.get(R.string.search_gender_all)),
+                    Opt(SearchGender.MALE, S.get(R.string.search_gender_male)),
+                    Opt(SearchGender.FEMALE, S.get(R.string.search_gender_female))
                 ).forEach { o ->
                     FilterChip(
                         selected = gender == o.g,
@@ -98,7 +99,7 @@ fun SearchFiltersSheet(
             Spacer(Modifier.height(20.dp))
 
             // ── الدولة ──
-            FilterLabel(stringResource(R.string.search_filter_country))
+            FilterLabel(S.get(R.string.search_filter_country))
             CountryDropdown(selected = country, onSelect = { country = it })
 
             Spacer(Modifier.height(20.dp))
@@ -106,7 +107,7 @@ fun SearchFiltersSheet(
             // ── العمر ──
             val from = ageRange.start.toInt()
             val to = ageRange.endInclusive.toInt()
-            FilterLabel("${stringResource(R.string.search_filter_age)}: $from - $to")
+            FilterLabel("${S.get(R.string.search_filter_age)}: $from - $to")
             RangeSlider(
                 value = ageRange,
                 onValueChange = { ageRange = it },
@@ -124,7 +125,7 @@ fun SearchFiltersSheet(
                         ageRange = AGE_MIN.toFloat()..AGE_MAX.toFloat()
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text(stringResource(R.string.search_filters_reset)) }
+                ) { Text(S.get(R.string.search_filters_reset)) }
 
                 Button(
                     onClick = {
@@ -138,7 +139,7 @@ fun SearchFiltersSheet(
                         )
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text(stringResource(R.string.search_filters_apply)) }
+                ) { Text(S.get(R.string.search_filters_apply)) }
             }
         }
     }
@@ -159,9 +160,9 @@ private fun CountryDropdown(selected: String?, onSelect: (String?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val selectedCountry = Countries.byCode(selected)
     val label = if (selectedCountry != null)
-        "${selectedCountry.flag} ${selectedCountry.nameAr}"
+        "${selectedCountry.flag} ${selectedCountry.name}"
     else
-        stringResource(R.string.search_gender_all)
+        S.get(R.string.search_gender_all)
 
     Box {
         Row(
@@ -187,12 +188,12 @@ private fun CountryDropdown(selected: String?, onSelect: (String?) -> Unit) {
             modifier = Modifier.heightIn(max = 360.dp)
         ) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.search_gender_all)) },
+                text = { Text(S.get(R.string.search_gender_all)) },
                 onClick = { onSelect(null); expanded = false }
             )
             Countries.list.filter { it.code != "OTHER" }.forEach { c ->
                 DropdownMenuItem(
-                    text = { Text("${c.flag}  ${c.nameAr}") },
+                    text = { Text("${c.flag}  ${c.name}") },
                     onClick = { onSelect(c.code); expanded = false }
                 )
             }

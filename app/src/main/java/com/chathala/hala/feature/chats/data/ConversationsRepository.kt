@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
@@ -33,7 +36,7 @@ class ConversationsRepository(
         // ✅ نطلب المقبولة + المنتهية (cancelled) — تبقى المحادثات الملغاة ظاهرة مع رسائلها.
         // الطلبات (pending) لها endpoint/شاشة مستقلة، والمرفوضة لا تُعرض.
         val resp = api.getConversations(bearer(), page, limit, status = "accepted,cancelled")
-        val data = resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        val data = resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
         _totalUnread.value = data.totalUnread
         data
     }
@@ -41,7 +44,7 @@ class ConversationsRepository(
     /** جلب محادثة واحدة (للطرف الآخر عند فتح الشات) — أخفّ بكثير من جلب القائمة كاملة. */
     suspend fun fetchConversation(conversationId: String): NetworkResult<Conversation> = safeApiCall {
         val resp = api.getConversation(bearer(), conversationId)
-        resp.data?.conversation ?: throw IllegalStateException("المحادثة غير متوفرة")
+        resp.data?.conversation ?: throw IllegalStateException(S.get(R.string.err_conversation_unavailable))
     }
 
     suspend fun refreshPendingCount(): NetworkResult<PendingCountData> = safeApiCall {
@@ -53,14 +56,14 @@ class ConversationsRepository(
 
     suspend fun fetchPendingRequests(): NetworkResult<PendingRequestsData> = safeApiCall {
         val resp = api.getPendingRequests(bearer())
-        val data = resp.data ?: throw IllegalStateException("بيانات غير متوفرة")
+        val data = resp.data ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
         _pendingRecentCount.value = data.recentCount
         data
     }
 
     suspend fun acceptRequest(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.acceptConversation(bearer(), conversationId)
-        resp.message ?: "تم قبول المحادثة"
+        resp.message ?: S.get(R.string.conv_accepted)
     }
 
     suspend fun acceptRequestWithMessage(
@@ -77,22 +80,22 @@ class ConversationsRepository(
 
     suspend fun rejectRequest(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.rejectConversation(bearer(), conversationId)
-        resp.message ?: "تم رفض المحادثة"
+        resp.message ?: S.get(R.string.conv_rejected)
     }
 
     suspend fun markRead(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.markConversationRead(bearer(), conversationId)
-        resp.message ?: "تم التحديث"
+        resp.message ?: S.get(R.string.conv_updated)
     }
 
     suspend fun deleteConversation(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteConversation(bearer(), conversationId)
-        resp.message ?: "تم حذف المحادثة"
+        resp.message ?: S.get(R.string.conv_deleted)
     }
 
     suspend fun cancelConversation(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.cancelConversation(bearer(), conversationId)
-        resp.message ?: "تم إنهاء المحادثة"
+        resp.message ?: S.get(R.string.conv_ended)
     }
 
     /** إرسال طلب محادثة جديد (يُستخدم لاستئناف محادثة منتهية). */
@@ -105,7 +108,7 @@ class ConversationsRepository(
                 isSuperLike = false
             )
         )
-        resp.message ?: "تم إرسال الطلب"
+        resp.message ?: S.get(R.string.conv_request_sent)
     }
 
     suspend fun setMute(
@@ -135,7 +138,7 @@ class ConversationsRepository(
             id = conversationId,
             body = ChatModeRequest(chatMode = mode)
         )
-        resp.data ?: throw IllegalStateException("فشل تغيير الوضع")
+        resp.data ?: throw IllegalStateException(S.get(R.string.conv_mode_change_failed))
     }
 
     fun decrementUnread(by: Int) {
@@ -144,7 +147,7 @@ class ConversationsRepository(
 
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
-            ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }

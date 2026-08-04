@@ -1,5 +1,7 @@
 package com.chathala.hala.ui.components
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -20,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chathala.hala.R
@@ -50,9 +51,9 @@ fun PasswordStrengthBar(
     val score = passwordScore(password)
     // 3 مستويات: 1-2 ضعيفة، 3 متوسطة، 4 قوية
     val (label, color, fraction) = when {
-        score <= 2 -> Triple(stringResource(R.string.pwd_strength_weak), Color(0xFFE53935), 0.33f)
-        score == 3 -> Triple(stringResource(R.string.pwd_strength_medium), Color(0xFFFB8C00), 0.66f)
-        else -> Triple(stringResource(R.string.pwd_strength_strong), Color(0xFF43A047), 1f)
+        score <= 2 -> Triple(S.get(R.string.pwd_strength_weak), Color(0xFFE53935), 0.33f)
+        score == 3 -> Triple(S.get(R.string.pwd_strength_medium), Color(0xFFFB8C00), 0.66f)
+        else -> Triple(S.get(R.string.pwd_strength_strong), Color(0xFF43A047), 1f)
     }
 
     val animatedFraction by animateFloatAsState(targetValue = fraction, label = "pwd-fraction")
@@ -85,7 +86,7 @@ fun PasswordStrengthBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(R.string.pwd_strength_label, label),
+                text = S.get(R.string.pwd_strength_label, label),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                 color = animatedColor
             )

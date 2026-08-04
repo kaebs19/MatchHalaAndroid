@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.friends.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -74,21 +77,21 @@ fun FriendsScreen(
             onDismissRequest = { removeTarget = null },
             shape = RoundedCornerShape(20.dp),
             title = {
-                Text("إزالة صديق", fontWeight = FontWeight.Bold)
+                Text(S.get(R.string.friends_remove_title), fontWeight = FontWeight.Bold)
             },
             text = {
-                Text("هل أنت متأكد من إزالة ${target.user.name ?: "هذا المستخدم"} من قائمة أصدقائك؟")
+                Text(S.get(R.string.friends_remove_confirm, target.user.name ?: S.get(R.string.label_this_user)))
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     viewModel.removeFriend(target)
                     removeTarget = null
                 }) {
-                    Text("إزالة", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    Text(S.get(R.string.action_remove), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = { removeTarget = null }) { Text("تراجع") }
+                androidx.compose.material3.TextButton(onClick = { removeTarget = null }) { Text(S.get(R.string.action_undo)) }
             }
         )
     }
@@ -113,13 +116,13 @@ fun FriendsScreen(
 
                 isFriendsTab && state.friends.isEmpty() -> EmptyState(
                     icon = Icons.Filled.People,
-                    title = "لا يوجد أصدقاء بعد",
-                    subtitle = "أضف أصدقاء من ملفاتهم الشخصية لتظهر هنا."
+                    title = S.get(R.string.friends_empty_title),
+                    subtitle = S.get(R.string.friends_empty_desc)
                 )
                 !isFriendsTab && state.requests.isEmpty() -> EmptyState(
                     icon = Icons.Filled.PersonAddAlt,
-                    title = "لا توجد طلبات صداقة",
-                    subtitle = "طلبات الصداقة الواردة تظهر هنا."
+                    title = S.get(R.string.friend_requests_empty_title),
+                    subtitle = S.get(R.string.friend_requests_empty_desc)
                 )
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -169,7 +172,7 @@ private fun TopBar(onBack: () -> Unit) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground)
         }
         Text(
-            text = "الأصدقاء",
+            text = S.get(R.string.friends_title),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 4.dp)
@@ -188,8 +191,8 @@ private fun TabRow(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        TabPill("الأصدقاء", friendsCount, selected == FriendsTab.FRIENDS) { onSelect(FriendsTab.FRIENDS) }
-        TabPill("طلبات الصداقة", requestsCount, selected == FriendsTab.REQUESTS) { onSelect(FriendsTab.REQUESTS) }
+        TabPill(S.get(R.string.friends_title), friendsCount, selected == FriendsTab.FRIENDS) { onSelect(FriendsTab.FRIENDS) }
+        TabPill(S.get(R.string.friend_requests_title), requestsCount, selected == FriendsTab.REQUESTS) { onSelect(FriendsTab.REQUESTS) }
     }
 }
 
@@ -236,7 +239,7 @@ private fun FriendRow(
             NameRow(friend.user)
             Spacer(Modifier.size(3.dp))
             Text(
-                text = if (friend.user.isOnline == true) "متصل الآن" else "غير متصل",
+                text = if (friend.user.isOnline == true) S.get(R.string.status_online_now) else S.get(R.string.status_offline),
                 style = MaterialTheme.typography.labelMedium,
                 color = if (friend.user.isOnline == true) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -265,7 +268,7 @@ private fun RequestRow(
         Column(Modifier.weight(1f)) {
             NameRow(request.user)
             Spacer(Modifier.size(3.dp))
-            Text("يريد إضافتك صديقاً", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Text(S.get(R.string.friend_wants_to_add), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         }
         if (processing) {
             CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.primary)
@@ -295,7 +298,7 @@ private fun RowCard(onClick: () -> Unit, content: @Composable androidx.compose.f
 private fun NameRow(user: FriendUser) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
-            text = user.name ?: "مستخدم",
+            text = user.name ?: S.get(R.string.label_user),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1

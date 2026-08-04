@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.profile.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -103,7 +104,7 @@ fun ProfileScreen(
                 if (part != null) {
                     viewModel.uploadPhoto(part)
                 } else {
-                    context.showToast("تعذّرت قراءة الصورة")
+                    context.showToast(S.get(R.string.profile_photo_read_failed))
                 }
             }
         }
@@ -127,7 +128,7 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState())
     ) {
         ProfileHeaderBar(
-            title = stringResource(R.string.profile_screen_title),
+            title = S.get(R.string.profile_screen_title),
             onSettings = onOpenSettings,
             onShowQr = { showQrSheet = true },
             onTheme = { showThemeSheet = true },
@@ -141,7 +142,7 @@ fun ProfileScreen(
         } else {
             val age = ProfileFormatter.computeAge(currentUser.birthDate)
             val countryLabel = currentUser.country?.let { code ->
-                Countries.list.firstOrNull { it.code == code }?.let { "${it.flag}  ${it.nameAr}" }
+                Countries.list.firstOrNull { it.code == code }?.let { "${it.flag}  ${it.name}" }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -231,13 +232,13 @@ private fun IdentityCard(user: User) {
             icon = Icons.Filled.Badge,
             iconTint = ProfilePalette.Id,
             iconBackground = ProfilePalette.bg(ProfilePalette.Id),
-            label = stringResource(R.string.profile_label_id),
+            label = S.get(R.string.profile_label_id),
             value = userIdDisplay,
             trailing = {
                 IconButton(
                     onClick = {
                         clipboard.setText(AnnotatedString(userIdDisplay))
-                        context.showToast("تم النسخ")
+                        context.showToast(S.get(R.string.action_copied))
                     },
                     modifier = Modifier.size(28.dp)
                 ) {
@@ -255,7 +256,7 @@ private fun IdentityCard(user: User) {
                 icon = Icons.Filled.CalendarMonth,
                 iconTint = ProfilePalette.Calendar,
                 iconBackground = ProfilePalette.bg(ProfilePalette.Calendar),
-                label = stringResource(R.string.profile_label_joined),
+                label = S.get(R.string.profile_label_joined),
                 value = joinDate,
                 showDivider = false
             )
@@ -265,26 +266,26 @@ private fun IdentityCard(user: User) {
 
 @Composable
 private fun BasicInfoCard(user: User) {
-    val notSet = stringResource(R.string.profile_not_set)
+    val notSet = S.get(R.string.profile_not_set)
     val age = ProfileFormatter.computeAge(user.birthDate)
     val countryLabel = user.country?.let { code ->
         val country = Countries.list.firstOrNull { it.code == code }
-        country?.let { "${it.flag}  ${it.nameAr}" } ?: code
+        country?.let { "${it.flag}  ${it.name}" } ?: code
     }
     val genderValue = when (user.gender) {
-        "male" -> stringResource(R.string.profile_gender_male)
-        "female" -> stringResource(R.string.profile_gender_female)
+        "male" -> S.get(R.string.profile_gender_male)
+        "female" -> S.get(R.string.profile_gender_female)
         else -> notSet
     }
     val genderIcon = if (user.gender == "female") Icons.Filled.Female else Icons.Filled.Male
-    val ageValue = age?.let { stringResource(R.string.profile_age_years, it) } ?: notSet
+    val ageValue = age?.let { S.get(R.string.profile_age_years, it) } ?: notSet
     val subscription = if (user.isPremium)
-        stringResource(R.string.profile_subscription_premium)
+        S.get(R.string.profile_subscription_premium)
     else
-        stringResource(R.string.profile_subscription_free)
+        S.get(R.string.profile_subscription_free)
 
     ProfileSectionCard(
-        title = stringResource(R.string.profile_section_basic),
+        title = S.get(R.string.profile_section_basic),
         titleIcon = Icons.Filled.Info,
         titleIconTint = MaterialTheme.colorScheme.primary
     ) {
@@ -292,21 +293,21 @@ private fun BasicInfoCard(user: User) {
             icon = genderIcon,
             iconTint = ProfilePalette.Gender,
             iconBackground = ProfilePalette.bg(ProfilePalette.Gender),
-            label = stringResource(R.string.profile_label_gender),
+            label = S.get(R.string.profile_label_gender),
             value = genderValue
         )
         ProfileInfoRow(
             icon = Icons.Filled.Cake,
             iconTint = ProfilePalette.Age,
             iconBackground = ProfilePalette.bg(ProfilePalette.Age),
-            label = stringResource(R.string.profile_label_age),
+            label = S.get(R.string.profile_label_age),
             value = ageValue
         )
         ProfileInfoRow(
             icon = Icons.Filled.Public,
             iconTint = ProfilePalette.Country,
             iconBackground = ProfilePalette.bg(ProfilePalette.Country),
-            label = stringResource(R.string.profile_label_country),
+            label = S.get(R.string.profile_label_country),
             value = countryLabel ?: notSet
         )
         user.city?.takeIf { it.isNotBlank() }?.let {
@@ -314,7 +315,7 @@ private fun BasicInfoCard(user: User) {
                 icon = Icons.Filled.LocationCity,
                 iconTint = ProfilePalette.Country,
                 iconBackground = ProfilePalette.bg(ProfilePalette.Country),
-                label = stringResource(R.string.profile_label_city),
+                label = S.get(R.string.profile_label_city),
                 value = it
             )
         }
@@ -323,7 +324,7 @@ private fun BasicInfoCard(user: User) {
                 icon = Icons.Filled.Stars,
                 iconTint = ProfilePalette.Premium,
                 iconBackground = ProfilePalette.bg(ProfilePalette.Premium),
-                label = stringResource(R.string.profile_label_zodiac),
+                label = S.get(R.string.profile_label_zodiac),
                 value = it
             )
         }
@@ -331,7 +332,7 @@ private fun BasicInfoCard(user: User) {
             icon = Icons.Filled.WorkspacePremium,
             iconTint = ProfilePalette.Premium,
             iconBackground = ProfilePalette.bg(ProfilePalette.Premium),
-            label = stringResource(R.string.profile_label_subscription),
+            label = S.get(R.string.profile_label_subscription),
             value = subscription,
             showDivider = false
         )
@@ -341,13 +342,13 @@ private fun BasicInfoCard(user: User) {
 @Composable
 private fun BioCard(bio: String?) {
     ProfileSectionCard(
-        title = stringResource(R.string.profile_section_bio),
+        title = S.get(R.string.profile_section_bio),
         titleIcon = Icons.Filled.Description,
         titleIconTint = ProfilePalette.Bio
     ) {
         Text(
             text = bio?.takeIf { it.isNotBlank() }
-                ?: stringResource(R.string.profile_no_bio),
+                ?: S.get(R.string.profile_no_bio),
             style = MaterialTheme.typography.bodyLarge,
             color = if (bio.isNullOrBlank())
                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -361,14 +362,14 @@ private fun BioCard(bio: String?) {
 @Composable
 private fun InterestsCard(interests: List<String>) {
     ProfileSectionCard(
-        title = stringResource(R.string.profile_section_interests),
+        title = S.get(R.string.profile_section_interests),
         titleIcon = Icons.Filled.AutoAwesome,
         titleIconTint = ProfilePalette.Interests,
         countBadge = interests.size.takeIf { it > 0 }
     ) {
         if (interests.isEmpty()) {
             Text(
-                text = stringResource(R.string.profile_no_interests),
+                text = S.get(R.string.profile_no_interests),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 6.dp)
@@ -408,7 +409,7 @@ private fun FriendsEntryRow(onClick: () -> Unit) {
         }
         Spacer(Modifier.width(14.dp))
         Text(
-            text = "الأصدقاء",
+            text = S.get(R.string.friends_title),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)

@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.ui
 
+import com.chathala.hala.core.i18n.S
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
@@ -15,7 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,8 +51,8 @@ fun ResetPasswordScreen(
     }
 
     AuthScaffold(
-        title = stringResource(R.string.reset_password_title),
-        subtitle = stringResource(R.string.reset_password_subtitle),
+        title = S.get(R.string.reset_password_title),
+        subtitle = S.get(R.string.reset_password_subtitle),
         onBack = onBack,
         headerExtra = {
             if (email.isNotBlank()) {
@@ -66,7 +67,7 @@ fun ResetPasswordScreen(
         HalaTextField(
             value = code,
             onValueChange = { code = it; codeError = null },
-            label = stringResource(R.string.field_reset_code),
+            label = S.get(R.string.field_reset_code),
             keyboardType = KeyboardType.Number,
             leadingIcon = { Icon(Icons.Filled.Pin, contentDescription = null) },
             isError = codeError != null,
@@ -76,7 +77,7 @@ fun ResetPasswordScreen(
         HalaTextField(
             value = newPassword,
             onValueChange = { newPassword = it; passwordError = null },
-            label = stringResource(R.string.field_new_password),
+            label = S.get(R.string.field_new_password),
             keyboardType = KeyboardType.Password,
             isPassword = true,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -87,7 +88,7 @@ fun ResetPasswordScreen(
         HalaTextField(
             value = confirm,
             onValueChange = { confirm = it; confirmError = null },
-            label = stringResource(R.string.field_confirm_password),
+            label = S.get(R.string.field_confirm_password),
             keyboardType = KeyboardType.Password,
             isPassword = true,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -100,12 +101,12 @@ fun ResetPasswordScreen(
         Spacer(Modifier.height(24.dp))
 
         HalaPrimaryButton(
-            text = stringResource(R.string.btn_reset_password),
+            text = S.get(R.string.btn_reset_password),
             loading = state.loading,
             onClick = {
-                codeError = if (code.trim().isEmpty()) "رمز التحقق مطلوب" else null
-                passwordError = if (newPassword.length < 6) "كلمة المرور يجب أن تكون 6 أحرف على الأقل" else null
-                confirmError = if (newPassword != confirm) "كلمتا المرور غير متطابقتين" else null
+                codeError = if (code.trim().isEmpty()) S.get(R.string.valid_reset_code_required) else null
+                passwordError = if (newPassword.length < 6) S.get(R.string.valid_password_min6) else null
+                confirmError = if (newPassword != confirm) S.get(R.string.valid_password_mismatch) else null
 
                 if (codeError == null && passwordError == null && confirmError == null) {
                     viewModel.resetPassword(email, code.trim(), newPassword)

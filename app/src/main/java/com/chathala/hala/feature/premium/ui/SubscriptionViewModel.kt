@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.premium.ui
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -68,7 +71,7 @@ class SubscriptionViewModel(
                 when (event) {
                     is BillingEvent.PurchaseVerified -> {
                         _state.update { it.copy(purchasing = false, success = true) }
-                        _message.tryEmit("تم تفعيل اشتراكك المميّز 🎉")
+                        _message.tryEmit(S.get(R.string.premium_activated))
                     }
                     is BillingEvent.Cancelled -> {
                         _state.update { it.copy(purchasing = false) }

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.list.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -53,19 +56,19 @@ fun ChatsFilterChips(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         FilterChip(
-            label = "الكل",
+            label = S.get(R.string.filter_all),
             selected = selected == ChatsFilter.ALL,
             onClick = { onSelect(ChatsFilter.ALL) }
         )
         FilterChip(
-            label = "غير مقروءة",
+            label = S.get(R.string.filter_unread),
             count = unreadCount,
             icon = Icons.Filled.Email,
             selected = selected == ChatsFilter.UNREAD,
             onClick = { onSelect(ChatsFilter.UNREAD) }
         )
         FilterChip(
-            label = "طلبات",
+            label = S.get(R.string.filter_requests),
             count = pendingCount,
             isAccent = true,
             selected = false,
@@ -73,14 +76,14 @@ fun ChatsFilterChips(
         )
         // ينتقل لشاشة الأصدقاء (ليس فلتراً للقائمة)
         FilterChip(
-            label = "أصدقائي",
+            label = S.get(R.string.filter_my_friends),
             icon = Icons.Filled.People,
             iconTint = Color(0xFFAB47BC),
             selected = false,
             onClick = onOpenFriends
         )
         FilterChip(
-            label = "مقربون",
+            label = S.get(R.string.filter_close),
             count = pinnedCount,
             icon = Icons.Filled.PushPin,
             iconTint = Color(0xFFFFB300),
@@ -88,7 +91,7 @@ fun ChatsFilterChips(
             onClick = { onSelect(ChatsFilter.PINNED) }
         )
         FilterChip(
-            label = "مميزون",
+            label = S.get(R.string.filter_premium),
             count = premiumCount,
             icon = Icons.Filled.Star,
             iconTint = Color(0xFFFFB300),

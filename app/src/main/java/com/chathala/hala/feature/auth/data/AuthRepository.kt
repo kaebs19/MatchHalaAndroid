@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.auth.data
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import android.util.Log
 import com.chathala.hala.core.device.DeviceIdentity
 import com.chathala.hala.core.network.ApiClient
@@ -79,13 +82,13 @@ class AuthRepository(
     suspend fun forgotPassword(email: String): NetworkResult<String> =
         safeApiCall {
             val resp = api.forgotPassword(ForgotPasswordRequest(email.trim()))
-            resp.message ?: "تم إرسال رمز التحقق"
+            resp.message ?: S.get(R.string.auth_code_sent)
         }
 
     suspend fun resetPassword(email: String, code: String, newPassword: String): NetworkResult<String> =
         safeApiCall {
             val resp = api.resetPassword(ResetPasswordRequest(email.trim(), code.trim(), newPassword))
-            resp.message ?: "تم تغيير كلمة المرور"
+            resp.message ?: S.get(R.string.auth_password_changed)
         }
 
     /** يمسح الجلسة والمستخدم المحفوظ. */
@@ -108,7 +111,7 @@ class AuthRepository(
     suspend fun deleteAccount(password: String?): NetworkResult<String> =
         safeApiCall {
             val token = tokenStorage.token.first()
-                ?: throw IllegalStateException("لا يوجد جلسة نشطة")
+                ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
             val resp = api.deleteAccount(
                 bearer = "Bearer $token",
                 body = DeleteAccountRequest(password = password)
@@ -120,7 +123,7 @@ class AuthRepository(
         runCatching { chatsCache?.clear() }
             tokenStorage.clear()
             userRepository.clear()
-            resp.message ?: "تم حذف الحساب"
+            resp.message ?: S.get(R.string.auth_account_deleted)
         }
 
     private suspend fun persistAuth(resp: AuthResponse) {

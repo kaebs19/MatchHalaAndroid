@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.notifications.util
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import com.chathala.hala.feature.notifications.data.NotificationItem
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -17,13 +20,18 @@ object NotificationFormat {
         }
     }
 
-    /** "قبل 5 دقائق" / "أمس" / "قبل 3 أيام"… */
-    fun timeAgoArabic(iso: String?): String {
+    /**
+     * "قبل 5 دقائق" / "أمس" / "3 days ago"… حسب اللغة الحالية.
+     *
+     * التفريعات على 1/2/<11 اختفت: موارد `plurals` تختار الصيغة الصحيحة لكل لغة
+     * (العربية ستّ صيغ، الإنجليزية اثنتان) بدل تكرار قواعد العربية في الكود.
+     */
+    fun timeAgo(iso: String?): String {
         if (iso.isNullOrBlank()) return ""
         val trimmed = iso.substringBefore('.').trimEnd('Z')
         val date = runCatching { isoParser.parse(trimmed) }.getOrNull() ?: return ""
         val diffMs = System.currentTimeMillis() - date.time
-        if (diffMs < 0) return "الآن"
+        if (diffMs < 0) return S.get(R.string.time_now)
 
         val seconds = diffMs / 1000
         val minutes = seconds / 60
@@ -31,19 +39,10 @@ object NotificationFormat {
         val days = hours / 24
 
         return when {
-            seconds < 60 -> "قبل لحظات"
-            minutes == 1L -> "قبل دقيقة"
-            minutes == 2L -> "قبل دقيقتين"
-            minutes < 11 -> "قبل $minutes دقائق"
-            minutes < 60 -> "قبل $minutes دقيقة"
-            hours == 1L -> "قبل ساعة"
-            hours == 2L -> "قبل ساعتين"
-            hours < 11 -> "قبل $hours ساعات"
-            hours < 24 -> "قبل $hours ساعة"
-            days == 1L -> "أمس"
-            days == 2L -> "قبل يومين"
-            days < 11 -> "قبل $days أيام"
-            else -> "قبل $days يوم"
+            seconds < 60 -> S.get(R.string.time_moments_ago)
+            minutes < 60 -> S.plural(R.plurals.time_minutes_ago, minutes.toInt())
+            hours < 24 -> S.plural(R.plurals.time_hours_ago, hours.toInt())
+            else -> S.plural(R.plurals.time_days_ago, days.toInt())
         }
     }
 

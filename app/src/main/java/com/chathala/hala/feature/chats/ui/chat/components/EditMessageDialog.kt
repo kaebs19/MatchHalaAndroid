@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,7 +41,7 @@ fun EditMessageDialog(
 
     AlertDialog(
         onDismissRequest = { if (!submitting) onDismiss() },
-        title = { Text("تعديل الرسالة 👑") },
+        title = { Text(S.get(R.string.edit_message_title)) },
         text = {
             Column {
                 OutlinedTextField(
@@ -51,7 +54,7 @@ fun EditMessageDialog(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "يمكن التعديل خلال ١٥ دقيقة من الإرسال، ويظهر للطرف الآخر وسم «مُعدَّلة».",
+                    text = S.get(R.string.edit_message_hint),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -62,11 +65,11 @@ fun EditMessageDialog(
                 onClick = { onConfirm(value.text) },
                 enabled = changed && !submitting
             ) {
-                Text(if (submitting) "جارٍ الحفظ…" else "حفظ")
+                Text(if (submitting) S.get(R.string.action_saving) else S.get(R.string.action_save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !submitting) { Text("إلغاء") }
+            TextButton(onClick = onDismiss, enabled = !submitting) { Text(S.get(R.string.action_cancel)) }
         }
     )
 }

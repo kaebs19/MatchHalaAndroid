@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.settings.ui.account
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -98,12 +101,12 @@ fun AccountStandingScreen(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
 
-    SettingsScaffold(title = "حالة حسابي", onBack = onBack, scrollable = false) {
+    SettingsScaffold(title = S.get(R.string.account_standing_title), onBack = onBack, scrollable = false) {
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 state.loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 state.data == null -> Text(
-                    text = state.error ?: "تعذّر تحميل البيانات",
+                    text = state.error ?: S.get(R.string.err_load_data_failed),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -134,12 +137,12 @@ private fun StandingContent(d: AccountStandingData, onOpenViolations: () -> Unit
 @Composable
 private fun StandingBadge(standing: String, hoursLeft: Int) {
     val (emoji, label, color, desc) = when (standing) {
-        "good" -> Quad("🟢", "حسابك سليم", Green, "لا توجد قيود على حسابك. واصل الالتزام بسياسة المنصة.")
-        "warning" -> Quad("🟡", "تحذير", Amber, "اقتربت من حدّ التقييد. أي مخالفة جديدة قد تقيّد مراسلتك.")
-        "restricted" -> Quad("🟠", "مراسلتك مقيّدة", Orange,
-            if (hoursLeft > 0) "يتبقّى $hoursLeft ساعة على رفع التقييد." else "حسابك مقيّد مؤقتاً.")
-        "suspended" -> Quad("🔴", "حسابك معلّق", Red, "تم تعليق حسابك مؤقتاً بسبب تكرار المخالفات.")
-        else -> Quad("⚪", "غير معروف", Color.Gray, "")
+        "good" -> Quad("🟢", S.get(R.string.standing_good_title), Green, S.get(R.string.standing_good_desc))
+        "warning" -> Quad("🟡", S.get(R.string.label_warning_short), Amber, S.get(R.string.standing_warning_desc))
+        "restricted" -> Quad("🟠", S.get(R.string.standing_restricted_title), Orange,
+            if (hoursLeft > 0) S.get(R.string.standing_hours_until_lift, hoursLeft) else S.get(R.string.standing_restricted_desc))
+        "suspended" -> Quad("🔴", S.get(R.string.standing_suspended_title), Red, S.get(R.string.standing_suspended_desc))
+        else -> Quad("⚪", S.get(R.string.label_unknown), Color.Gray, "")
     }
     Column(
         modifier = Modifier
@@ -186,7 +189,7 @@ private fun ViolationsProgress(violations: Int, threshold: Int, onOpenViolations
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("المخالفات في الدورة الحالية", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold))
+            Text(S.get(R.string.standing_current_cycle), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold))
             Text("$violations / $threshold", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = barColor)
         }
         Spacer(Modifier.size(8.dp))
@@ -198,14 +201,14 @@ private fun ViolationsProgress(violations: Int, threshold: Int, onOpenViolations
         )
         Spacer(Modifier.size(8.dp))
         Text(
-            text = if (violations >= threshold) "بلغت الحدّ — أي مخالفة تطبّق التصعيد التالي."
-            else "تبقّى ${threshold - violations} قبل التقييد.",
+            text = if (violations >= threshold) S.get(R.string.standing_at_threshold)
+            else S.get(R.string.standing_remaining_before, threshold - violations),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.size(10.dp))
         Text(
-            "عرض سجل المخالفات ›",
+            S.get(R.string.standing_view_history),
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
@@ -226,10 +229,10 @@ private fun EscalationLadder(ladder: List<EscalationStep>, nextStep: Int, lockCo
             .background(MaterialTheme.colorScheme.surface)
             .padding(16.dp)
     ) {
-        Text("سُلّم التصعيد", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+        Text(S.get(R.string.standing_escalation_ladder), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
         Spacer(Modifier.size(4.dp))
         Text(
-            "كل تقييد يرفع المدّة. التزامك يحمي حسابك من الحظر الدائم.",
+            S.get(R.string.standing_escalation_desc),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -270,7 +273,7 @@ private fun EscalationLadder(ladder: List<EscalationStep>, nextStep: Int, lockCo
                 )
                 if (isNext) {
                     Text(
-                        "التالي",
+                        S.get(R.string.label_next),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = Orange,
                         modifier = Modifier
@@ -297,10 +300,10 @@ private fun RecoveryCard(days: Int) {
         Text("🌱", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text("الاسترداد", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = Green)
+            Text(S.get(R.string.label_recovery), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = Green)
             Text(
-                text = if (days <= 0) "سيُعاد تعيين عدّاد التقييدات قريباً."
-                else "سيُعاد تعيين عدّاد التقييدات خلال $days يوم من الالتزام.",
+                text = if (days <= 0) S.get(R.string.standing_reset_soon)
+                else S.get(R.string.standing_reset_after_days, days),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
