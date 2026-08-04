@@ -26,7 +26,7 @@ class ProfileRepository(
             val token = storage.token.first()
                 ?: throw IllegalStateException(S.get(R.string.err_no_session_signin))
             val resp = api.updateProfile(bearer = "Bearer $token", body = request)
-            resp.message ?: S.get(R.string.profile_data_updated)
+            S.serverOr(resp.message, R.string.profile_data_updated)
         }
 
     suspend fun uploadProfileImage(part: MultipartBody.Part): NetworkResult<String> =
@@ -34,7 +34,7 @@ class ProfileRepository(
             val token = storage.token.first()
                 ?: throw IllegalStateException(S.get(R.string.err_no_session_signin))
             val resp = api.uploadProfileImage(bearer = "Bearer $token", profileImage = part)
-            resp.message ?: S.get(R.string.profile_photo_uploaded)
+            S.serverOr(resp.message, R.string.profile_photo_uploaded)
         }
 
     suspend fun deleteProfileImage(): NetworkResult<String> =
@@ -42,6 +42,6 @@ class ProfileRepository(
             val token = storage.token.first()
                 ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
             val resp = api.deleteProfileImage(bearer = "Bearer $token")
-            resp.message ?: S.get(R.string.profile_photo_deleted)
+            S.serverOr(resp.message, R.string.profile_photo_deleted)
         }
 }

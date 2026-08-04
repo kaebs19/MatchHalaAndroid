@@ -93,7 +93,7 @@ fun ExternalPromoBlockedDialog(
 
             // الوصف
             Text(
-                text = info.message ?: S.get(R.string.msg_blocked_desc),
+                text = S.serverOr(info.message, R.string.msg_blocked_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

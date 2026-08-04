@@ -27,7 +27,7 @@ class ReportRepository(
                 description = description?.takeIf { it.isNotBlank() }
             )
         )
-        resp.message ?: S.get(R.string.report_sent)
+        S.serverOr(resp.message, R.string.report_sent)
     }
 
     private suspend fun bearer(): String {

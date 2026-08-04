@@ -97,12 +97,12 @@ class MessagesRepository(
     /** يعدّل نصّ رسالة ويُرجع النصّ بعد فلاتر الخادم (قد يُكتَم جزء منه). */
     suspend fun editMessage(messageId: String, content: String): NetworkResult<String> = safeApiCall {
         val resp = api.editMessage(bearer(), messageId, EditMessageRequest(content))
-        resp.data?.content ?: throw IllegalStateException(resp.message ?: S.get(R.string.msg_edit_failed))
+        resp.data?.content ?: throw IllegalStateException(S.serverOr(resp.message, R.string.msg_edit_failed))
     }
 
     suspend fun deleteMessage(messageId: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteMessage(bearer(), messageId)
-        resp.message ?: S.get(R.string.msg_deleted)
+        S.serverOr(resp.message, R.string.msg_deleted)
     }
 
     suspend fun forwardMessage(
@@ -123,7 +123,7 @@ class MessagesRepository(
 
     suspend fun revealSensitiveContent(messageId: String): NetworkResult<String> = safeApiCall {
         val resp = api.revealSensitiveContent(bearer(), messageId)
-        resp.data?.content ?: throw IllegalStateException(resp.message ?: S.get(R.string.msg_reveal_failed))
+        resp.data?.content ?: throw IllegalStateException(S.serverOr(resp.message, R.string.msg_reveal_failed))
     }
 
     suspend fun sendDisappearingImage(
@@ -148,7 +148,7 @@ class MessagesRepository(
 
     suspend fun appealBlock(messageId: String, reason: String): NetworkResult<String> = safeApiCall {
         val resp = api.appealBlock(bearer(), messageId, AppealBlockRequest(reason))
-        resp.message ?: S.get(R.string.appeal_submitted)
+        S.serverOr(resp.message, R.string.appeal_submitted)
     }
 
     /**
@@ -164,7 +164,7 @@ class MessagesRepository(
                 actionType = "restriction"
             )
         )
-        resp.message ?: S.get(R.string.request_submitted)
+        S.serverOr(resp.message, R.string.request_submitted)
     }
 
     suspend fun fetchPromoKeywords(): NetworkResult<List<PromoKeyword>> = safeApiCall {

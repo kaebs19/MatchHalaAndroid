@@ -21,12 +21,12 @@ class BlockingRepository(
 
     suspend fun block(userId: String): NetworkResult<String> = safeApiCall {
         val resp = api.blockUser(bearer(), userId)
-        resp.message ?: S.get(R.string.block_user_blocked)
+        S.serverOr(resp.message, R.string.block_user_blocked)
     }
 
     suspend fun unblock(userId: String): NetworkResult<String> = safeApiCall {
         val resp = api.unblockUser(bearer(), userId)
-        resp.message ?: S.get(R.string.block_user_unblocked)
+        S.serverOr(resp.message, R.string.block_user_unblocked)
     }
 
     /** حالة الحظر بالاتجاهين مع مستخدم محدّد — تُفحص عند كل فتح للمحادثة. */

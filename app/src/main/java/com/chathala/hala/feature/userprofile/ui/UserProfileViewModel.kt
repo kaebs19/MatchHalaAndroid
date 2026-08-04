@@ -196,7 +196,7 @@ class UserProfileViewModel(
         viewModelScope.launch {
             when (val r = discover.recordSwipe(userId, "like")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
+                    if (r.data.matched) _message.tryEmit(S.serverOr(r.data.message, R.string.discover_new_match))
                 is NetworkResult.Error -> { /* «سبق السوايب» → تجاهل، نُبقي اللون */ }
             }
         }
@@ -209,7 +209,7 @@ class UserProfileViewModel(
         viewModelScope.launch {
             when (val r = discover.recordSwipe(userId, "superlike")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
+                    if (r.data.matched) _message.tryEmit(S.serverOr(r.data.message, R.string.discover_new_match))
                 is NetworkResult.Error -> {
                     _state.update { it.copy(liked = false) }  // تجاوز الحد → أعِد اللون
                     _message.tryEmit(ErrorMessages.friendly(r))

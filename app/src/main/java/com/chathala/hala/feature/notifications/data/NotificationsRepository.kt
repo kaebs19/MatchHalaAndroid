@@ -77,22 +77,22 @@ class NotificationsRepository(
 
     suspend fun markRead(id: String): NetworkResult<String> = safeApiCall {
         val resp = api.markNotificationRead(bearer(), id)
-        resp.message ?: S.get(R.string.notif_updated_one)
+        S.serverOr(resp.message, R.string.notif_updated_one)
     }
 
     suspend fun markAllRead(): NetworkResult<String> = safeApiCall {
         val resp = api.markAllNotificationsRead(bearer())
-        resp.message ?: S.get(R.string.notif_updated_all)
+        S.serverOr(resp.message, R.string.notif_updated_all)
     }
 
     suspend fun delete(id: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteNotification(bearer(), id)
-        resp.message ?: S.get(R.string.notif_deleted_one)
+        S.serverOr(resp.message, R.string.notif_deleted_one)
     }
 
     suspend fun deleteAll(): NetworkResult<String> = safeApiCall {
         val resp = api.deleteAllNotifications(bearer())
-        resp.message ?: S.get(R.string.notif_deleted_all)
+        S.serverOr(resp.message, R.string.notif_deleted_all)
     }
 
     private suspend fun bearer(): String {

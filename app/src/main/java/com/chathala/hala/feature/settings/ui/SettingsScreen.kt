@@ -21,7 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.ContactSupport
+import androidx.compose.material.icons.automirrored.filled.ContactSupport
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Explore
@@ -204,7 +204,7 @@ fun SettingsScreen(
                     onClick = onOpenAbout
                 )
                 SettingsItem(
-                    icon = Icons.Filled.ContactSupport,
+                    icon = Icons.AutoMirrored.Filled.ContactSupport,
                     iconTint = MaterialTheme.colorScheme.primary,
                     label = S.get(R.string.contact_title),
                     onClick = onOpenContact

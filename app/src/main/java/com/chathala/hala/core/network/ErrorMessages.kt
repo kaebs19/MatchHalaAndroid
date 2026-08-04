@@ -50,7 +50,9 @@ object ErrorMessages {
             // رموز عامة
             "REFRESH_TOKEN_EXPIRED" -> S.get(R.string.err_session_expired)
 
-            else -> result.message
+            // رمز غير معروف: نعرض رسالة الخادم إن كانت مقروءة بلغة الواجهة،
+            // وإلا رسالة عامة مترجَمة — الخادم يردّ بالعربية دائماً.
+            else -> S.serverOr(result.message, R.string.err_generic)
         }
 
     /** استخراج رسالة مفيدة من أي NetworkResult.Error. */

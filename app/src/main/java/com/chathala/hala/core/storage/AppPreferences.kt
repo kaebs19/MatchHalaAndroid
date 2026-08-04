@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import java.util.Locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -26,9 +27,19 @@ enum class AppLanguage(val tag: String) {
     ARABIC("ar"), ENGLISH("en");
 
     companion object {
-        /** الافتراضي: العربية — التطبيق عربي أولاً. */
+        /**
+         * اللغة المحفوظة، أو لغة الجهاز عند أول تشغيل.
+         *
+         * `null` يعني «لم يختر المستخدم بعد» لا «العربية»: نتبع الجهاز في هذه الحالة
+         * فيجد المستخدم الإنجليزي واجهته بلغته فوراً. أي اختيار صريح يُحفظ ويَسبق
+         * الجهاز بعدها، فلا يُنقض قراره لو غيّر لغة نظامه لاحقاً.
+         */
         fun fromString(s: String?): AppLanguage =
-            entries.firstOrNull { it.name == s } ?: ARABIC
+            entries.firstOrNull { it.name == s } ?: fromDevice()
+
+        /** العربية هي الافتراضي لكل لغة عدا الإنجليزية — جمهور التطبيق عربي. */
+        private fun fromDevice(): AppLanguage =
+            if (Locale.getDefault().language == "en") ENGLISH else ARABIC
     }
 }
 

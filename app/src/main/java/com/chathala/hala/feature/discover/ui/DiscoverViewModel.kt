@@ -262,7 +262,7 @@ class DiscoverViewModel(
             viewModelScope.launch {
                 when (val r = repo.recordSwipe(card.id, "like")) {
                     is NetworkResult.Success ->
-                        if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
+                        if (r.data.matched) _message.tryEmit(S.serverOr(r.data.message, R.string.discover_new_match))
                     is NetworkResult.Error -> { /* «سبق السوايب» وغيره → تجاهل بهدوء، نُبقي اللون */ }
                 }
             }
@@ -278,7 +278,7 @@ class DiscoverViewModel(
         viewModelScope.launch {
             when (val r = repo.recordSwipe(card.id, "superlike")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(r.data.message ?: S.get(R.string.discover_new_match))
+                    if (r.data.matched) _message.tryEmit(S.serverOr(r.data.message, R.string.discover_new_match))
                 is NetworkResult.Error -> {
                     // مثل تجاوز الحد اليومي → أظهر الرسالة وأعِد لون الزر
                     _state.update { it.copy(likedIds = it.likedIds - card.id) }

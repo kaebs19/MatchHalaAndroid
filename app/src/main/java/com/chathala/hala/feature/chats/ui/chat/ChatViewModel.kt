@@ -1331,7 +1331,7 @@ class ChatViewModel(
                 }
             },
             onFailure = { err ->
-                _message.tryEmit(err.message ?: S.get(R.string.rec_start_failed))
+                _message.tryEmit(S.serverOr(err.message, R.string.rec_start_failed))
             }
         )
     }
@@ -1383,7 +1383,7 @@ class ChatViewModel(
                 }
             },
             onFailure = { err ->
-                _message.tryEmit(err.message ?: S.get(R.string.rec_failed))
+                _message.tryEmit(S.serverOr(err.message, R.string.rec_failed))
             }
         )
     }

@@ -26,7 +26,7 @@ class VerificationRepository(
         val part = MediaUploadHelper.uriToImagePart(context, selfieUri, fieldName = "selfie")
             ?: throw IllegalStateException(S.get(R.string.msg_image_read_failed))
         val resp = api.submitVerification(bearer(), part)
-        resp.message ?: S.get(R.string.conv_request_sent)
+        S.serverOr(resp.message, R.string.conv_request_sent)
     }
 
     private suspend fun bearer(): String {

@@ -25,6 +25,17 @@ android {
         versionName = "1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // اللغات المدعومة صراحةً — يُسقط لغات المكتبات غير المستخدمة من الحزمة
+        // ويجعل قائمة اللغات في إعدادات النظام (أندرويد 13+) مطابقة لما ندعمه فعلاً.
+        resourceConfigurations += listOf("ar", "en")
+    }
+
+    lint {
+        // حارس آلي: نصّ جديد بلا ترجمة إنجليزية (أو العكس) يُفشل البناء بدل أن
+        // يظهر بالعربية داخل واجهة إنجليزية. هذا ما يبقي اللغتين متطابقتين تلقائياً.
+        error += listOf("MissingTranslation", "ExtraTranslation")
+        abortOnError = true
     }
 
     signingConfigs {

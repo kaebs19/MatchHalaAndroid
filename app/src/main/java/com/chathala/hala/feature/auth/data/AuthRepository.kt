@@ -82,13 +82,13 @@ class AuthRepository(
     suspend fun forgotPassword(email: String): NetworkResult<String> =
         safeApiCall {
             val resp = api.forgotPassword(ForgotPasswordRequest(email.trim()))
-            resp.message ?: S.get(R.string.auth_code_sent)
+            S.serverOr(resp.message, R.string.auth_code_sent)
         }
 
     suspend fun resetPassword(email: String, code: String, newPassword: String): NetworkResult<String> =
         safeApiCall {
             val resp = api.resetPassword(ResetPasswordRequest(email.trim(), code.trim(), newPassword))
-            resp.message ?: S.get(R.string.auth_password_changed)
+            S.serverOr(resp.message, R.string.auth_password_changed)
         }
 
     /** يمسح الجلسة والمستخدم المحفوظ. */
@@ -123,7 +123,7 @@ class AuthRepository(
         runCatching { chatsCache?.clear() }
             tokenStorage.clear()
             userRepository.clear()
-            resp.message ?: S.get(R.string.auth_account_deleted)
+            S.serverOr(resp.message, R.string.auth_account_deleted)
         }
 
     private suspend fun persistAuth(resp: AuthResponse) {

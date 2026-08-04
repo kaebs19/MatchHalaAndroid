@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Campaign
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.MarkChatUnread
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Visibility
@@ -111,7 +111,7 @@ fun NotificationSettingsScreen(
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 NotifToggle(
-                                    icon = Icons.Filled.Chat,
+                                    icon = Icons.AutoMirrored.Filled.Chat,
                                     title = S.get(R.string.notif_invitations_title),
                                     subtitle = S.get(R.string.notif_invitations_desc),
                                     checked = d.invitations,

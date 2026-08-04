@@ -44,7 +44,9 @@ object LocaleManager {
     /** Context مضبوط على اللغة المطلوبة — مُخزَّن مؤقتاً لتفادي إعادة البناء. */
     fun contextFor(language: AppLanguage): Context = contexts.getOrPut(language) {
         val locale = Locale.forLanguageTag(language.tag)
-        Locale.setDefault(locale)
+        // لا نستدعي Locale.setDefault: تغيير الافتراضي عالمياً كان سيجعل
+        // AppLanguage.fromDevice() (كشف لغة الجهاز عند أول تشغيل) يقرأ اختيارنا
+        // لا لغة الجهاز. المنسّقات تأخذ اللغة صراحةً من LocaleManager.locale.
         val config = Configuration(appContext.resources.configuration).apply {
             setLocale(locale)
             setLayoutDirection(locale)
@@ -76,4 +78,22 @@ object S {
 
     /** يختار النص حسب اللغة الحالية — للحالات التي لا تناسبها موارد النظام (بيانات مثل أسماء الدول). */
     fun pick(ar: String, en: String): String = if (LocaleManager.isRtl) ar else en
+
+    private val ARABIC_SCRIPT = Regex("[\\u0600-\\u06FF]")
+
+    /**
+     * نصٌّ وارد من الخادم مع بديل محلي مُترجَم.
+     *
+     * الخادم يردّ بالعربية دائماً (لا يتفاوض على اللغة)، فتفضيل رسالته حرفياً
+     * كان يُسرّب العربية إلى الواجهة الإنجليزية. هنا نتجاهلها إن كانت عربية
+     * والواجهة إنجليزية: رسالة عامة مترجَمة أوضح للمستخدم من نصّ لا يقرأه.
+     *
+     * تبقى رسالة الخادم مُفضَّلة في الوضع العربي لأنها أدقّ وأحدث من البديل.
+     */
+    fun serverOr(serverMessage: String?, fallbackRes: Int): String {
+        val msg = serverMessage?.trim()
+        if (msg.isNullOrBlank()) return get(fallbackRes)
+        if (!LocaleManager.isRtl && ARABIC_SCRIPT.containsMatchIn(msg)) return get(fallbackRes)
+        return msg
+    }
 }

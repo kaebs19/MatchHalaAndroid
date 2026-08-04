@@ -29,32 +29,32 @@ class SettingsRepository(
 
     suspend fun setShowDistance(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateShowDistance(bearer(), UpdateDistanceRequest(value))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun setStealthMode(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateStealthMode(bearer(), UpdateStealthRequest(value))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun setShowAge(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateShowAge(bearer(), UpdateShowAgeRequest(value))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun setShowCountry(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateShowCountry(bearer(), UpdateShowCountryRequest(value))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun setAcceptingRequests(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updateAcceptingRequests(bearer(), UpdateAcceptingRequestsRequest(value))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun setPremiumOnlyRequests(value: Boolean): NetworkResult<String> = safeApiCall {
         val resp = api.updatePremiumOnlyRequests(bearer(), UpdatePremiumOnlyRequestsRequest(value))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     /** من يستطيع إرسال طلب صداقة لي: everyone | contacts | nobody. */
@@ -63,7 +63,7 @@ class SettingsRepository(
             bearer(),
             com.chathala.hala.feature.friends.data.UpdateFriendRequestsPrivacyBody(value)
         )
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun setDoNotDisturb(
@@ -85,7 +85,7 @@ class SettingsRepository(
         durationHours: Int? = null
     ): NetworkResult<String> = safeApiCall {
         val resp = api.updatePauseDiscovery(bearer(), UpdatePauseDiscoveryRequest(enabled, durationHours))
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun fetchNotificationPrefs(): NetworkResult<NotificationPrefsData> = safeApiCall {
@@ -118,7 +118,7 @@ class SettingsRepository(
             bearer = bearer(),
             body = ChangePasswordRequest(currentPassword, newPassword)
         )
-        resp.message ?: S.get(R.string.auth_password_changed)
+        S.serverOr(resp.message, R.string.auth_password_changed)
     }
 
     suspend fun setAllowSensitiveContent(enabled: Boolean): NetworkResult<String> = safeApiCall {

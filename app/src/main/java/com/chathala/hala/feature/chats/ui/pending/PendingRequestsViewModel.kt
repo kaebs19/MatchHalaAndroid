@@ -169,7 +169,7 @@ class PendingRequestsViewModel(
                         if (evt.welcomeSent) S.get(R.string.pending_accepted_with_greeting) else S.get(R.string.pending_accepted)
                     )
                 },
-                onFailure = { e -> _message.tryEmit(e.message ?: S.get(R.string.pending_accept_failed)) }
+                onFailure = { e -> _message.tryEmit(S.serverOr(e.message, R.string.pending_accept_failed)) }
             )
         }
     }

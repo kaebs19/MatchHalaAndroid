@@ -64,7 +64,7 @@ class GoogleSignInHelper(private val context: Context) {
             GoogleSignInResult.Error(S.get(R.string.google_read_failed))
         } catch (e: GetCredentialException) {
             android.util.Log.e(TAG, "GetCredentialException: type=${e.type} msg=${e.message}", e)
-            GoogleSignInResult.Error(e.message ?: S.get(R.string.google_signin_failed))
+            GoogleSignInResult.Error(S.serverOr(e.message, R.string.google_signin_failed))
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Unexpected Google sign-in error", e)
             GoogleSignInResult.Error(e.message ?: S.get(R.string.err_unexpected))

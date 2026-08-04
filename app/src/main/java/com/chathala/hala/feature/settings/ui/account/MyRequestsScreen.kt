@@ -115,7 +115,7 @@ class MyRequestsViewModel(private val tokenStorage: TokenStorage) : ViewModel() 
                 _state.update {
                     it.copy(
                         submitting = false,
-                        message = resp.message ?: S.get(R.string.request_sent_moderator)
+                        message = S.serverOr(resp.message, R.string.request_sent_moderator)
                     )
                 }
                 load() // أعد تحميل القائمة لإظهار الطلب الجديد

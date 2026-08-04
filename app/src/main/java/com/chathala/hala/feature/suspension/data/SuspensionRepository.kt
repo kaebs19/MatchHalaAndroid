@@ -54,7 +54,7 @@ class SuspensionRepository(
                 actionType = if (permanent) "ban" else "suspension"
             )
         )
-        resp.message ?: S.get(R.string.appeal_sent)
+        S.serverOr(resp.message, R.string.appeal_sent)
     }
 
     /** يجلب الاستئنافات السابقة للمستخدم (وضع الحساب فقط — يحتاج توكن). */
@@ -75,6 +75,6 @@ class SuspensionRepository(
                 deviceToken = DeviceIdentity.deviceToken.ifEmpty { null }
             )
         )
-        resp.message ?: S.get(R.string.appeal_sent)
+        S.serverOr(resp.message, R.string.appeal_sent)
     }
 }

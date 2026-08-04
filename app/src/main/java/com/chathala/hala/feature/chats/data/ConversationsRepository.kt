@@ -63,7 +63,7 @@ class ConversationsRepository(
 
     suspend fun acceptRequest(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.acceptConversation(bearer(), conversationId)
-        resp.message ?: S.get(R.string.conv_accepted)
+        S.serverOr(resp.message, R.string.conv_accepted)
     }
 
     suspend fun acceptRequestWithMessage(
@@ -80,22 +80,22 @@ class ConversationsRepository(
 
     suspend fun rejectRequest(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.rejectConversation(bearer(), conversationId)
-        resp.message ?: S.get(R.string.conv_rejected)
+        S.serverOr(resp.message, R.string.conv_rejected)
     }
 
     suspend fun markRead(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.markConversationRead(bearer(), conversationId)
-        resp.message ?: S.get(R.string.conv_updated)
+        S.serverOr(resp.message, R.string.conv_updated)
     }
 
     suspend fun deleteConversation(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.deleteConversation(bearer(), conversationId)
-        resp.message ?: S.get(R.string.conv_deleted)
+        S.serverOr(resp.message, R.string.conv_deleted)
     }
 
     suspend fun cancelConversation(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.cancelConversation(bearer(), conversationId)
-        resp.message ?: S.get(R.string.conv_ended)
+        S.serverOr(resp.message, R.string.conv_ended)
     }
 
     /** إرسال طلب محادثة جديد (يُستخدم لاستئناف محادثة منتهية). */
@@ -108,7 +108,7 @@ class ConversationsRepository(
                 isSuperLike = false
             )
         )
-        resp.message ?: S.get(R.string.conv_request_sent)
+        S.serverOr(resp.message, R.string.conv_request_sent)
     }
 
     suspend fun setMute(
