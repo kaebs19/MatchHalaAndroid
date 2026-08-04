@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.settings.ui
 
+import com.chathala.hala.core.i18n.LanguageController
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -28,6 +30,7 @@ import kotlinx.coroutines.launch
 class SettingsViewModel(
     private val prefs: AppPreferences,
     private val authRepo: AuthRepository,
+    private val deviceTokens: com.chathala.hala.feature.push.data.DeviceTokenRepository,
     userRepo: UserRepository
 ) : ViewModel() {
 
@@ -51,13 +54,9 @@ class SettingsViewModel(
         viewModelScope.launch { prefs.setTheme(theme) }
     }
 
-    /**
-     * التبديل فوري: نحدّث [LocaleManager] مباشرةً (حالة Compose) قبل الكتابة في DataStore
-     * حتى لا ينتظر المستخدم دورة الـ Flow.
-     */
+    /** التبديل والحفظ وإبلاغ الخادم — التفاصيل في [LanguageController]. */
     fun setLanguage(language: AppLanguage) {
-        LocaleManager.setLanguage(language)
-        viewModelScope.launch { prefs.setLanguage(language) }
+        LanguageController.apply(language, prefs, deviceTokens)
     }
 
     fun logout(onDone: () -> Unit) {
@@ -95,6 +94,7 @@ class SettingsViewModel(
                 return SettingsViewModel(
                     prefs = app.appPreferences,
                     authRepo = app.authRepository,
+                    deviceTokens = app.deviceTokenRepository,
                     userRepo = app.userRepository
                 ) as T
             }

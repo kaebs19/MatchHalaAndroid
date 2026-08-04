@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.push.data
 
+import com.chathala.hala.core.i18n.LocaleManager
+
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -40,7 +42,8 @@ class DeviceTokenRepository(
                 deviceToken = fcmToken,
                 platform = "android",
                 osVersion = Build.VERSION.RELEASE,
-                appVersion = BuildConfig.VERSION_NAME
+                appVersion = BuildConfig.VERSION_NAME,
+                language = LocaleManager.current.tag
             )
         )
         Unit
@@ -60,7 +63,8 @@ class DeviceTokenRepository(
                 deviceToken = fcm,
                 platform = "android",
                 osVersion = Build.VERSION.RELEASE,
-                appVersion = BuildConfig.VERSION_NAME
+                appVersion = BuildConfig.VERSION_NAME,
+                language = LocaleManager.current.tag
             )
         )
         Log.d(TAG, "FCM registered with backend")

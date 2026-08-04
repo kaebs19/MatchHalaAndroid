@@ -111,5 +111,6 @@ data class DeviceInfo(
     val osVersion: String? = null,
     val appVersion: String? = null,
     val deviceModel: String? = null,
-    val language: String? = "ar"
+    /** لا افتراض ثابت: تُملأ من LocaleManager عند الاستدعاء. */
+    val language: String? = null
 )

@@ -1,5 +1,7 @@
 package com.chathala.hala.ui.components
 
+import com.chathala.hala.core.i18n.LanguageController
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,8 +53,7 @@ fun LanguageToggleChip(modifier: Modifier = Modifier) {
             .background(Color.White.copy(alpha = 0.18f))
             .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(50))
             .clickable {
-                LocaleManager.setLanguage(next)
-                scope.launch { app.appPreferences.setLanguage(next) }
+                LanguageController.apply(next, app.appPreferences, app.deviceTokenRepository)
             }
             .padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically

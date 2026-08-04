@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.auth.data
 
+import com.chathala.hala.core.i18n.LocaleManager
+
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -71,7 +73,8 @@ class AuthRepository(
                     deviceInfo = DeviceInfo(
                         osVersion = DeviceIdentity.osVersion,
                         appVersion = DeviceIdentity.appVersion,
-                        deviceModel = DeviceIdentity.deviceModel
+                        deviceModel = DeviceIdentity.deviceModel,
+                        language = LocaleManager.current.tag
                     )
                 )
             )
