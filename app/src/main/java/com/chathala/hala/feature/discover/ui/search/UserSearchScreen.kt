@@ -420,6 +420,7 @@ private fun PremiumChip(user: SearchUser, onClick: () -> Unit) {
             HalaAsyncImage(
                 model = user.profileImage,
                 contentDescription = user.name,
+                fallbackName = user.name,
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
@@ -532,7 +533,7 @@ private fun SearchResultRow(user: SearchUser, onClick: () -> Unit) {
                 Modifier.size(52.dp).clip(CircleShape).border(2.dp, GoldColor, CircleShape)
             else
                 Modifier.size(52.dp).clip(CircleShape)
-            HalaAsyncImage(model = user.profileImage, contentDescription = user.name, modifier = avatarModifier)
+            HalaAsyncImage(model = user.profileImage, contentDescription = user.name, modifier = avatarModifier, fallbackName = user.name)
             if (user.isOnline == true) {
                 Box(
                     modifier = Modifier.align(Alignment.BottomEnd).size(13.dp).clip(CircleShape)

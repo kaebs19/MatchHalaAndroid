@@ -50,6 +50,7 @@ import com.chathala.hala.feature.blocking.data.BlockedUser
 import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -187,13 +188,12 @@ private fun BlockedUserRow(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
             ) {
-                user.profileImage?.takeIf { it.isNotBlank() }?.let {
-                    AsyncImage(
-                        model = it,
-                        contentDescription = null,
-                        modifier = Modifier.size(44.dp).clip(CircleShape)
-                    )
-                }
+                HalaAsyncImage(
+                    model = user.profileImage,
+                    contentDescription = null,
+                    fallbackName = user.name,
+                    modifier = Modifier.size(44.dp).clip(CircleShape)
+                )
             }
             Spacer(Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {

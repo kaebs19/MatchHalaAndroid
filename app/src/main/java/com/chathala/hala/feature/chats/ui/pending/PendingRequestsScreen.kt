@@ -57,6 +57,7 @@ import com.chathala.hala.feature.notifications.util.NotificationFormat
 import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -393,20 +394,13 @@ private fun RingAvatar(url: String?, ringColor: Color, name: String?) {
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
-        if (!url.isNullOrBlank()) {
-            AsyncImage(
-                model = url,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Text(
-                text = name?.take(1) ?: "?",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        HalaAsyncImage(
+            model = url,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            fallbackName = name,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 

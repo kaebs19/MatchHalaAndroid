@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun ProfileAvatarSection(
@@ -52,6 +53,7 @@ fun ProfileAvatarSection(
     ) {
         AvatarWithCameraButton(
             imageUrl = imageUrl,
+            name = name,
             size = avatarSize,
             onChangePhoto = onChangePhoto,
             isUploading = isUploading
@@ -64,6 +66,7 @@ fun ProfileAvatarSection(
 @Composable
 private fun AvatarWithCameraButton(
     imageUrl: String?,
+    name: String?,
     size: Dp,
     onChangePhoto: () -> Unit,
     isUploading: Boolean = false
@@ -85,21 +88,13 @@ private fun AvatarWithCameraButton(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            if (!imageUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize().clip(CircleShape)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(size * 0.5f)
-                )
-            }
+            HalaAsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                fallbackName = name,
+                modifier = Modifier.fillMaxSize().clip(CircleShape)
+            )
         }
 
         // Camera badge at the bottom-center

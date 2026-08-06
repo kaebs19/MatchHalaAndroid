@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.chathala.hala.feature.chats.data.PendingRequest
 import com.chathala.hala.feature.notifications.util.NotificationFormat
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun PendingRequestRow(
@@ -76,7 +77,7 @@ fun PendingRequestRow(
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Avatar(url = creator?.profileImage, isPremium = creator?.isPremium == true)
+                Avatar(url = creator?.profileImage, name = creator?.name, isPremium = creator?.isPremium == true)
                 Spacer(Modifier.size(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -183,7 +184,7 @@ fun PendingRequestRow(
 }
 
 @Composable
-private fun Avatar(url: String?, isPremium: Boolean) {
+private fun Avatar(url: String?, name: String?, isPremium: Boolean) {
     Box(
         modifier = Modifier
             .size(52.dp)
@@ -198,13 +199,12 @@ private fun Avatar(url: String?, isPremium: Boolean) {
                 shape = CircleShape
             )
     ) {
-        if (!url.isNullOrBlank()) {
-            AsyncImage(
-                model = url,
-                contentDescription = null,
-                modifier = Modifier.size(52.dp).clip(CircleShape)
-            )
-        }
+        HalaAsyncImage(
+            model = url,
+            contentDescription = null,
+            fallbackName = name,
+            modifier = Modifier.size(52.dp).clip(CircleShape)
+        )
     }
 }
 

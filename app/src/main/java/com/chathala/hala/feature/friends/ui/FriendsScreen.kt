@@ -57,6 +57,7 @@ import com.chathala.hala.feature.friends.data.FriendUser
 import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun FriendsScreen(
@@ -320,13 +321,10 @@ private fun Avatar(user: FriendUser) {
         modifier = Modifier.size(52.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
-        if (!user.profileImage.isNullOrBlank()) {
-            AsyncImage(model = user.profileImage, contentDescription = null, contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize())
-        } else {
-            Text(user.name?.take(1) ?: "?", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        HalaAsyncImage(
+            model = user.profileImage, contentDescription = null, contentScale = ContentScale.Crop,
+            fallbackName = user.name, modifier = Modifier.fillMaxSize()
+        )
     }
 }
 

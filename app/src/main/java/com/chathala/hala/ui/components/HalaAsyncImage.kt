@@ -26,14 +26,31 @@ import coil.compose.SubcomposeAsyncImageContent
  *  - عند الفشل: أيقونة «صورة معطوبة» على خلفية هادئة.
  *
  * تُستخدم بدل [coil.compose.AsyncImage] المباشر لتوحيد التجربة.
+ *
+ * @param fallbackName اسم المستخدم — يُمرَّر في الأفاتار فقط. عند تمريره يحلّ
+ * [InitialAvatar] (الحرف الأول) محلّ أيقونة «الصورة المعطوبة»، سواء كان
+ * [model] فارغاً أصلاً أو فشل تحميله. مستخدمو فيسبوك/Google بلا صورة كانوا
+ * يظهرون بأيقونة عطل توحي بخلل في التطبيق.
  */
 @Composable
 fun HalaAsyncImage(
     model: Any?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop
+    contentScale: ContentScale = ContentScale.Crop,
+    fallbackName: String? = null
 ) {
+    // رابط فارغ = لا صورة أصلاً؛ لا داعي لتمريره على Coil ليفشل ثم نعالج الفشل.
+    val hasModel = when (model) {
+        null -> false
+        is String -> model.isNotBlank()
+        else -> true
+    }
+    if (!hasModel && fallbackName != null) {
+        InitialAvatar(name = fallbackName, modifier = modifier)
+        return
+    }
+
     SubcomposeAsyncImage(
         model = model,
         contentDescription = contentDescription,
@@ -44,18 +61,22 @@ fun HalaAsyncImage(
             is AsyncImagePainter.State.Loading ->
                 SkeletonBlock(modifier = Modifier.fillMaxSize())
             is AsyncImagePainter.State.Error ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.BrokenImage,
-                        contentDescription = S.get(R.string.err_image_load_failed),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.size(40.dp)
-                    )
+                if (fallbackName != null) {
+                    InitialAvatar(name = fallbackName, modifier = Modifier.fillMaxSize())
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.BrokenImage,
+                            contentDescription = S.get(R.string.err_image_load_failed),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
             else -> SubcomposeAsyncImageContent()
         }

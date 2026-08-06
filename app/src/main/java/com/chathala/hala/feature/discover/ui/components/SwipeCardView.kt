@@ -64,6 +64,7 @@ import com.chathala.hala.core.util.HapticHelper
 import com.chathala.hala.core.util.ProfileFormatter
 import com.chathala.hala.feature.discover.data.DiscoverCard
 import kotlin.math.roundToInt
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 /**
  * اتجاه السحب — يُرجَع من onSwiped.
@@ -197,14 +198,13 @@ fun SwipeCardView(
     ) {
         // Background image (pager)
         val photoUrl = photos.getOrNull(photoIndex)
-        if (photoUrl != null) {
-            AsyncImage(
-                model = photoUrl,
-                contentDescription = S.get(R.string.photo_of_named, card.name ?: S.get(R.string.label_user)),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        HalaAsyncImage(
+            model = photoUrl,
+            contentDescription = S.get(R.string.photo_of_named, card.name ?: S.get(R.string.label_user)),
+            contentScale = ContentScale.Crop,
+            fallbackName = card.name,
+            modifier = Modifier.fillMaxSize()
+        )
 
         // Photo indicator dashes (top)
         if (photos.size > 1 && showOverlay) {

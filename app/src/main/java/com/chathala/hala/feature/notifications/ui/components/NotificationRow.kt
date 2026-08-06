@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.chathala.hala.feature.notifications.data.NotificationItem
 import com.chathala.hala.feature.notifications.util.NotificationFormat
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun NotificationRow(
@@ -179,24 +180,19 @@ private fun NotificationLeading(item: NotificationItem) {
         return
     }
     val senderImage = item.sender?.profileImage?.takeIf { it.isNotBlank() }
-    if (senderImage != null) {
+    // مرسِل بلا صورة يستحق حرفه الأول، لا أيقونة نوع الإشعار العامة.
+    if (senderImage != null || item.sender?.name != null) {
         Box(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            AsyncImage(
-                model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                    .data(senderImage)
-                    .crossfade(200)
-                    .build(),
+            HalaAsyncImage(
+                model = senderImage,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                placeholder = androidx.compose.ui.graphics.painter.ColorPainter(
-                    MaterialTheme.colorScheme.surfaceVariant
-                ),
-                error = androidx.compose.ui.graphics.vector.rememberVectorPainter(Icons.Filled.Person),
+                fallbackName = item.sender?.name,
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)

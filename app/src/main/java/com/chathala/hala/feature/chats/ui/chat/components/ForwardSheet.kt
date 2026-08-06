@@ -39,6 +39,7 @@ import coil.compose.AsyncImage
 import com.chathala.hala.feature.chats.data.Conversation
 import com.chathala.hala.feature.chats.data.ConversationsRepository
 import com.chathala.hala.core.network.NetworkResult
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,13 +143,12 @@ private fun ForwardRow(
                     shape = CircleShape
                 )
         ) {
-            other?.profileImage?.takeIf { it.isNotBlank() }?.let {
-                AsyncImage(
-                    model = it,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp).clip(CircleShape)
-                )
-            }
+            HalaAsyncImage(
+                model = other?.profileImage,
+                contentDescription = null,
+                fallbackName = other?.name,
+                modifier = Modifier.size(40.dp).clip(CircleShape)
+            )
         }
         Spacer(Modifier.size(12.dp))
         Text(

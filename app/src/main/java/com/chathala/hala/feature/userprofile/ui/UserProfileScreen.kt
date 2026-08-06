@@ -80,6 +80,7 @@ import com.chathala.hala.feature.userprofile.data.UserProfile
 import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun UserProfileScreen(
@@ -610,16 +611,13 @@ private fun HeroSection(user: UserProfile, onOpenPhoto: () -> Unit) {
     ) {
         // الصورة الرئيسية كخلفية غامرة
         val mainPhoto = user.galleryUrls.firstOrNull()
-        if (mainPhoto != null) {
-            AsyncImage(
-                model = mainPhoto,
-                contentDescription = S.get(R.string.photo_of_named, user.name ?: S.get(R.string.label_user)),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
-        }
+        HalaAsyncImage(
+            model = mainPhoto,
+            contentDescription = S.get(R.string.photo_of_named, user.name ?: S.get(R.string.label_user)),
+            contentScale = ContentScale.Crop,
+            fallbackName = user.name,
+            modifier = Modifier.fillMaxSize()
+        )
 
         // تدرّج داكن لقراءة النص
         Box(

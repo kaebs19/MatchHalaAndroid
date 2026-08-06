@@ -62,6 +62,7 @@ import com.chathala.hala.feature.chats.ui.pending.components.GreetingDialog
 import com.chathala.hala.feature.reporting.ui.ReportUserSheet
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun RequestPreviewScreen(
@@ -451,20 +452,13 @@ private fun AvatarWithRings(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            if (!avatarUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = avatarUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Text(
-                    text = fallbackInitial.ifBlank { "?" },
-                    style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            HalaAsyncImage(
+                model = avatarUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                fallbackName = fallbackInitial,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

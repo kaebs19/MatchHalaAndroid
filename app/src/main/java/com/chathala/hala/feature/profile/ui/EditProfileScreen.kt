@@ -64,6 +64,7 @@ import com.chathala.hala.feature.profile.ui.components.InterestsChipGrid
 import com.chathala.hala.ui.components.FormError
 import com.chathala.hala.ui.components.HalaPrimaryButton
 import com.chathala.hala.ui.components.HalaTextField
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun EditProfileScreen(
@@ -184,6 +185,7 @@ fun EditProfileScreen(
             // صورة الملف الشخصي — تغيير مباشر من هنا
             EditablePhoto(
                 imageUrl = state.imageUrl,
+                name = state.name,
                 uploading = state.uploading,
                 onPick = pickPhoto
             )
@@ -271,6 +273,7 @@ private fun SectionLabel(text: String) {
 @Composable
 private fun EditablePhoto(
     imageUrl: String?,
+    name: String?,
     uploading: Boolean,
     onPick: () -> Unit
 ) {
@@ -294,17 +297,12 @@ private fun EditablePhoto(
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(28.dp)
                     )
-                    !imageUrl.isNullOrBlank() -> AsyncImage(
+                    else -> HalaAsyncImage(
                         model = imageUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        fallbackName = name,
                         modifier = Modifier.fillMaxSize()
-                    )
-                    else -> Icon(
-                        imageVector = Icons.Filled.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(48.dp)
                     )
                 }
             }

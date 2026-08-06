@@ -99,6 +99,7 @@ import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
 import com.chathala.hala.ui.theme.contrastBorderColor
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @Composable
 fun ChatScreen(
@@ -804,21 +805,13 @@ private fun ChatHeader(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                if (!avatarUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = avatarUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Text(
-                        text = title.take(1).ifBlank { "?" },
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
+                HalaAsyncImage(
+                    model = avatarUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    fallbackName = title,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             if (isOnline) {
                 Box(

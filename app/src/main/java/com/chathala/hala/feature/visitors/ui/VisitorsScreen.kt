@@ -53,6 +53,7 @@ import com.chathala.hala.feature.notifications.util.NotificationFormat
 import com.chathala.hala.feature.visitors.data.ProfileViewItem
 import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaPrimaryButton
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 private val Gold = Color(0xFFFFC107)
 private val GoldDark = Color(0xFFFFA726)
@@ -209,18 +210,20 @@ private fun VisitorRow(item: ProfileViewItem, locked: Boolean, onClick: () -> Un
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            if (!locked && !visitor?.profileImage.isNullOrBlank()) {
-                AsyncImage(
+            if (!locked) {
+                HalaAsyncImage(
                     model = visitor?.profileImage,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    fallbackName = visitor?.name,
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
+                // المجاني لا يرى هوية الزائر — أيقونة مبهمة مموّهة، لا حرف اسمه.
                 Icon(
                     Icons.Filled.Person, null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(28.dp).then(if (locked) Modifier.blur(6.dp) else Modifier)
+                    modifier = Modifier.size(28.dp).blur(6.dp)
                 )
             }
         }

@@ -42,6 +42,7 @@ import com.chathala.hala.feature.chats.data.DELETED_ACCOUNT_NAME
 import com.chathala.hala.feature.chats.data.isOtherAccountDeleted
 import com.chathala.hala.feature.chats.data.otherParticipant
 import com.chathala.hala.feature.notifications.util.NotificationFormat
+import com.chathala.hala.ui.components.HalaAsyncImage
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -220,20 +221,13 @@ private fun RingAvatar(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            if (!imageUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Text(
-                    text = name?.take(1) ?: "?",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            HalaAsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                fallbackName = name,
+                modifier = Modifier.fillMaxSize()
+            )
         }
         if (isOnline) {
             Box(
