@@ -29,11 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chathala.hala.R
+import com.chathala.hala.feature.auth.data.FacebookSignInHelper
+import com.chathala.hala.feature.auth.data.FacebookSignInResult
 import com.chathala.hala.feature.auth.data.GoogleSignInHelper
 import com.chathala.hala.feature.auth.data.GoogleSignInResult
 import com.chathala.hala.ui.components.AuthFooterLinks
 import com.chathala.hala.ui.components.AuthScaffold
 import com.chathala.hala.ui.components.FormError
+import com.chathala.hala.ui.components.FacebookSignInButton
 import com.chathala.hala.ui.components.GoogleSignInButton
 import com.chathala.hala.ui.components.HalaPrimaryButton
 import com.chathala.hala.ui.components.HalaTextField
@@ -59,6 +62,7 @@ fun LoginScreen(
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val googleHelper = remember { GoogleSignInHelper(context) }
+    val facebookHelper = remember { FacebookSignInHelper(context) }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -149,6 +153,21 @@ fun LoginScreen(
                         is GoogleSignInResult.Success -> viewModel.googleLogin(r.idToken)
                         is GoogleSignInResult.Error -> viewModel.setError(r.message)
                         GoogleSignInResult.Cancelled -> { /* user cancelled — do nothing */ }
+                    }
+                }
+            }
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        FacebookSignInButton(
+            loading = state.loading,
+            onClick = {
+                scope.launch {
+                    when (val r = facebookHelper.signIn()) {
+                        is FacebookSignInResult.Success -> viewModel.facebookLogin(r.accessToken)
+                        is FacebookSignInResult.Error -> viewModel.setError(r.message)
+                        FacebookSignInResult.Cancelled -> { /* user cancelled — do nothing */ }
                     }
                 }
             }

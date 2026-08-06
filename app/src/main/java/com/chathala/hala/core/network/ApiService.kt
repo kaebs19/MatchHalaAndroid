@@ -2,6 +2,7 @@ package com.chathala.hala.core.network
 
 import com.chathala.hala.feature.auth.data.AuthResponse
 import com.chathala.hala.feature.auth.data.ForgotPasswordRequest
+import com.chathala.hala.feature.auth.data.FacebookAuthRequest
 import com.chathala.hala.feature.auth.data.GoogleAuthRequest
 import com.chathala.hala.feature.profile.data.InterestsResponse
 import com.chathala.hala.feature.legal.data.LegalResponse
@@ -82,6 +83,9 @@ interface ApiService {
 
     @POST("api/auth/google")
     suspend fun googleAuth(@Body body: GoogleAuthRequest): AuthResponse
+
+    @POST("api/auth/facebook")
+    suspend fun facebookAuth(@Body body: FacebookAuthRequest): AuthResponse
 
     // ── حظر الجهاز / الاستئناف ────────────────────────────────────
 

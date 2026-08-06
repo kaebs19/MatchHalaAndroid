@@ -82,6 +82,26 @@ class AuthRepository(
             resp
         }
 
+    suspend fun facebookLogin(accessToken: String): NetworkResult<AuthResponse> =
+        safeApiCall {
+            val resp = api.facebookAuth(
+                FacebookAuthRequest(
+                    accessToken = accessToken,
+                    deviceFingerprint = DeviceIdentity.deviceFingerprint.ifEmpty { null },
+                    deviceToken = DeviceIdentity.deviceToken.ifEmpty { null },
+                    vendorId = DeviceIdentity.vendorId.ifEmpty { null },
+                    deviceInfo = DeviceInfo(
+                        osVersion = DeviceIdentity.osVersion,
+                        appVersion = DeviceIdentity.appVersion,
+                        deviceModel = DeviceIdentity.deviceModel,
+                        language = LocaleManager.current.tag
+                    )
+                )
+            )
+            persistAuth(resp)
+            resp
+        }
+
     suspend fun forgotPassword(email: String): NetworkResult<String> =
         safeApiCall {
             val resp = api.forgotPassword(ForgotPasswordRequest(email.trim()))

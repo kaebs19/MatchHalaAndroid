@@ -29,6 +29,7 @@ playServicesAds = "23.6.0"
 socketio = "2.1.0"
 lottie = "6.4.0"
 billing = "8.0.0"
+facebookLogin = "18.0.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -77,6 +78,8 @@ socketio-client = { group = "io.socket", name = "socket.io-client", version.ref 
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+
+facebook-login = { group = "com.facebook.android", name = "facebook-login", version.ref = "facebookLogin" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

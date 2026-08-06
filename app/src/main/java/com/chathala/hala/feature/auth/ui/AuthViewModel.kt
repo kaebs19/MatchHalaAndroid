@@ -63,6 +63,11 @@ class AuthViewModel(
         runAuth { authRepo.googleLogin(idToken) }
     }
 
+    fun facebookLogin(accessToken: String) {
+        // مثل Google: الجدة تُحدّد من ردّ الخادم (isNewUser).
+        runAuth { authRepo.facebookLogin(accessToken) }
+    }
+
     /**
      * Wrapper موحّد لتدفق تسجيل الدخول: يستدعي الـ API، وعند النجاح
      * يحاول جلب بيانات المستخدم الكاملة من /me (best-effort — لا يمنع المتابعة لو فشل).

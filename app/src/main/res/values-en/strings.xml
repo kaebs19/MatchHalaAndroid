@@ -161,6 +161,9 @@
     <!-- Google button -->
     <string name="btn_google_continue">Continue with Google</string>
 
+    <!-- Facebook button -->
+    <string name="btn_facebook_continue">Continue with Facebook</string>
+
     <!-- Common -->
     <string name="retry">Try again</string>
     <string name="copied">Copied</string>
@@ -403,6 +406,10 @@
     <string name="google_no_accounts">No Google accounts on this device. Add one in Settings and try again.</string>
     <string name="google_read_failed">Failed to read Google data</string>
     <string name="google_signin_failed">Could not sign in with Google — please try again</string>
+
+    <!-- com/chathala/hala/feature/auth/data/FacebookSignInHelper.kt -->
+    <string name="facebook_signin_failed">Could not sign in with Facebook — please try again</string>
+    <string name="facebook_no_token">No access token was returned by Facebook</string>
 
     <!-- com/chathala/hala/feature/auth/ui/ContentPolicyScreen.kt -->
     <string name="policy_item_sexual_title">Sexual and pornographic content</string>

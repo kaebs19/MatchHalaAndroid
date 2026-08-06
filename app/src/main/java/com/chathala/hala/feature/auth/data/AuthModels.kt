@@ -106,6 +106,16 @@ data class GoogleAuthRequest(
 )
 
 @JsonClass(generateAdapter = true)
+data class FacebookAuthRequest(
+    val accessToken: String,
+    val platform: String = "android",
+    val deviceToken: String? = null,
+    val deviceFingerprint: String? = null,
+    val vendorId: String? = null,
+    val deviceInfo: DeviceInfo? = null
+)
+
+@JsonClass(generateAdapter = true)
 data class DeviceInfo(
     val platform: String = "android",
     val osVersion: String? = null,

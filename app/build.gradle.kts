@@ -114,6 +114,9 @@ dependencies {
     // Google Play Billing — الاشتراكات (premium)
     implementation(libs.billing.ktx)
 
+    // تسجيل الدخول عبر فيسبوك
+    implementation(libs.facebook.login)
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation(libs.play.services.location)

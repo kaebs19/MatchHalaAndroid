@@ -161,6 +161,9 @@
     <!-- Google button -->
     <string name="btn_google_continue">المتابعة باستخدام Google</string>
 
+    <!-- Facebook button -->
+    <string name="btn_facebook_continue">المتابعة باستخدام فيسبوك</string>
+
     <!-- Common -->
     <string name="retry">إعادة المحاولة</string>
     <string name="copied">تم النسخ</string>
@@ -403,6 +406,15 @@
     <string name="google_no_accounts">لا توجد حسابات Google على الجهاز. أضف حساباً من الإعدادات وحاول مجدداً.</string>
     <string name="google_read_failed">فشل قراءة بيانات Google</string>
     <string name="google_signin_failed">تعذّر الدخول بـ Google — حاول مجدداً</string>
+
+    <!-- com/chathala/hala/feature/auth/data/FacebookSignInHelper.kt -->
+    <string name="facebook_signin_failed">تعذّر الدخول بفيسبوك — حاول مجدداً</string>
+    <string name="facebook_no_token">لم يصل رمز الدخول من فيسبوك</string>
+
+    <!-- إعدادات Facebook SDK — قيم تهيئة لا تُترجم (Meta App Dashboard) -->
+    <string name="facebook_app_id" translatable="false">881600218041672</string>
+    <string name="facebook_client_token" translatable="false">fb8f35b401615252edb4a4e39f6604dd</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb881600218041672</string>
 
     <!-- com/chathala/hala/feature/auth/ui/ContentPolicyScreen.kt -->
     <string name="policy_item_sexual_title">المحتوى الجنسي والإباحي</string>
