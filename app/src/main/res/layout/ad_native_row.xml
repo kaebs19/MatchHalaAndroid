@@ -67,14 +67,19 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
+        <!--
+            زر عادي بلا ?attr/materialButtonStyle: القالب يرث من
+            android:Theme.Material (إطار النظام) فلا يعرّف هذا النمط أصلاً،
+            وكان يجرّ مكتبة com.google.android.material كاملةً لأجل سطر واحد —
+            وهي المكتبة التي تستدعي setStatusBarColor/setNavigationBarColor
+            المهجورَين في أندرويد 15. insetTop/insetBottom أُزيلا أيضاً لأنهما
+            من خصائص MaterialButton ولا يفهمهما Button العادي.
+        -->
         <Button
             android:id="@+id/ad_call_to_action"
-            style="?attr/materialButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:paddingHorizontal="14dp"

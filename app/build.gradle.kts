@@ -51,7 +51,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: تصغير الكود + إزالة الموارد غير المستخدمة. قواعد الحفظ في
+            // proguard-rules.pro — انتبه أن Moshi هنا يعمل بالانعكاس، فأي نموذج
+            // شبكة جديد خارج حزم data/network يحتاج قاعدة حفظ صريحة.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -76,8 +80,11 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    // ملاحظة: androidx.appcompat و com.google.android.material أُزيلا عمداً —
+    // التطبيق Compose بالكامل، والقالب يرث من android:Theme.Material (إطار
+    // النظام) لا من المكتبة. وجودهما كان يُدخل BottomSheetDialog/SheetDialog
+    // اللذين يستدعيان setStatusBarColor/setNavigationBarColor المهجورَين في
+    // أندرويد 15، فتشكو منهما مراجعة Play رغم أننا لا نستدعيهما.
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

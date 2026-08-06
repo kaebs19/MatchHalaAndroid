@@ -4,12 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Surface
-import androidx.core.view.WindowCompat
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,9 +27,12 @@ import com.chathala.hala.ui.theme.HalaTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // edge-to-edge: نتحكم نحن بحواف النظام (insets) — مطلوب على Android 15+.
+        // enableEdgeToEdge بدل setDecorFitsSystemWindows وحده: يضبط أيضاً شفافية
+        // أشرطة النظام وتباين أيقوناتها بطريقة متوافقة مع ما قبل أندرويد 15، بدل
+        // setStatusBarColor/setNavigationBarColor المهجورَين. يُستدعى قبل super.
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // edge-to-edge: نتحكم نحن بحواف النظام (insets) — مطلوب على Android 15+
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         val app = applicationContext as HalaApp
         PushIntentCoordinator.handle(intent)
         setContent {

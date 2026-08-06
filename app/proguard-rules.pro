@@ -1,21 +1,43 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# قواعد R8 لنسخة الإصدار.
+# أغلب المكتبات (OkHttp/Retrofit/Coil/Firebase/Billing/Facebook) تشحن قواعدها
+# الخاصة تلقائياً، فما هنا هو ما لا تستطيع المكتبات معرفته عن كودنا نحن.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ── أثر التتبّع ─────────────────────────────────────────────
+# نُبقي أرقام الأسطر ونُخفي أسماء الملفات: تقارير الأعطال في Play Console
+# تبقى قابلة للقراءة دون كشف بنية المصدر.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ── Moshi ───────────────────────────────────────────────────
+# حرِج: ApiClient يضيف KotlinJsonAdapterFactory، أي أن نماذج الشبكة تُقرأ
+# بالانعكاس من أسماء الحقول ومن kotlin.Metadata. لو غيّر R8 الأسماء أو حذف
+# البيانات الوصفية، تفشل كل استجابة JSON صامتةً وقت التشغيل لا وقت البناء.
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+-keep class kotlin.Metadata { *; }
+-keep @com.squareup.moshi.JsonClass class * { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.Json <fields>;
+}
+-keep class com.squareup.moshi.** { *; }
+-keep class kotlin.reflect.jvm.internal.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# نماذج البيانات في التطبيق — تُبنى كلها بالانعكاس عبر Moshi.
+-keep class com.chathala.hala.**.data.** { *; }
+-keep class com.chathala.hala.core.network.** { *; }
+
+# محوّل مخصّص يُشار إليه بالاسم في ApiClient
+-keep class com.chathala.hala.feature.chats.data.MessageSenderAdapterFactory { *; }
+
+# ── Socket.IO / Engine.IO ───────────────────────────────────
+# لا تشحن قواعد consumer، وتستخدم الانعكاس داخلياً في معالجة الأحداث.
+-keep class io.socket.** { *; }
+-dontwarn io.socket.**
+-keep class okio.** { *; }
+-dontwarn okio.**
+
+# ── تحذيرات مكتبات لا نستخدمها فعلياً ──────────────────────
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
+-dontwarn javax.annotation.**

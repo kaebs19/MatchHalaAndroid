@@ -9,6 +9,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.graphics.drawable.toBitmap
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.transform.CircleCropTransformation
 import com.chathala.hala.HalaApp
 import com.chathala.hala.MainActivity
 import com.chathala.hala.R
@@ -113,7 +116,7 @@ class HalaMessagingService : FirebaseMessagingService() {
             //  - غير ذلك → الشعار الرسمي الملوّن
             // الأيقونة الصغيرة تبقى أحادية اللون بإلزام النظام.
             val senderImage = extras["senderImage"]?.takeIf { it.isNotBlank() }
-            val largeIcon = (senderImage?.let { loadCircularBitmap(it, 128) })
+            val largeIcon = (senderImage?.let { loadCircularBitmap(context, it, 128) })
                 ?: runCatching {
                     ContextCompat.getDrawable(context, R.drawable.dardasha_hala_log)?.toBitmap(128, 128)
                 }.getOrNull()
@@ -141,37 +144,25 @@ class HalaMessagingService : FirebaseMessagingService() {
         }
 
         /**
-         * يحمّل صورة من URL (متزامن — يُستدعى من خيط FCM الخلفي) ويقصّها دائرية.
-         * يُعيد null عند الفشل/المهلة فنرجع للشعار الرسمي.
+         * يحمّل صورة المُرسِل ويقصّها دائرية لأيقونة الإشعار الكبيرة.
+         *
+         * عبر Coil لا عبر HttpURLConnection + BitmapFactory يدوياً: التنزيل اليدوي
+         * كان يفكّ ترميز الصورة بحجمها الأصلي كاملاً في الذاكرة قبل تصغيرها (صورة
+         * ملف شخصي 2000×2000 ≈ 16MB لأيقونة 128px)، بلا تخزين مؤقت ولا إعادة
+         * استخدام للاتصال. Coil يقلّص أثناء فكّ الترميز ويتشارك ذاكرة التخزين
+         * المؤقت مع بقية التطبيق. متزامن عمداً — يُستدعى من خيط FCM الخلفي.
          */
-        private fun loadCircularBitmap(url: String, sizePx: Int): android.graphics.Bitmap? = runCatching {
-            val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
-                connectTimeout = 4000
-                readTimeout = 4000
-                doInput = true
-                instanceFollowRedirects = true
-                connect()
-            }
-            val raw = conn.inputStream.use { android.graphics.BitmapFactory.decodeStream(it) }
-                ?: return null
-            circleCrop(raw, sizePx)
-        }.getOrNull()
-
-        private fun circleCrop(src: android.graphics.Bitmap, size: Int): android.graphics.Bitmap {
-            val square = android.media.ThumbnailUtils.extractThumbnail(src, size, size)
-            val output = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-            val canvas = android.graphics.Canvas(output)
-            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-                shader = android.graphics.BitmapShader(
-                    square,
-                    android.graphics.Shader.TileMode.CLAMP,
-                    android.graphics.Shader.TileMode.CLAMP
-                )
-            }
-            val r = size / 2f
-            canvas.drawCircle(r, r, r, paint)
-            return output
-        }
+        private fun loadCircularBitmap(context: Context, url: String, sizePx: Int): android.graphics.Bitmap? =
+            runCatching {
+                val request = ImageRequest.Builder(context)
+                    .data(url)
+                    .size(sizePx)
+                    .transformations(CircleCropTransformation())
+                    .allowHardware(false)   // الإشعار يحتاج bitmap في ذاكرة البرنامج
+                    .build()
+                val result = kotlinx.coroutines.runBlocking { context.imageLoader.execute(request) }
+                result.drawable?.toBitmap(sizePx, sizePx)
+            }.getOrNull()
 
         const val EXTRA_FROM_PUSH = "hala_from_push"
         const val EXTRA_TYPE = "hala_notif_type"
