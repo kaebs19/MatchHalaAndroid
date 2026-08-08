@@ -43,6 +43,7 @@ import com.chathala.hala.ui.components.HalaTextField
 import com.chathala.hala.ui.components.OrDivider
 import com.chathala.hala.feature.legal.ui.components.TermsFooterLinks
 import com.chathala.hala.ui.components.TextLink
+import com.chathala.hala.core.config.AppConfig
 import com.chathala.hala.core.util.Validators
 import kotlinx.coroutines.launch
 
@@ -158,20 +159,23 @@ fun LoginScreen(
             }
         )
 
-        Spacer(Modifier.height(12.dp))
+        // الزر مخفيّ حتى يُنشر تطبيق ميتا — انظر AppConfig.FACEBOOK_LOGIN_ENABLED
+        if (AppConfig.FACEBOOK_LOGIN_ENABLED) {
+            Spacer(Modifier.height(12.dp))
 
-        FacebookSignInButton(
-            loading = state.loading,
-            onClick = {
-                scope.launch {
-                    when (val r = facebookHelper.signIn()) {
-                        is FacebookSignInResult.Success -> viewModel.facebookLogin(r.accessToken)
-                        is FacebookSignInResult.Error -> viewModel.setError(r.message)
-                        FacebookSignInResult.Cancelled -> { /* user cancelled — do nothing */ }
+            FacebookSignInButton(
+                loading = state.loading,
+                onClick = {
+                    scope.launch {
+                        when (val r = facebookHelper.signIn()) {
+                            is FacebookSignInResult.Success -> viewModel.facebookLogin(r.accessToken)
+                            is FacebookSignInResult.Error -> viewModel.setError(r.message)
+                            FacebookSignInResult.Cancelled -> { /* user cancelled — do nothing */ }
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
 
         Spacer(Modifier.height(28.dp))
 
