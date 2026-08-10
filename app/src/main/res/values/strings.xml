@@ -776,6 +776,7 @@
     <string name="action_send_message">إرسال رسالة</string>
     <string name="action_super_like">إعجاب مميز</string>
     <string name="action_like">إعجاب</string>
+    <string name="action_unlike">إلغاء الإعجاب</string>
 
     <!-- com/chathala/hala/feature/discover/ui/components/SwipeCardView.kt -->
     <string name="discover_near_you">بالقرب منك</string>

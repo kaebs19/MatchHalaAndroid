@@ -92,6 +92,12 @@ class DiscoverRepository(
         )
     }
 
+    /** إلغاء الإعجاب — DELETE /api/swipes/:userId. */
+    suspend fun unlike(userId: String): NetworkResult<String> = safeApiCall {
+        val resp = api.unlike(bearer(), userId)
+        resp.message.orEmpty()
+    }
+
     data class SwipeResult(
         val matched: Boolean,
         val conversationId: String?,

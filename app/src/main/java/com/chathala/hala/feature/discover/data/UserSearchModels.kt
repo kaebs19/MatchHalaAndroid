@@ -30,5 +30,7 @@ data class SearchUser(
     val isOnline: Boolean? = null,
     val isVerified: Boolean? = null,
     val isPremium: Boolean? = null,
-    val distanceLabel: String? = null
+    val distanceLabel: String? = null,
+    /** هل أعجبتُ بهذا المستخدم؟ يأتي من الخادم لرسم حالة القلب. */
+    val isLiked: Boolean? = null
 )

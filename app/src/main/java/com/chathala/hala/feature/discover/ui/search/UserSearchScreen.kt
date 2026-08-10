@@ -21,6 +21,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalHapticFeedback
+import com.chathala.hala.core.util.HapticHelper
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -91,6 +99,7 @@ import com.chathala.hala.ui.components.HalaAsyncImage
 import com.chathala.hala.ui.components.SkeletonBlock
 
 private val GoldColor = Color(0xFFE6B800)
+private val LikeColor = Color(0xFFFF3B6B)
 private val OnlineColor = Color(0xFF4CAF50)
 
 @Composable
@@ -231,6 +240,8 @@ fun UserSearchScreen(
                     else -> if (state.gridLayout) {
                         ResultsGrid(
                             results = state.results,
+                            isLiked = state::isLiked,
+                            onToggleLike = viewModel::toggleLike,
                             loadingMore = state.loadingMore,
                             onLoadMore = viewModel::loadMore,
                             onOpen = openProfile,
@@ -258,6 +269,8 @@ fun UserSearchScreen(
 
                 else -> SuggestionsList(
                     gridLayout = state.gridLayout,
+                    isLiked = state::isLiked,
+                    onToggleLike = viewModel::toggleLike,
                     recent = state.recent,
                     premium = state.premium,
                     online = state.online,
@@ -286,6 +299,8 @@ fun UserSearchScreen(
 @Composable
 private fun ResultsGrid(
     results: List<SearchUser>,
+    isLiked: (SearchUser) -> Boolean,
+    onToggleLike: (SearchUser) -> Unit,
     loadingMore: Boolean,
     onLoadMore: () -> Unit,
     onOpen: (String) -> Unit,
@@ -315,7 +330,12 @@ private fun ResultsGrid(
     ) {
         results.forEachIndexed { index, user ->
             item(key = user.id) {
-                SearchResultCard(user = user, onClick = { onOpen(user.id) })
+                SearchResultCard(
+                    user = user,
+                    onClick = { onOpen(user.id) },
+                    liked = isLiked(user),
+                    onToggleLike = { onToggleLike(user) }
+                )
             }
             // إعلان مدمج بين المستخدمين — يشغل خانة واحدة كبطاقة مستخدم فلا يكسر الشبكة
             if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
@@ -337,7 +357,12 @@ private fun ResultsGrid(
 
 /** بطاقة مستخدم في الشبكة: صورة + اسم/عمر/دولة على تدرّج داكن أسفلها. */
 @Composable
-private fun SearchResultCard(user: SearchUser, onClick: () -> Unit) {
+private fun SearchResultCard(
+    user: SearchUser,
+    onClick: () -> Unit,
+    liked: Boolean = false,
+    onToggleLike: (() -> Unit)? = null
+) {
     val isPremium = user.isPremium == true
     val age = ProfileFormatter.computeAge(user.birthDate)
     val country = countryText(user.country)
@@ -393,11 +418,46 @@ private fun SearchResultCard(user: SearchUser, onClick: () -> Unit) {
             }
         }
 
+        // زرّ الإعجاب — أسفل الطرف المقابل للنصّ. نبضة قصيرة عند التفعيل تُعطي
+        // إحساساً بالاستجابة، والحجم يعود لطبيعته فلا يبقى الزرّ متضخّماً.
+        if (onToggleLike != null) {
+            val haptic = LocalHapticFeedback.current
+            val scale by animateFloatAsState(
+                targetValue = if (liked) 1.12f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "likeScale"
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
+                    .size(38.dp)
+                    .scale(scale)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .clickable {
+                        HapticHelper.light(haptic)
+                        onToggleLike()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = S.get(
+                        if (liked) R.string.action_unlike else R.string.action_like
+                    ),
+                    tint = if (liked) LikeColor else Color.White,
+                    modifier = Modifier.size(21.dp)
+                )
+            }
+        }
+
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .padding(10.dp)
+                // نترك مساحة لزرّ القلب فلا يركبه الاسم الطويل
+                .padding(start = 10.dp, end = 54.dp, top = 10.dp, bottom = 10.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -491,6 +551,8 @@ private fun ResultsList(
 @Composable
 private fun SuggestionsList(
     gridLayout: Boolean,
+    isLiked: (SearchUser) -> Boolean,
+    onToggleLike: (SearchUser) -> Unit,
     recent: List<String>,
     premium: List<SearchUser>,
     online: List<SearchUser>,
@@ -592,7 +654,12 @@ private fun SuggestionsList(
             online.forEachIndexed { index, user ->
                 item(key = "o_${user.id}") {
                     if (gridLayout) {
-                        SearchResultCard(user = user, onClick = { onOpen(user.id) })
+                        SearchResultCard(
+                    user = user,
+                    onClick = { onOpen(user.id) },
+                    liked = isLiked(user),
+                    onToggleLike = { onToggleLike(user) }
+                )
                     } else {
                         Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                             SearchResultRow(user = user, onClick = { onOpen(user.id) })

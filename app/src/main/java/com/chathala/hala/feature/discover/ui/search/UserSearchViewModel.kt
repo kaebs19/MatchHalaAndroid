@@ -58,8 +58,16 @@ data class UserSearchUiState(
     val onlineTotal: Int = 0,
     val recent: List<String> = emptyList(),
     /** true = شبكة، false = قائمة. محفوظ في التفضيلات فلا يُعاد ضبطه كل تشغيل. */
-    val gridLayout: Boolean = true
+    val gridLayout: Boolean = true,
+    /** تعديلات الإعجاب المحلية (تحديث متفائل) — تسبق ما جاء من الخادم. */
+    val likedOverrides: Map<String, Boolean> = emptyMap(),
+    /** طلبات إعجاب جارية — لمنع الضغط المتكرّر. */
+    val likeInFlight: Set<String> = emptySet()
 ) {
+    /** هل هذا المستخدم معجَب به الآن؟ */
+    fun isLiked(user: SearchUser): Boolean =
+        likedOverrides[user.id] ?: (user.isLiked == true)
+
     val onlineCanLoadMore: Boolean get() = online.isNotEmpty() && online.size < onlineTotal
     val isSearchMode: Boolean get() = query.trim().length >= 2
 }
@@ -71,6 +79,10 @@ class UserSearchViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UserSearchUiState())
+
+    /** رسائل عابرة (فشل إعجاب مثلاً) — تُعرض كـ snackbar/toast في الشاشة. */
+    private val _message = kotlinx.coroutines.flow.MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val message: kotlinx.coroutines.flow.SharedFlow<String> = _message
     val state: StateFlow<UserSearchUiState> = _state.asStateFlow()
 
     private var searchJob: Job? = null
@@ -88,6 +100,41 @@ class UserSearchViewModel(
             prefs.searchGridLayout.collect { grid -> _state.update { it.copy(gridLayout = grid) } }
         }
     }
+
+    /**
+     * إعجاب/إلغاء إعجاب من بطاقة البحث.
+     *
+     * تحديث متفائل: القلب يتلوّن فوراً قبل ردّ الخادم — الشبكة قد تتأخّر ثانية،
+     * وقلبٌ لا يستجيب للمسة يبدو معطّلاً. عند الفشل نرجع للحالة السابقة.
+     * `likeInFlight` يمنع الضغط المتكرّر السريع من إرسال طلبات متضاربة.
+     */
+    fun toggleLike(user: SearchUser) {
+        val id = user.id
+        if (id in _state.value.likeInFlight) return
+        val nowLiked = !(likedState(id) ?: false)
+
+        _state.update {
+            it.copy(
+                likedOverrides = it.likedOverrides + (id to nowLiked),
+                likeInFlight = it.likeInFlight + id
+            )
+        }
+
+        viewModelScope.launch {
+            val r = if (nowLiked) repo.recordSwipe(id, "like") else repo.unlike(id)
+            if (r is NetworkResult.Error) {
+                _state.update {
+                    it.copy(likedOverrides = it.likedOverrides + (id to !nowLiked))
+                }
+                _message.tryEmit(ErrorMessages.friendly(r))
+            }
+            _state.update { it.copy(likeInFlight = it.likeInFlight - id) }
+        }
+    }
+
+    /** الحالة المعروضة: التعديل المحلي إن وُجد، وإلا ما جاء من الخادم. */
+    private fun likedState(id: String): Boolean? =
+        _state.value.likedOverrides[id]
 
     fun toggleLayout() {
         viewModelScope.launch { prefs.setSearchGridLayout(!_state.value.gridLayout) }

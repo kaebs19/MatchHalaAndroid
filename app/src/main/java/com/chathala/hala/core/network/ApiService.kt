@@ -599,6 +599,12 @@ interface ApiService {
         @Body body: RequestConversationRequest
     ): RequestConversationResponse
 
+    @retrofit2.http.DELETE("api/swipes/{userId}")
+    suspend fun unlike(
+        @Header("Authorization") bearer: String,
+        @retrofit2.http.Path("userId") userId: String
+    ): com.chathala.hala.feature.auth.data.SimpleResponse
+
     @POST("api/swipes")
     suspend fun swipe(
         @Header("Authorization") bearer: String,

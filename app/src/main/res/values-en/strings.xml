@@ -771,6 +771,7 @@
     <string name="action_send_message">Send a message</string>
     <string name="action_super_like">Super Like</string>
     <string name="action_like">Like</string>
+    <string name="action_unlike">Remove like</string>
 
     <!-- com/chathala/hala/feature/discover/ui/components/SwipeCardView.kt -->
     <string name="discover_near_you">Near you</string>
