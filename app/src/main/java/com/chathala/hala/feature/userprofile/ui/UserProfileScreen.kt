@@ -1093,7 +1093,7 @@ private fun MessageBottomSheet(
             Spacer(Modifier.height(16.dp))
 
             QuickMessagesRow(
-                onSend = { onSend(it) },
+                onPick = { text = it },
                 enabled = !sending && !alreadySent
             )
             Spacer(Modifier.height(12.dp))

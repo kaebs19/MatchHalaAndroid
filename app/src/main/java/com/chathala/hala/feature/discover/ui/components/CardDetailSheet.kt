@@ -179,7 +179,7 @@ fun CardDetailSheet(
 
             if (!alreadyRequested) {
                 QuickMessagesRow(
-                    onSend = { onSendRequest(it) },
+                    onPick = { greeting = it },
                     enabled = !sending
                 )
                 Spacer(Modifier.height(12.dp))

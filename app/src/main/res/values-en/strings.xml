@@ -764,7 +764,7 @@
     <string name="quick_msg_hi">Hi</string>
     <string name="quick_msg_how_are_you">How are you?</string>
     <string name="quick_msg_get_to_know">Shall we get to know each other?</string>
-    <string name="quick_messages_label">Quick messages (tap to send)</string>
+    <string name="quick_messages_label">Quick messages (tap to insert)</string>
 
     <!-- com/chathala/hala/feature/discover/ui/components/SwipeActionButtons.kt -->
     <string name="action_skip">Skip</string>

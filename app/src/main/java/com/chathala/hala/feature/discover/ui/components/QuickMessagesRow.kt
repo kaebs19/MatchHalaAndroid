@@ -29,8 +29,11 @@ import androidx.compose.ui.unit.sp
 import com.chathala.hala.core.util.HapticHelper
 
 /**
- * صف رسائل سريعة قابل للتمرير أفقياً — مطابق iOS MessageInputView.
- * عند النقر: يُرسل النص مباشرة عبر [onSend] (يعمل كزر إرسال).
+ * صف رسائل سريعة قابل للتمرير أفقياً.
+ *
+ * النقر **يُدرج** النصّ في حقل الرسالة عبر [onPick] ولا يُرسل: طلب المحادثة
+ * إجراء يراه الطرف الآخر ولا يمكن سحبه، فإرساله بلمسة واحدة عابرة كان يُنتج
+ * طلبات بالخطأ. المستخدم يعدّل النصّ إن شاء ثم يضغط زرّ الإرسال.
  */
 
 private data class QuickMessage(val emoji: String, val text: String)
@@ -46,7 +49,7 @@ private val QuickMessages = listOf(
 
 @Composable
 fun QuickMessagesRow(
-    onSend: (String) -> Unit,
+    onPick: (String) -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -77,7 +80,7 @@ fun QuickMessagesRow(
                     onClick = {
                         if (!enabled) return@QuickMessageChip
                         HapticHelper.light(haptic)
-                        onSend(msg.text)
+                        onPick(msg.text)
                     }
                 )
             }

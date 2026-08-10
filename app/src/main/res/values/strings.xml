@@ -769,7 +769,7 @@
     <string name="quick_msg_hi">مرحبا</string>
     <string name="quick_msg_how_are_you">كيف حالك؟</string>
     <string name="quick_msg_get_to_know">نتعرف؟</string>
-    <string name="quick_messages_label">رسائل سريعة (اضغط للإرسال)</string>
+    <string name="quick_messages_label">رسائل سريعة (اضغط للإدراج)</string>
 
     <!-- com/chathala/hala/feature/discover/ui/components/SwipeActionButtons.kt -->
     <string name="action_skip">تخطي</string>
