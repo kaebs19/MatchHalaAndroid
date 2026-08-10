@@ -67,6 +67,12 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-8219247197168750~3358932717" />
 
+        <!-- Privacy Sandbox: يحسم تعارض إعدادَي ads و analytics (انظر تعليق الملف) -->
+        <property
+            android:name="android.adservices.AD_SERVICES_CONFIG"
+            android:resource="@xml/hala_ad_services_config"
+            tools:replace="android:resource" />
+
         <!-- Facebook Login — القيم من Meta App Dashboard (App settings → Basic/Advanced) -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

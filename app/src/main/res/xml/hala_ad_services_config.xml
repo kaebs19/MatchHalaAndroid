@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  دمج إعدادَي Privacy Sandbox المتعارضَين: play-services-ads يعلن attribution+topics
+  و firebase-analytics يعلن attribution فقط، فيفشل دمج المانيفست. هذا الملف يجمع
+  الاثنين (مجموعة GMA الأشمل) ويُفرض عبر tools:replace في AndroidManifest.
+-->
+<ad-services-config>
+  <!-- Attribution API -->
+  <attribution allowAllToAccess="true" />
+
+  <!-- Topics API -->
+  <topics allowAllToAccess="true" />
+</ad-services-config>

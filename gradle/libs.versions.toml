@@ -70,6 +70,7 @@ zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" 
 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 

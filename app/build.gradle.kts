@@ -126,6 +126,8 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    // Analytics: يُفعّل مقاييس المستخدمين في لوحة AdMob بعد ربط مشروع Firebase بها
+    implementation(libs.firebase.analytics)
     implementation(libs.play.services.location)
     implementation(libs.play.services.ads)
 
