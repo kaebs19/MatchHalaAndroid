@@ -18,9 +18,9 @@ object AdConfig {
     private const val TEST_NATIVE = "ca-app-pub-3940256099942544/2247696110"
 
     // ── المعرّفات الحقيقية ──
-    private const val REAL_BANNER = "ca-app-pub-8219247197168750/7322228459"
-    private const val REAL_INTERSTITIAL = "ca-app-pub-8219247197168750/4696065119"
-    private const val REAL_NATIVE = "ca-app-pub-8219247197168750/5165848728"
+    private const val REAL_BANNER = "ca-app-pub-8219247197168750/5140663498"
+    private const val REAL_INTERSTITIAL = "ca-app-pub-8219247197168750/9723886272"
+    private const val REAL_NATIVE = "ca-app-pub-8219247197168750/7097722938"
 
     val bannerUnitId: String get() = if (debug) TEST_BANNER else REAL_BANNER
     val interstitialUnitId: String get() = if (debug) TEST_INTERSTITIAL else REAL_INTERSTITIAL
