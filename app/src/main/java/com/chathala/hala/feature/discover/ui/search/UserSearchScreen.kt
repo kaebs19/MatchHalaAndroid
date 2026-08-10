@@ -19,7 +19,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.automirrored.filled.ViewList
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -71,6 +80,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chathala.hala.R
 import com.chathala.hala.core.ads.AdConfig
+import com.chathala.hala.core.ads.NativeAdGridItem
 import com.chathala.hala.core.ads.NativeAdListItem
 import com.chathala.hala.core.data.Countries
 import com.chathala.hala.core.util.ProfileFormatter
@@ -192,6 +202,19 @@ fun UserSearchScreen(
                     )
                 }
             }
+            // تبديل شبكة/قائمة — يشمل نتائج البحث وقائمة «المتصلون الآن» معاً
+            run {
+                IconButton(onClick = viewModel::toggleLayout) {
+                    Icon(
+                        imageVector = if (state.gridLayout)
+                            Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
+                        contentDescription = S.get(
+                            if (state.gridLayout) R.string.search_view_list else R.string.search_view_grid
+                        ),
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -205,13 +228,23 @@ fun UserSearchScreen(
                         title = S.get(R.string.user_search_empty_title),
                         subtitle = S.get(R.string.user_search_empty_desc)
                     )
-                    else -> ResultsList(
-                        results = state.results,
-                        loadingMore = state.loadingMore,
-                        onLoadMore = viewModel::loadMore,
-                        onOpen = openProfile,
-                        onScroll = dismissKeyboard
-                    )
+                    else -> if (state.gridLayout) {
+                        ResultsGrid(
+                            results = state.results,
+                            loadingMore = state.loadingMore,
+                            onLoadMore = viewModel::loadMore,
+                            onOpen = openProfile,
+                            onScroll = dismissKeyboard
+                        )
+                    } else {
+                        ResultsList(
+                            results = state.results,
+                            loadingMore = state.loadingMore,
+                            onLoadMore = viewModel::loadMore,
+                            onOpen = openProfile,
+                            onScroll = dismissKeyboard
+                        )
+                    }
                 }
 
                 // وضع الاقتراحات (قبل الكتابة)
@@ -224,6 +257,7 @@ fun UserSearchScreen(
                 )
 
                 else -> SuggestionsList(
+                    gridLayout = state.gridLayout,
                     recent = state.recent,
                     premium = state.premium,
                     online = state.online,
@@ -237,6 +271,169 @@ fun UserSearchScreen(
                     // بطاقة الترقية → صفحة المشتريات مباشرة
                     onPromoClick = onOpenPremium,
                     onScroll = dismissKeyboard
+                )
+            }
+        }
+    }
+}
+
+/**
+ * شبكة نتائج البحث — عمودان، البطاقة صورة بملء الإطار مع اسم/عمر/دولة فوق تدرّج داكن.
+ *
+ * الصورة هي المحتوى الأساسي هنا (بخلاف القائمة التي تُظهر أفاتاراً صغيراً)، فالشبكة
+ * تعرض ضِعف عدد النتائج في نفس المساحة وتُبرز الصور — وهو ما يناسب شاشة تعارف.
+ */
+@Composable
+private fun ResultsGrid(
+    results: List<SearchUser>,
+    loadingMore: Boolean,
+    onLoadMore: () -> Unit,
+    onOpen: (String) -> Unit,
+    onScroll: () -> Unit
+) {
+    val gridState = rememberLazyGridState()
+    val reachedEnd by remember {
+        derivedStateOf {
+            val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            last >= results.size - 4
+        }
+    }
+    LaunchedEffect(reachedEnd, results.size) {
+        if (reachedEnd && results.isNotEmpty()) onLoadMore()
+    }
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }.collect { if (it) onScroll() }
+    }
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        state = gridState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        results.forEachIndexed { index, user ->
+            item(key = user.id) {
+                SearchResultCard(user = user, onClick = { onOpen(user.id) })
+            }
+            // إعلان مدمج بين المستخدمين — يشغل خانة واحدة كبطاقة مستخدم فلا يكسر الشبكة
+            if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
+                item(key = "ad_$index") {
+                    NativeAdGridItem()
+                }
+            }
+        }
+        if (loadingMore) {
+            item(key = "loading_more", span = { GridItemSpan(maxLineSpan) }) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) { CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primary) }
+            }
+        }
+    }
+}
+
+/** بطاقة مستخدم في الشبكة: صورة + اسم/عمر/دولة على تدرّج داكن أسفلها. */
+@Composable
+private fun SearchResultCard(user: SearchUser, onClick: () -> Unit) {
+    val isPremium = user.isPremium == true
+    val age = ProfileFormatter.computeAge(user.birthDate)
+    val country = countryText(user.country)
+
+    Box(
+        modifier = Modifier
+            .aspectRatio(0.75f)
+            .clip(MaterialTheme.shapes.large)
+            .then(
+                if (isPremium) Modifier.border(2.dp, GoldColor, MaterialTheme.shapes.large)
+                else Modifier
+            )
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
+    ) {
+        HalaAsyncImage(
+            model = user.profileImage,
+            contentDescription = user.name,
+            contentScale = ContentScale.Crop,
+            fallbackName = user.name,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // تدرّج داكن أسفل البطاقة — بدونه يذوب النصّ الأبيض في الصور الفاتحة
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .fillMaxHeight(0.45f)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                    )
+                )
+        )
+
+        // نقطة الاتصال + تاج المشترك أعلى البطاقة
+        Row(
+            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (user.isOnline == true) {
+                Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(OnlineColor))
+            }
+            if (isPremium) {
+                if (user.isOnline == true) Spacer(Modifier.size(4.dp))
+                Icon(
+                    imageVector = Icons.Filled.WorkspacePremium,
+                    contentDescription = null,
+                    tint = GoldColor,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(10.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = user.name ?: "—",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (age != null) {
+                    Spacer(Modifier.size(6.dp))
+                    Text(
+                        text = age.toString(),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+                if (user.isVerified == true) {
+                    Spacer(Modifier.size(4.dp))
+                    Icon(
+                        imageVector = Icons.Filled.Verified,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+            if (country != null) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = country,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White.copy(alpha = 0.85f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -293,6 +490,7 @@ private fun ResultsList(
 
 @Composable
 private fun SuggestionsList(
+    gridLayout: Boolean,
     recent: List<String>,
     premium: List<SearchUser>,
     online: List<SearchUser>,
@@ -306,29 +504,37 @@ private fun SuggestionsList(
     onPromoClick: () -> Unit,
     onScroll: () -> Unit
 ) {
-    val listState = rememberLazyListState()
+    // شبكة بعمود واحد = قائمة. توحيد المسارين في LazyVerticalGrid واحد يتجنّب
+    // تكرار كل الأقسام (الترويج/الأخيرة/المشتركون) مرتين، ويمنع تعشيش شبكة
+    // داخل LazyColumn وهو غير مسموح (ارتفاع غير محدود).
+    val gridState = rememberLazyGridState()
     val reachedEnd by remember {
         derivedStateOf {
-            val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val total = listState.layoutInfo.totalItemsCount
+            val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = gridState.layoutInfo.totalItemsCount
             total > 0 && last >= total - 2
         }
     }
     LaunchedEffect(reachedEnd, online.size) {
         if (reachedEnd && online.isNotEmpty()) onLoadMoreOnline()
     }
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.isScrollInProgress }.collect { if (it) onScroll() }
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }.collect { if (it) onScroll() }
     }
 
-    LazyColumn(
-        state = listState,
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(if (gridLayout) 2 else 1),
+        state = gridState,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        contentPadding = PaddingValues(
+            horizontal = if (gridLayout) 12.dp else 0.dp,
+            vertical = 8.dp
+        ),
+        horizontalArrangement = Arrangement.spacedBy(if (gridLayout) 10.dp else 0.dp),
+        verticalArrangement = Arrangement.spacedBy(if (gridLayout) 10.dp else 4.dp)
     ) {
         if (showPromo) {
-            item(key = "promo") {
+            item(key = "promo", span = { GridItemSpan(maxLineSpan) }) {
                 PremiumPromoCard(
                     onClick = onPromoClick,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -336,7 +542,7 @@ private fun SuggestionsList(
             }
         }
         if (recent.isNotEmpty()) {
-            item(key = "recent_header") {
+            item(key = "recent_header", span = { GridItemSpan(maxLineSpan) }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -346,7 +552,7 @@ private fun SuggestionsList(
                     TextButton(onClick = onClearRecent) { Text(S.get(R.string.user_search_clear_recent)) }
                 }
             }
-            item(key = "recent_chips") {
+            item(key = "recent_chips", span = { GridItemSpan(maxLineSpan) }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 4.dp),
@@ -360,12 +566,12 @@ private fun SuggestionsList(
         }
 
         if (premium.isNotEmpty()) {
-            item(key = "premium_header") {
+            item(key = "premium_header", span = { GridItemSpan(maxLineSpan) }) {
                 Box(Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)) {
                     SectionHeader(icon = Icons.Filled.WorkspacePremium, text = S.get(R.string.user_search_section_premium), iconTint = GoldColor)
                 }
             }
-            item(key = "premium_carousel") {
+            item(key = "premium_carousel", span = { GridItemSpan(maxLineSpan) }) {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -378,26 +584,36 @@ private fun SuggestionsList(
         }
 
         if (online.isNotEmpty()) {
-            item(key = "online_header") {
+            item(key = "online_header", span = { GridItemSpan(maxLineSpan) }) {
                 Box(Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) {
                     SectionHeader(icon = Icons.Filled.FiberManualRecord, text = S.get(R.string.user_search_section_online), iconTint = OnlineColor)
                 }
             }
             online.forEachIndexed { index, user ->
                 item(key = "o_${user.id}") {
-                    Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                        SearchResultRow(user = user, onClick = { onOpen(user.id) })
+                    if (gridLayout) {
+                        SearchResultCard(user = user, onClick = { onOpen(user.id) })
+                    } else {
+                        Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                            SearchResultRow(user = user, onClick = { onOpen(user.id) })
+                        }
                     }
                 }
                 // ✅ إعلان مدمج بين المتصلين
                 if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
-                    item(key = "online_ad_$index") {
-                        NativeAdListItem(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                    if (gridLayout) {
+                        item(key = "online_ad_$index") {
+                            NativeAdGridItem()
+                        }
+                    } else {
+                        item(key = "online_ad_$index", span = { GridItemSpan(maxLineSpan) }) {
+                            NativeAdListItem(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                        }
                     }
                 }
             }
             if (onlineLoadingMore) {
-                item(key = "online_loading_more") {
+                item(key = "online_loading_more", span = { GridItemSpan(maxLineSpan) }) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         contentAlignment = Alignment.Center

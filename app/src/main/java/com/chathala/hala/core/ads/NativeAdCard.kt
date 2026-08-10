@@ -6,6 +6,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,6 +77,26 @@ fun NativeAdListItem(modifier: Modifier = Modifier) {
             .padding(12.dp)
     ) {
         NativeAdRowCard(nativeAd = ad)
+    }
+}
+
+/**
+ * إعلان مدمج بشكل **بطاقة** بأبعاد بطاقة المستخدم في الشبكة.
+ *
+ * لا يُعاد استخدام [NativeAdListItem] هنا: تخطيطه أفقي (أيقونة + نصّ + زر على
+ * سطر واحد) فيبدو شبه فارغ داخل خانة 3:4، بينما `ad_native_card` تخطيط عمودي
+ * بصورة كبيرة يملأ البطاقة ويشبه بطاقة المستخدم المجاورة.
+ */
+@Composable
+fun NativeAdGridItem(modifier: Modifier = Modifier) {
+    val ad = rememberNativeAd() ?: return
+    Box(
+        modifier = modifier
+            .aspectRatio(0.75f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        NativeAdCard(nativeAd = ad, modifier = Modifier.fillMaxSize())
     }
 }
 

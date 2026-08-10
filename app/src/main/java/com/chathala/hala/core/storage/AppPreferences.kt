@@ -111,6 +111,19 @@ class AppPreferences(private val context: Context) {
         context.appPrefs.edit { it[sensitiveContentKey] = enabled }
     }
 
+    // ── طريقة عرض نتائج البحث ──
+
+    private val searchGridKey = booleanPreferencesKey("search_grid_layout")
+
+    /** true = شبكة (الافتراضي)، false = قائمة. يُحفظ فلا يُعاد ضبطه كل تشغيل. */
+    val searchGridLayout: Flow<Boolean> = context.appPrefs.data.map {
+        it[searchGridKey] ?: true
+    }
+
+    suspend fun setSearchGridLayout(grid: Boolean) {
+        context.appPrefs.edit { it[searchGridKey] = grid }
+    }
+
     // ── محادثات موثوقة (auto-reveal) ──
 
     private val trustedConversationsKey = stringPreferencesKey("trusted_conversations")

@@ -171,6 +171,9 @@
     <string name="cancel">إلغاء</string>
     <string name="back">رجوع</string>
     <!-- User search -->
+    <!-- تبديل عرض نتائج البحث -->
+    <string name="search_view_grid">عرض شبكي</string>
+    <string name="search_view_list">عرض قائمة</string>
     <string name="user_search_hint">ابحث بالاسم…</string>
     <string name="user_search_prompt_title">ابحث عن أشخاص</string>
     <string name="user_search_prompt_desc">اكتب اسم الشخص الذي تبحث عنه (حرفان على الأقل)</string>

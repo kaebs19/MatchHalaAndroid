@@ -171,6 +171,9 @@
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
     <!-- User search -->
+    <!-- Search results layout toggle -->
+    <string name="search_view_grid">Grid view</string>
+    <string name="search_view_list">List view</string>
     <string name="user_search_hint">Search by name…</string>
     <string name="user_search_prompt_title">Find people</string>
     <string name="user_search_prompt_desc">Type the name of the person you are looking for (at least 2 letters)</string>

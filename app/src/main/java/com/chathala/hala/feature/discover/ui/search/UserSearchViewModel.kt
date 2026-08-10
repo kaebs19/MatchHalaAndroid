@@ -56,7 +56,9 @@ data class UserSearchUiState(
     val online: List<SearchUser> = emptyList(),
     val onlineLoadingMore: Boolean = false,
     val onlineTotal: Int = 0,
-    val recent: List<String> = emptyList()
+    val recent: List<String> = emptyList(),
+    /** true = شبكة، false = قائمة. محفوظ في التفضيلات فلا يُعاد ضبطه كل تشغيل. */
+    val gridLayout: Boolean = true
 ) {
     val onlineCanLoadMore: Boolean get() = online.isNotEmpty() && online.size < onlineTotal
     val isSearchMode: Boolean get() = query.trim().length >= 2
@@ -77,7 +79,18 @@ class UserSearchViewModel(
     init {
         observeRecent()
         observePremium()
+        observeLayout()
         loadSuggestions()
+    }
+
+    private fun observeLayout() {
+        viewModelScope.launch {
+            prefs.searchGridLayout.collect { grid -> _state.update { it.copy(gridLayout = grid) } }
+        }
+    }
+
+    fun toggleLayout() {
+        viewModelScope.launch { prefs.setSearchGridLayout(!_state.value.gridLayout) }
     }
 
     private fun observeRecent() {
