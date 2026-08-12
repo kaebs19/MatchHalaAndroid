@@ -21,8 +21,8 @@ android {
         applicationId = "com.chathala.hala"
         minSdk = 32
         targetSdk = 36
-        versionCode = 15
-        versionName = "2.1"
+        versionCode = 16
+        versionName = "2.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

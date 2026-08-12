@@ -65,7 +65,7 @@
         <!-- AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8219247197168750~3358932717" />
+            android:value="ca-app-pub-8219247197168750~7977406362" />
 
         <!-- Privacy Sandbox: يحسم تعارض إعدادَي ads و analytics (انظر تعليق الملف) -->
         <property
