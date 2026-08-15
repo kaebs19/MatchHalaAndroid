@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    إعلان مدمج بمقاس خانة الشبكة (3:4) في صفحة البحث.
+
+    مهم: الارتفاع هنا match_parent والوسائط بوزن مرن — تخطيط `ad_native_card`
+    كان يحتاج ~350dp (رأس + وسائط 170dp ثابتة + وصف + زر) فيُقصّ داخل خانة
+    ارتفاعها ~240dp، فيخرج الزر وجزء من الوسائط خارج حدود NativeAdView.
+    وهذا ما يرصده AdMob native ad validator بـ
+    "Advertiser assets outside native ad view" — مخالفة تنفيذ تُضعف العرض.
+-->
+<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- الرأس: أيقونة + عنوان + شارة "إعلان" -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ad_app_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/bg_ad_avatar"
+                android:clipToOutline="true"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop" />
+
+            <TextView
+                android:id="@+id/ad_headline"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/ad_attribution"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ad_badge"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="1dp"
+                android:text="إعلان"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp" />
+        </LinearLayout>
+
+        <!-- الوسائط تأخذ ما تبقّى من ارتفاع الخانة -->
+        <com.google.android.gms.ads.nativead.MediaView
+            android:id="@+id/ad_media"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/ad_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#888888"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/ad_call_to_action"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="6dp"
+            android:textAllCaps="false"
+            android:textSize="12sp" />
+    </LinearLayout>
+</com.google.android.gms.ads.nativead.NativeAdView>

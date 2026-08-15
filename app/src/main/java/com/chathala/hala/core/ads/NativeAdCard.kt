@@ -1,6 +1,8 @@
 package com.chathala.hala.core.ads
 
 import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -84,8 +86,9 @@ fun NativeAdListItem(modifier: Modifier = Modifier) {
  * إعلان مدمج بشكل **بطاقة** بأبعاد بطاقة المستخدم في الشبكة.
  *
  * لا يُعاد استخدام [NativeAdListItem] هنا: تخطيطه أفقي (أيقونة + نصّ + زر على
- * سطر واحد) فيبدو شبه فارغ داخل خانة 3:4، بينما `ad_native_card` تخطيط عمودي
- * بصورة كبيرة يملأ البطاقة ويشبه بطاقة المستخدم المجاورة.
+ * سطر واحد) فيبدو شبه فارغ داخل خانة 3:4، ولا `ad_native_card` لأن ارتفاعه
+ * الثابت يتجاوز الخانة فتُقصّ عناصر الإعلان خارج حدود NativeAdView — وهي
+ * مخالفة يرصدها AdMob native ad validator. `ad_native_grid` يملأ الخانة تماماً.
  */
 @Composable
 fun NativeAdGridItem(modifier: Modifier = Modifier) {
@@ -96,8 +99,25 @@ fun NativeAdGridItem(modifier: Modifier = Modifier) {
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        NativeAdCard(nativeAd = ad, modifier = Modifier.fillMaxSize())
+        NativeAdGridCard(nativeAd = ad, modifier = Modifier.fillMaxSize())
     }
+}
+
+/** إعلان مدمج يملأ خانة الشبكة — الوسائط مرنة والزر داخل الحدود دائماً. */
+@Composable
+private fun NativeAdGridCard(nativeAd: NativeAd, modifier: Modifier = Modifier) {
+    AndroidView(
+        modifier = modifier.fillMaxSize(),
+        factory = { ctx ->
+            val view = LayoutInflater.from(ctx)
+                .inflate(R.layout.ad_native_grid, null) as NativeAdView
+            // بدون layoutParams صريحة تبقى wrap_content فيتجاوز المحتوى الخانة
+            view.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            bind(view, nativeAd)
+            view
+        },
+        update = { bind(it, nativeAd) }
+    )
 }
 
 /** إعلان مدمج بشكل صف يشبه بطاقة المستخدم (أيقونة + عنوان + وصف + زر). */
