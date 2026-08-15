@@ -51,8 +51,10 @@ data class Message(
     val editedAt: String? = null,
     val createdAt: String? = null,
     // ── audio ──
-    val audioDuration: Int? = null,    // بالثواني
-    val audioWaveform: List<Int>? = null,
+    // ملاحظة: iOS يرسل waveform كقيم عشرية 0..1 والمدّة قد تُخزَّن كرقم عشري في الخادم،
+    // لذا نستقبلهما كـ Double حتى لا يفشل تحليل Moshi ويسقط الرد كاملاً.
+    val audioDuration: Double? = null,    // بالثواني
+    val audioWaveform: List<Double>? = null,
     // ── image (disappearing) ──
     val imageSource: String? = null,   // camera | gallery
     val disappearing: DisappearingInfo? = null,
