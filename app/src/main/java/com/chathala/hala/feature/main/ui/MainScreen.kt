@@ -34,7 +34,7 @@ import com.chathala.hala.feature.discover.ui.DiscoverScreen
 import com.chathala.hala.feature.notifications.ui.NotificationsScreen
 import com.chathala.hala.feature.profile.ui.ProfileScreen
 import com.chathala.hala.feature.push.PushIntentCoordinator
-import com.chathala.hala.feature.push.RequestNotificationPermissionEffect
+import com.chathala.hala.feature.push.NotificationPermissionPrompt
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -71,7 +71,7 @@ fun MainScreen(
         PushIntentCoordinator.consumeTab()
     }
 
-    RequestNotificationPermissionEffect()
+    NotificationPermissionPrompt()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,

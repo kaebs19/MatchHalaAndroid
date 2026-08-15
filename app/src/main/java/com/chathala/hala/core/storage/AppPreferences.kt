@@ -3,6 +3,7 @@ package com.chathala.hala.core.storage
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import java.util.Locale
@@ -122,6 +123,19 @@ class AppPreferences(private val context: Context) {
 
     suspend fun setSearchGridLayout(grid: Boolean) {
         context.appPrefs.edit { it[searchGridKey] = grid }
+    }
+
+    // ── طلب إذن الإشعارات ──
+
+    private val notifPromptDismissedAtKey = longPreferencesKey("notif_prompt_dismissed_at")
+
+    /** وقت آخر «ليس الآن» — نُعيد السؤال بعد مهلة بدل إزعاج المستخدم كل تشغيل. */
+    val notificationPromptDismissedAt: Flow<Long> = context.appPrefs.data.map {
+        it[notifPromptDismissedAtKey] ?: 0L
+    }
+
+    suspend fun setNotificationPromptDismissedNow() {
+        context.appPrefs.edit { it[notifPromptDismissedAtKey] = System.currentTimeMillis() }
     }
 
     // ── محادثات موثوقة (auto-reveal) ──

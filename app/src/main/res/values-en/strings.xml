@@ -1254,4 +1254,15 @@
         <item quantity="other">%1$d people visited your profile</item>
     </plurals>
     <string name="report_reason_other_short">Other</string>
+    <!-- Notification permission pre-prompt -->
+    <string name="notif_prompt_title">Never miss a message</string>
+    <string name="notif_prompt_subtitle">Turn on notifications to get alerts the moment they arrive</string>
+    <string name="notif_prompt_benefit_messages">New messages as they arrive</string>
+    <string name="notif_prompt_benefit_likes">Likes and profile visits</string>
+    <string name="notif_prompt_benefit_requests">Chat requests and replies</string>
+    <string name="notif_prompt_enable">Turn on notifications</string>
+    <string name="notif_prompt_later">Not now</string>
+    <string name="notif_prompt_settings_title">Notifications are off</string>
+    <string name="notif_prompt_settings_subtitle">Enable them in system settings to receive messages and alerts</string>
+    <string name="notif_prompt_open_settings">Open settings</string>
 </resources>

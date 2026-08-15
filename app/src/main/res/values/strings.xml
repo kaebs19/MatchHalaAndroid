@@ -1292,4 +1292,15 @@
         <item quantity="other">%1$d شخص زار ملفك</item>
     </plurals>
     <string name="report_reason_other_short">أخرى</string>
+    <!-- طلب إذن الإشعارات (شاشة تمهيدية قبل نافذة النظام) -->
+    <string name="notif_prompt_title">لا تفوّت رسالة</string>
+    <string name="notif_prompt_subtitle">فعّل الإشعارات لتصلك التنبيهات لحظة وصولها</string>
+    <string name="notif_prompt_benefit_messages">رسائل جديدة فور وصولها</string>
+    <string name="notif_prompt_benefit_likes">إعجابات وزيارات لملفك</string>
+    <string name="notif_prompt_benefit_requests">طلبات محادثة وردود</string>
+    <string name="notif_prompt_enable">تفعيل الإشعارات</string>
+    <string name="notif_prompt_later">ليس الآن</string>
+    <string name="notif_prompt_settings_title">الإشعارات معطّلة</string>
+    <string name="notif_prompt_settings_subtitle">فعّلها من إعدادات النظام لتصلك الرسائل والتنبيهات</string>
+    <string name="notif_prompt_open_settings">فتح الإعدادات</string>
 </resources>
