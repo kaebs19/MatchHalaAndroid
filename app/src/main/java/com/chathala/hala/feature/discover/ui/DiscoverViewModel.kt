@@ -65,7 +65,7 @@ class DiscoverViewModel(
     private val blocking: BlockingRepository,
     private val reporting: ReportRepository,
     private val cache: DiscoverCacheStorage,
-    userRepository: UserRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DiscoverUiState())
@@ -148,7 +148,26 @@ class DiscoverViewModel(
             if (loc != null) {
                 _state.update { it.copy(location = loc, initialLoading = true, cards = emptyList(), page = 1) }
                 fetch(page = 1, append = false)
+                reportLocation(context, loc)
             }
+        }
+    }
+
+    /**
+     * يرفع الموقع للخادم ليظهر في لوحة التحكم — مستقلّ عن تحميل البطاقات:
+     * فشله لا يجب أن يمنع ظهور الاكتشاف، ولذلك يعمل بصمت وبعد الجلب.
+     */
+    private fun reportLocation(context: Context, loc: LatLng) {
+        if (!userRepository.shouldSendLocation()) return
+        viewModelScope.launch {
+            val place = runCatching { LocationHelper.resolvePlace(context, loc) }.getOrNull()
+            userRepository.updateLocation(
+                latitude = loc.lat,
+                longitude = loc.lng,
+                city = place?.city,
+                country = place?.country,
+                accuracy = loc.accuracyMeters
+            )
         }
     }
 

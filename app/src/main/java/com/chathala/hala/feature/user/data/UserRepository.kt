@@ -65,4 +65,46 @@ class UserRepository(
     suspend fun clear() {
         userStorage.clear()
     }
+
+    /**
+     * يرفع موقع المستخدم للخادم (لوحة التحكم + حساب المسافات).
+     *
+     * مكبوح زمنياً: الاكتشاف يطلب الموقع عند كل دخول للشاشة، وبلا كبح يصبح
+     * الرفع طلب شبكة في كل مرة بلا فائدة. الفشل صامت — الموقع رفاهية لا وظيفة.
+     */
+    suspend fun updateLocation(
+        latitude: Double,
+        longitude: Double,
+        city: String? = null,
+        country: String? = null,
+        accuracy: Float? = null
+    ): NetworkResult<Unit> = safeApiCall {
+        val token = tokenStorage.token.first()
+            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
+        api.updateUserLocation(
+            bearer = "Bearer $token",
+            body = UpdateLocationRequest(
+                latitude = latitude,
+                longitude = longitude,
+                city = city,
+                country = country,
+                accuracy = accuracy
+            )
+        )
+        lastLocationSentAtMs = System.currentTimeMillis()
+        Unit
+    }
+
+    /** هل مضى ما يكفي منذ آخر رفع؟ (يُفحص قبل استدعاء [updateLocation]) */
+    fun shouldSendLocation(): Boolean =
+        System.currentTimeMillis() - lastLocationSentAtMs >= LOCATION_MIN_INTERVAL_MS
+
+    private companion object {
+        /** آخر رفع ناجح — في الذاكرة فقط: إعادة الرفع بعد إعادة التشغيل مقبولة. */
+        @Volatile
+        var lastLocationSentAtMs: Long = 0L
+
+        /** ساعة واحدة بين رفعَين — يكفي لتتبّع الانتقال بين المدن بلا إزعاج للشبكة. */
+        const val LOCATION_MIN_INTERVAL_MS = 60 * 60 * 1000L
+    }
 }
