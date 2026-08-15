@@ -402,6 +402,9 @@ fun ChatScreen(
                                                         viewModel.audioPlayer.toggle(m.id, url)
                                                     }
                                                 },
+                                                onSeekAudio = { m, fraction ->
+                                                    viewModel.audioPlayer.seekTo(m.id, fraction)
+                                                },
                                                 onLongPress = { m ->
                                                     haptic.performHapticFeedback(
                                                         androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress

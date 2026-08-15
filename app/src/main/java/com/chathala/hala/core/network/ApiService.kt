@@ -380,7 +380,8 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Part audio: MultipartBody.Part,
         @Part("conversationId") conversationId: okhttp3.RequestBody,
-        @Part("duration") duration: okhttp3.RequestBody?
+        @Part("duration") duration: okhttp3.RequestBody?,
+        @Part("waveform") waveform: okhttp3.RequestBody? = null
     ): SendMessageResponse
 
     @POST("api/mobile/messages/{messageId}/react")
@@ -389,6 +390,13 @@ interface ApiService {
         @Path("messageId") messageId: String,
         @Body body: ReactRequest
     ): ReactResponse
+
+    /** يحفظ موقع المستخدم في الخادم (يظهر للأدمن في لوحة التحكم ويُستخدم للمسافات). */
+    @PUT("api/mobile/users/location")
+    suspend fun updateUserLocation(
+        @Header("Authorization") bearer: String,
+        @Body body: com.chathala.hala.feature.user.data.UpdateLocationRequest
+    ): com.chathala.hala.feature.user.data.UpdateLocationResponse
 
     @PUT("api/mobile/conversations/{id}/mute")
     suspend fun muteConversation(

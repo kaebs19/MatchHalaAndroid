@@ -1352,7 +1352,8 @@ class ChatViewModel(
                     sender = MessageSender(id = selfId, name = selfName),
                     type = "audio",
                     mediaUrl = rec.file.absolutePath,
-                    audioDuration = rec.durationSeconds,
+                    audioDuration = rec.durationSeconds.toDouble(),
+                    audioWaveform = rec.waveform.takeIf { it.isNotEmpty() },
                     status = "sent",
                     isRead = false,
                     isDelivered = false,
@@ -1362,7 +1363,12 @@ class ChatViewModel(
                     it.copy(messages = it.messages + optimistic, uploadingMedia = true)
                 }
                 viewModelScope.launch {
-                    when (val r = messagesRepo.sendAudio(conversationId, rec.file, rec.durationSeconds)) {
+                    when (val r = messagesRepo.sendAudio(
+                        conversationId,
+                        rec.file,
+                        rec.durationSeconds,
+                        rec.waveform
+                    )) {
                         is NetworkResult.Success -> _state.update { s ->
                             s.copy(
                                 messages = s.messages.map { if (it.id == tempId) r.data else it },

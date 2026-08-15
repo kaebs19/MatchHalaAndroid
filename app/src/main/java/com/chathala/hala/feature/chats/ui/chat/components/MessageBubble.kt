@@ -36,7 +36,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -80,6 +79,7 @@ fun MessageBubble(
     /** الصورة المؤقتة انتهت/دُمِّرت */
     disappearingExpired: Boolean = false,
     onToggleAudio: (Message) -> Unit = {},
+    onSeekAudio: (Message, Float) -> Unit = { _, _ -> },
     onLongPress: (Message) -> Unit = {},
     onViewDisappearing: (Message) -> Unit = {},
     onReplyTap: (String) -> Unit = {},
@@ -219,7 +219,8 @@ fun MessageBubble(
                     isPlaying = audioPlayingId == message.id,
                     positionMs = audioPositionMs,
                     durationMs = audioDurationMs,
-                    onToggle = { onToggleAudio(message) }
+                    onToggle = { onToggleAudio(message) },
+                    onSeek = onSeekAudio
                 )
                 else -> {
                     val content = (revealedContent ?: message.content)?.takeIf { it.isNotBlank() }
@@ -783,18 +784,27 @@ private fun AudioContent(
     isPlaying: Boolean,
     positionMs: Int,
     durationMs: Int,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    onSeek: (Message, Float) -> Unit
 ) {
     val accentColor = if (isMine)
         MaterialTheme.colorScheme.onPrimary
     else
         MaterialTheme.colorScheme.primary
 
-    val totalSeconds = (message.audioDuration ?: (durationMs / 1000)).coerceAtLeast(1)
+    val totalSeconds = (message.audioDuration?.toInt() ?: (durationMs / 1000)).coerceAtLeast(1)
     val currentSeconds = (positionMs / 1000).coerceAtMost(totalSeconds)
     val progress = if (isPlaying && durationMs > 0)
         (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
     else 0f
+
+    val fallback = rememberFallbackWaveform(message.id)
+    val levels = remember(message.audioWaveform, fallback) {
+        message.audioWaveform
+            ?.takeIf { it.isNotEmpty() }
+            ?.map { it.toFloat() }
+            ?: fallback
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -817,14 +827,13 @@ private fun AudioContent(
         }
         Spacer(Modifier.size(10.dp))
         Column(modifier = Modifier.weight(1f)) {
-            LinearProgressIndicator(
-                progress = { progress },
-                color = accentColor,
-                trackColor = accentColor.copy(alpha = 0.25f),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
+            VoiceWaveform(
+                levels = levels,
+                progress = progress,
+                playedColor = accentColor,
+                remainingColor = accentColor.copy(alpha = 0.28f),
+                // التنقّل متاح للمقطع الجاري فقط — الآخرون لم يُحمَّلوا بعد
+                onSeek = if (isPlaying) { f -> onSeek(message, f) } else null
             )
             Spacer(Modifier.size(4.dp))
             val displaySeconds = if (isPlaying) currentSeconds else totalSeconds

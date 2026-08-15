@@ -39,6 +39,17 @@ class AudioPlayer {
         }
     }
 
+    /** ينقل موضع التشغيل داخل المقطع الجاري ([fraction] بين 0 و1). */
+    fun seekTo(messageId: String, fraction: Float) {
+        if (currentId != messageId) return
+        val p = player ?: return
+        val duration = runCatching { p.duration }.getOrNull() ?: return
+        if (duration <= 0) return
+        val target = (duration * fraction.coerceIn(0f, 1f)).toInt().coerceIn(0, duration)
+        runCatching { p.seekTo(target) }
+        _state.value = _state.value.copy(positionMs = target)
+    }
+
     fun stop() {
         progressJob?.cancel()
         progressJob = null

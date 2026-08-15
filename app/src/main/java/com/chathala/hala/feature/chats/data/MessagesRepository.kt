@@ -73,14 +73,20 @@ class MessagesRepository(
     suspend fun sendAudio(
         conversationId: String,
         file: File,
-        durationSeconds: Int
+        durationSeconds: Int,
+        waveform: List<Double> = emptyList()
     ): NetworkResult<Message> = safeApiCall {
         val part = MediaUploadHelper.fileToAudioPart(file)
+        // الخادم يتوقّع waveform كنصّ JSON (نفس ما يرسله iOS) — قيم 0..1
+        val waveformJson = waveform
+            .takeIf { it.isNotEmpty() }
+            ?.joinToString(prefix = "[", postfix = "]") { "%.3f".format(java.util.Locale.US, it) }
         val resp = api.sendAudioMessage(
             bearer = bearer(),
             audio = part,
             conversationId = MediaUploadHelper.plainText(conversationId),
-            duration = MediaUploadHelper.plainText(durationSeconds.toString())
+            duration = MediaUploadHelper.plainText(durationSeconds.toString()),
+            waveform = waveformJson?.let { MediaUploadHelper.plainText(it) }
         )
         resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_audio_send_failed))
     }
