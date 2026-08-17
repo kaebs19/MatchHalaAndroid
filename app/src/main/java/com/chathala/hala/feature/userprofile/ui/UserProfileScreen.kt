@@ -364,6 +364,7 @@ private fun ProfileContent(
                 BasicInfoCard(user)
                 LocationCard(user)
                 BioCard(user)
+                InterestsCard(user)
                 PhotosCard(user, onOpenPhoto = onOpenPhoto)
 
                 if (!suspended) {
@@ -848,12 +849,27 @@ private fun BioCard(user: UserProfile) {
         icon = {
             Text("📝", fontSize = 18.sp)
         },
-        title = S.get(R.string.profile_about_me)
+        // ليست "نبذة عني" — هذه شاشة ملف شخص آخر
+        title = S.get(R.string.profile_bio)
     ) {
         Text(
             text = bio,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 14.sp
+        )
+    }
+}
+
+@Composable
+private fun InterestsCard(user: UserProfile) {
+    if (user.interests.isEmpty()) return
+    InfoCard(
+        icon = { Text("🎯", fontSize = 18.sp) },
+        // ليست "اهتماماتي" — هذه شاشة ملف شخص آخر
+        title = S.get(R.string.profile_interests)
+    ) {
+        com.chathala.hala.feature.profile.ui.components.ReadOnlyInterestsChips(
+            interestKeys = user.interests
         )
     }
 }

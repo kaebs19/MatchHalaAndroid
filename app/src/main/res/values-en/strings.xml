@@ -1146,7 +1146,8 @@
     <string name="profile_liked_you">Liked you</string>
     <string name="profile_premium_user">Premium member</string>
     <string name="label_location">Location</string>
-    <string name="profile_about_me">About me</string>
+    <string name="profile_interests">Interests</string>
+    <string name="profile_bio">About</string>
     <string name="profile_photos">Photos</string>
     <string name="label_friend">Friend</string>
     <string name="label_request_sent">Sent</string>

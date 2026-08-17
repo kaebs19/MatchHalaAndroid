@@ -1151,7 +1151,8 @@
     <string name="profile_liked_you">أعجب بك</string>
     <string name="profile_premium_user">مستخدم مميز</string>
     <string name="label_location">الموقع</string>
-    <string name="profile_about_me">نبذة عني</string>
+    <string name="profile_interests">الاهتمامات</string>
+    <string name="profile_bio">النبذة</string>
     <string name="profile_photos">الصور</string>
     <string name="label_friend">صديق</string>
     <string name="label_request_sent">مُرسل</string>
