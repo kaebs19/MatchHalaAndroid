@@ -847,6 +847,8 @@
     <string name="billing_plan_unavailable">الباقة غير متاحة حالياً</string>
     <string name="billing_no_offer">لا يوجد عرض متاح لهذه الباقة</string>
     <string name="billing_verify_failed">تعذّر التحقق من الشراء — إن خُصم المبلغ سيُسترجع تلقائياً</string>
+    <string name="billing_restore">استعادة المشتريات</string>
+    <string name="billing_restore_none">لا توجد مشتريات لاستعادتها على حساب Google هذا</string>
 
     <!-- com/chathala/hala/feature/premium/data/SubscriptionModels.kt -->
     <string name="plan_weekly">أسبوعي</string>

@@ -76,6 +76,10 @@ class SubscriptionViewModel(
                     is BillingEvent.Cancelled -> {
                         _state.update { it.copy(purchasing = false) }
                     }
+                    is BillingEvent.RestoreEmpty -> {
+                        _state.update { it.copy(purchasing = false) }
+                        _message.tryEmit(S.get(R.string.billing_restore_none))
+                    }
                     is BillingEvent.Error -> {
                         _state.update { it.copy(purchasing = false) }
                         _message.tryEmit(event.message)
@@ -93,6 +97,19 @@ class SubscriptionViewModel(
     fun purchase(activity: Activity) {
         _state.update { it.copy(purchasing = true) }
         billing.launchPurchase(activity, _state.value.selectedPlan)
+    }
+
+    /**
+     * استعادة المشتريات يدوياً (جهاز جديد / إعادة تثبيت). النتيجة تصل عبر
+     * الأحداث: [BillingEvent.PurchaseVerified] أو [BillingEvent.RestoreEmpty].
+     */
+    fun restore() {
+        if (!billing.connected.value) {
+            billing.connect() // connect() يستدعي restorePurchases() بعد الاتصال
+            return
+        }
+        _state.update { it.copy(purchasing = true) }
+        viewModelScope.launch { billing.restorePurchases() }
     }
 
     companion object {

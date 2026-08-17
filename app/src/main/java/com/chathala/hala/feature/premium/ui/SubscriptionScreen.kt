@@ -199,7 +199,20 @@ fun SubscriptionScreen(
                 )
             }
 
-            Spacer(Modifier.height(12.dp))
+            // استعادة المشتريات — لمن أعاد التثبيت أو بدّل جهازه (وتطلبه مراجعة Play)
+            androidx.compose.material3.TextButton(
+                onClick = { viewModel.restore() },
+                enabled = !state.purchasing,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = S.get(R.string.billing_restore),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(Modifier.height(4.dp))
             Text(
                 text = S.get(R.string.premium_renewal_note),
                 style = MaterialTheme.typography.labelSmall,
