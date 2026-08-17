@@ -1,6 +1,8 @@
 package com.chathala.hala.core.ads
 
 import android.app.Activity
+import com.chathala.hala.BuildConfig
+import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
@@ -24,10 +26,22 @@ object AdConsent {
         if (requested) return
         requested = true
 
+        // في debug نتظاهر بأننا داخل المنطقة الاقتصادية الأوروبية، وإلا فالنموذج
+        // لا يظهر أصلاً خارجها فيستحيل اختباره. (المحاكي جهاز اختبار تلقائياً.)
+        val params = ConsentRequestParameters.Builder().apply {
+            if (BuildConfig.DEBUG) {
+                setConsentDebugSettings(
+                    ConsentDebugSettings.Builder(activity)
+                        .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                        .build()
+                )
+            }
+        }.build()
+
         val info: ConsentInformation = UserMessagingPlatform.getConsentInformation(activity)
         info.requestConsentInfoUpdate(
             activity,
-            ConsentRequestParameters.Builder().build(),
+            params,
             {
                 UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { formError ->
                     if (formError != null) {
