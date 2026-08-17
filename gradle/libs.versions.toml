@@ -25,7 +25,8 @@ zxing = "3.5.3"
 firebaseBom = "33.7.0"
 googleServices = "4.4.2"
 playServicesLocation = "21.3.0"
-playServicesAds = "23.6.0"
+playServicesAds = "24.8.0"
+userMessagingPlatform = "4.0.0"
 socketio = "2.1.0"
 lottie = "6.4.0"
 billing = "8.0.0"
@@ -73,6 +74,7 @@ firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+user-messaging-platform = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }
 
 socketio-client = { group = "io.socket", name = "socket.io-client", version.ref = "socketio" }
 
