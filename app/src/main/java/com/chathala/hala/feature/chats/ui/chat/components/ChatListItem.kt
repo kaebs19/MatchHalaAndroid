@@ -28,8 +28,13 @@ sealed class ChatListItem {
         override val key: String get() = message.id
     }
 
-    data class DateHeader(val label: String) : ChatListItem() {
-        override val key: String get() = "date-$label"
+    /**
+     * @param anchorId معرّف الرسالة التي سبقها الفاصل — يدخل في المفتاح لأن
+     *   `label` وحده يتكرّر إذا اختلّ ترتيب الأيام (انحراف ساعة الجهاز يضع رسالة
+     *   متفائلة بيوم يختلف عن جارتها من الخادم)، والمفتاح المكرّر يُسقط التطبيق.
+     */
+    data class DateHeader(val label: String, val anchorId: String = "") : ChatListItem() {
+        override val key: String get() = "date-$anchorId"
     }
 
     data object UnreadDivider : ChatListItem() {
@@ -46,15 +51,18 @@ fun buildChatList(
     firstUnreadId: String?
 ): List<ChatListItem> {
     if (messages.isEmpty()) return emptyList()
+    // خطّ الدفاع الأخير أمام مفاتيح LazyColumn المكرّرة: إعادة إرسال بعد مهلة
+    // انقطاع (الطلب الأول نجح فعلاً) أو أي خلل دمج أعلى يترك نسختين بنفس المعرّف.
+    val unique = messages.distinctBy { it.id }
     val out = mutableListOf<ChatListItem>()
     var lastDay: String? = null
     // نافذة التجميع: رسائل نفس المرسل خلال دقيقتين تُعتبر مجموعة واحدة
     val groupWindowMs = 2 * 60 * 1000L
-    for ((i, msg) in messages.withIndex()) {
+    for ((i, msg) in unique.withIndex()) {
         val day = dayKey(msg.createdAt)
         val newDay = day != null && day != lastDay
         if (newDay) {
-            out += ChatListItem.DateHeader(labelFor(day))
+            out += ChatListItem.DateHeader(label = labelFor(day), anchorId = msg.id)
             lastDay = day
         }
         var unreadHere = false
@@ -64,8 +72,8 @@ fun buildChatList(
         }
 
         // تجميع: أول في المجموعة إذا اختلف المرسل/اليوم/وُجد فاصل، أو فجوة زمنية كبيرة
-        val prev = messages.getOrNull(i - 1)
-        val next = messages.getOrNull(i + 1)
+        val prev = unique.getOrNull(i - 1)
+        val next = unique.getOrNull(i + 1)
         val isFirst = newDay || unreadHere || prev == null ||
             prev.sender?.id != msg.sender?.id ||
             timeGap(prev.createdAt, msg.createdAt) > groupWindowMs

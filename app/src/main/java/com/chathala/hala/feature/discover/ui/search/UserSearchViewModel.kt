@@ -190,7 +190,8 @@ class UserSearchViewModel(
             val premiumRes = premiumDeferred.await()
             val onlineRes = onlineDeferred.await()
             val recentRes = recentDeferred.await()
-            val premium = (premiumRes as? NetworkResult.Success)?.data?.users ?: emptyList()
+            val premium = ((premiumRes as? NetworkResult.Success)?.data?.users ?: emptyList())
+                .distinctBy { it.id }
             val onlineData = (onlineRes as? NetworkResult.Success)?.data
             // لا نحذف المشتركين من قائمة المتصلين: شريط «المشتركون» شريط ترشيح أفقي
             // منفصل، وكان استبعادهم يُفرغ قسم «متصلون الآن» كلّما كان أغلب المتصلين

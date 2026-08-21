@@ -92,7 +92,11 @@ fun VisitorsScreen(
                 if (state.premiumRequired) {
                     item(key = "upgrade") { UpgradeBanner(total = state.totalViews, onClick = onOpenPremium) }
                 }
-                itemsIndexed(state.views, key = { i, v -> v.viewer?.id ?: "hidden_$i" }) { _, item ->
+                // العنصر سجلّ زيارة لا زائر: الزائر نفسه قد يزور مرتين فيتكرّر id،
+                // والمفتاح المكرّر في LazyColumn يُسقط التطبيق (IllegalArgumentException
+                // من subcompose). الفهرس في المفتاح يضمن التفرّد، والإلحاق لا يغيّر
+                // فهارس العناصر القائمة فتبقى المفاتيح مستقرة.
+                itemsIndexed(state.views, key = { i, v -> "${v.viewer?.id ?: "hidden"}_$i" }) { _, item ->
                     VisitorRow(
                         item = item,
                         locked = state.premiumRequired,

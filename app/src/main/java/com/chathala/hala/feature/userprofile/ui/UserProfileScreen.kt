@@ -19,10 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -887,26 +884,28 @@ private fun PhotosCard(user: UserProfile, onOpenPhoto: (Int) -> Unit) {
             )
         }
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(((urls.size + 1) / 2 * 180).dp)
-        ) {
-            itemsIndexed(urls) { index, url ->
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        // index في الشبكة = index+1 في galleryUrls (الأولى صورة الهيرو)
-                        .clickable { onOpenPhoto(index + 1) }
-                )
+        // صفوف عادية لا LazyVerticalGrid: الشاشة كلّها داخل verticalScroll، وقائمة
+        // Lazy داخل حاوية تمرير عمودية تحتاج ارتفاعاً مثبّتاً يدوياً — وكان مقدَّراً
+        // بـ 180dp للصف بينما الخلية مربّعة بعرض نصف الشاشة، فتُقصّ الصور على
+        // الشاشات العريضة. الصور قليلة (≤ بضع صور) فلا يفيد الكسل أصلاً.
+        urls.chunked(2).forEachIndexed { rowIndex, row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEachIndexed { colIndex, url ->
+                    AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            // موضع الصورة في galleryUrls (الأولى صورة الهيرو المعروضة أعلاه)
+                            .clickable { onOpenPhoto(rowIndex * 2 + colIndex + 1) }
+                    )
+                }
+                // خانة فارغة تحفظ عرض الخلية عندما يكون عدد الصور فردياً
+                if (row.size == 1) Spacer(Modifier.weight(1f))
             }
         }
     }

@@ -63,7 +63,10 @@ class VisitorsViewModel(private val repo: VisitorsRepository) : ViewModel() {
                         loadingMore = false,
                         error = null,
                         totalViews = r.data.totalViews,
-                        views = if (append) it.views + r.data.views else r.data.views,
+                        // إزالة تكرار حدود الصفحات: زيارة جديدة أثناء التصفح تُزيح
+                        // الترقيم فيعود نفس السجل في الصفحة التالية.
+                        views = (if (append) it.views + r.data.views else r.data.views)
+                            .distinctBy { v -> "${v.viewer?.id}_${v.createdAt}" },
                         premiumRequired = r.data.isPremiumRequired,
                         page = r.data.page,
                         totalPages = r.data.totalPages
