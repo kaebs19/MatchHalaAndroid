@@ -1,5 +1,6 @@
 package com.chathala.hala.core.network
 
+import com.chathala.hala.BuildConfig
 import com.chathala.hala.core.storage.TokenStorage
 import com.chathala.hala.core.storage.UserStorage
 import com.chathala.hala.feature.auth.data.ErrorBody
@@ -40,8 +41,20 @@ object ApiClient {
         this.userStorage = userStorage
     }
 
+    /**
+     * سجلّ الشبكة — **في debug فقط**. المستوى BODY يطبع الترويسات والأجسام
+     * كاملةً في logcat: أي أن رمز الوصول ورمز التجديد ونصّ كل رسالة خاصة
+     * تُكتب بوضوح. ذلك مقبول أثناء التطوير، وتسريبٌ في نسخة المتجر (تقارير
+     * الأخطاء وأدوات الجهاز تلتقط logcat). في release نستخدم NONE.
+     */
     private val logging: HttpLoggingInterceptor by lazy {
-        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+        HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+        }
     }
 
     // ── Refresh client (without authenticator) ──────────────────

@@ -55,7 +55,8 @@ class DeviceTokenRepository(
      */
     suspend fun ensureSynced(): NetworkResult<String> = safeApiCall {
         val fcm = fetchFcmToken()
-        Log.d(TAG, "FCM token: $fcm")
+        // قيمة التوكن لا تُطبع — انظر التعليق في HalaMessagingService.onNewToken
+        Log.d(TAG, "FCM token fetched (len=${fcm.length})")
         val bearer = bearerOrThrow()
         api.registerDeviceToken(
             bearer = bearer,

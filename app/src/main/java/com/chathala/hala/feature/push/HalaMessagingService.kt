@@ -41,7 +41,8 @@ class HalaMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "FCM onNewToken: $token")
+        // لا نطبع قيمة التوكن: من يملكها يستطيع إرسال إشعارات لهذا الجهاز.
+        Log.d(TAG, "FCM onNewToken (len=${token.length})")
         val app = applicationContext as? HalaApp ?: return
         scope.launch {
             // نُسجّل فقط لو المستخدم مسجّل دخول (لدينا access token)
