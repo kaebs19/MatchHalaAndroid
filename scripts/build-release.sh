@@ -22,6 +22,7 @@ GRADLE_MODULE=":app"
 BUILD_GRADLE="$ROOT/app/build.gradle.kts"
 KEYSTORE_PROPS="$ROOT/keystore.properties"
 WHATSNEW_DIR="$ROOT/distribution/whatsnew"
+RELEASE_ROOT="$ROOT/distribution/release"
 WHATSNEW_LIMIT=500   # حدّ Play Console لكل لغة
 
 CHECK_ONLY=0
@@ -137,6 +138,27 @@ check_sdk() {
     fi
 }
 
+# ── مجلّد النسخة ────────────────────────────────────────────
+# مجلّد واحد لكل (versionName-versionCode) يجمع ما يلزم الرفع: لقطة من ملاحظات
+# المتجر كما كانت وقت البناء، والحزمة الناتجة. الفائدة عند تشخيص انهيار بعد
+# شهرين: ما رُفع بالضبط، وبأي ملاحظات، ومن أي commit.
+prepare_release_dir() {
+    RELEASE_DIR="$RELEASE_ROOT/$VERSION_NAME-$VERSION_CODE"
+    mkdir -p "$RELEASE_DIR/artifacts" || { fail "تعذّر إنشاء $RELEASE_DIR"; return; }
+
+    # يُبقي artifacts/ في git ويُخرج محتوياته منه (الحزمة كبيرة، والخرائط داخلها).
+    if [ ! -f "$RELEASE_DIR/artifacts/.gitignore" ]; then
+        printf '*\n!.gitignore\n' > "$RELEASE_DIR/artifacts/.gitignore"
+    fi
+
+    local file
+    for file in "$WHATSNEW_DIR"/whatsnew-*; do
+        [ -f "$file" ] || continue
+        cp "$file" "$RELEASE_DIR/$(basename "$file")"
+    done
+    ok "مجلّد النسخة: ${RELEASE_DIR#"$ROOT"/}"
+}
+
 log "فحص جاهزية الرفع…"
 check_version
 check_signing
@@ -146,6 +168,14 @@ check_git
 
 if [ "$FAILED" -ne 0 ]; then
     printf '\n[release] توقّف: عالِج ما سبق ثم أعد التشغيل.\n' >&2
+    exit 1
+fi
+
+prepare_release_dir
+# فشل هنا (صلاحيات، قرص ممتلئ) يعني ألّا مكان تُنسخ إليه المخرجات لاحقاً — نتوقّف
+# قبل بناء طويل بدل أن ننتهي إلى حزمة لا تُؤرشَف.
+if [ "$FAILED" -ne 0 ]; then
+    printf '\n[release] توقّف: تعذّر تجهيز مجلّد النسخة.\n' >&2
     exit 1
 fi
 
@@ -168,26 +198,47 @@ log "البناء: ./gradlew $TASKS"
 }
 
 AAB="$ROOT/app/build/outputs/bundle/release/app-release.aab"
+APK="$ROOT/app/build/outputs/apk/release/app-release.apk"
 MAPPING="$ROOT/app/build/outputs/mapping/release/mapping.txt"
+DEST="$RELEASE_DIR/artifacts"
 
 printf '\n'
-if [ -f "$AAB" ]; then
-    ok "الحزمة: $AAB ($(du -h "$AAB" | cut -f1))"
-else
+if [ ! -f "$AAB" ]; then
     fail "لم تُنتج الحزمة في المسار المتوقّع: $AAB"
     exit 1
 fi
-[ "$BUILD_APK" -eq 1 ] && [ -f "$ROOT/app/build/outputs/apk/release/app-release.apk" ] && \
-    ok "APK: $ROOT/app/build/outputs/apk/release/app-release.apk"
-# ملف الخرائط يُضمَّن في الـ AAB تلقائياً، فتقارير Play مفكوكة التشويش دون رفع
-# يدوي — نطبع مساره للأرشفة لا غير.
-[ -f "$MAPPING" ] && ok "خرائط R8 (مُضمّنة في الحزمة): $MAPPING"
+
+# ننسخ لا ننقل: `./gradlew clean` يمسح app/build، فتضيع حزمة رُفعت فعلاً.
+cp "$AAB" "$DEST/" && ok "الحزمة: ${DEST#"$ROOT"/}/app-release.aab ($(du -h "$AAB" | cut -f1))"
+
+# ملف الخرائط مُضمَّن في الـ AAB تلقائياً (تقارير Play مفكوكة التشويش دون رفع
+# يدوي) — نسخته هنا للأرشفة، تلزم لو أُعيد تشويش أثر قديم يدوياً.
+[ -f "$MAPPING" ] && cp "$MAPPING" "$DEST/" && ok "خرائط R8: ${DEST#"$ROOT"/}/mapping.txt"
+
+if [ "$BUILD_APK" -eq 1 ] && [ -f "$APK" ]; then
+    cp "$APK" "$DEST/" && ok "APK (للتجربة، لا يُرفع): ${DEST#"$ROOT"/}/app-release.apk"
+fi
+
+# بصمة البناء: تربط الحزمة بالكود الذي أنتجها. بلا هذا يصير تشخيص انهيار في
+# المتجر تخميناً لأي commit كان.
+{
+    printf 'versionName: %s\n' "$VERSION_NAME"
+    printf 'versionCode: %s\n' "$VERSION_CODE"
+    printf 'builtAt:     %s\n' "$(date -u '+%Y-%m-%d %H:%M UTC')"
+    if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        printf 'commit:      %s\n' "$(git -C "$ROOT" rev-parse HEAD)"
+        printf 'branch:      %s\n' "$(git -C "$ROOT" rev-parse --abbrev-ref HEAD)"
+        [ -n "$(git -C "$ROOT" status --porcelain)" ] && printf 'dirty:       نعم — الحزمة لا تطابق الـ commit تماماً\n'
+    fi
+    printf 'sha256:      %s\n' "$(sha256sum "$AAB" 2>/dev/null | cut -d" " -f1)"
+} > "$DEST/build-info.txt"
+ok "بصمة البناء: ${DEST#"$ROOT"/}/build-info.txt"
 
 cat <<EOF
 
 [release] الخطوات التالية في Play Console:
-  1. Production (أو Internal testing) → Create new release → ارفع app-release.aab
-  2. الصق ملاحظات الإصدار من distribution/whatsnew/ (ar و en-US)
+  1. Internal testing → Create new release → ارفع الحزمة من مجلّد النسخة أعلاه
+  2. الصق ملاحظات الإصدار من مجلّد النسخة (whatsnew-ar و whatsnew-en-US)
   3. راجع Pre-launch report قبل الطرح الكامل
   4. بعد نجاح الرفع: ارفع رقم versionCode في app/build.gradle.kts للإصدار القادم
 EOF

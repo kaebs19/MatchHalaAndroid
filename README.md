@@ -31,7 +31,23 @@ bash scripts/build-release.sh           # فحص + بناء AAB موقّعة
 السكربت يفحص قبل أن يبني: رقم الإصدار، اكتمال بيانات التوقيع ووجود المفتاح،
 ملاحظات المتجر في `distribution/whatsnew/` (حدّ 500 حرف لكل لغة)، وجود الـ SDK،
 ونظافة شجرة git. ثم يشغّل `lintRelease` (الترجمات الناقصة تُفشل البناء) واختبارات
-الوحدة، ويُخرج `app/build/outputs/bundle/release/app-release.aab`.
+الوحدة.
+
+### مجلّد النسخة
+
+كل إصدار له مجلّد في `distribution/release/<versionName>-<versionCode>/` — يُنشئه
+السكربت إن غاب ويملؤه:
+
+```
+distribution/release/2.2.3-20/
+├── README.md            دليل الرفع وقائمة التحقّق لهذه النسخة
+├── whatsnew-ar          لقطة من ملاحظات المتجر وقت البناء
+├── whatsnew-en-US
+└── artifacts/           app-release.aab · mapping.txt · build-info.txt
+```
+
+`artifacts/` محتوياته خارج git (الحزمة كبيرة). `build-info.txt` يربط الحزمة
+بالـ commit وبصمة sha256 — وهو ما يلزم لردّ انهيار في المتجر إلى كوده.
 
 **قبل كل رفع:** ارفع `versionCode` في `app/build.gradle.kts` — المتجر يرفض رقماً
 مساوياً أو أقلّ من آخر ما رُفع، وبقاء الرقم كما هو يجعل تقارير الانهيار غير قابلة
