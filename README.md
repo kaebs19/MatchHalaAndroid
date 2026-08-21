@@ -20,3 +20,39 @@ JAVA_HOME=".../Android Studio.app/Contents/jbr/Contents/Home" ./gradlew :app:ass
 ```
 
 > ملاحظة: `keystore.properties` ومفتاح التوقيع `*.jks` غير مُضمّنين (أسرار) — يلزمان للبناء الموقّع.
+
+## البناء في جلسات Claude Code السحابية
+
+الجلسة السحابية تبدأ بنسخة نظيفة بلا Android SDK، وشبكتها تسمح بقائمة نطاقات
+محدودة. قائمة **Trusted** الافتراضية تشمل Maven Central وGradle **لكن لا تشمل
+مستودع Google** — ومنه تُخدَم AGP وAndroidX وحزم الـ SDK نفسها. النتيجة: لا ترجمة.
+
+### مرّة واحدة: السماح لمستودع Google
+
+من إعدادات البيئة في [claude.ai/code](https://claude.ai/code):
+
+```
+Network access → Custom
+Allowed domains:
+  dl.google.com
+  maven.google.com
+✓ Also include default list of common package managers
+```
+
+`maven.google.com` يُعيد التوجيه إلى `dl.google.com`، فالاثنان لازمان.
+
+### تلقائياً: تهيئة الـ SDK
+
+`scripts/setup-android-sdk.sh` يُنزّل `platform-tools` وplatform الـ `compileSdk`
+وbuild-tools، ثم يكتب `local.properties`. يعمل من خطّاف `SessionStart` في
+`.claude/settings.json` مع كل جلسة، وهو:
+
+- **قابل لإعادة التشغيل** — يتحقّق قبل أن يُنزّل.
+- **لا يمسّ إعداداً محلياً** — إن كان `ANDROID_HOME` مضبوطاً (جهاز عليه Android
+  Studio) يكتفي بالتحقّق.
+- **لا يُفشل الجلسة أبداً** — ينتهي بصفر حتى عند تعذّر التنزيل، ويشرح السبب.
+
+للتشغيل يدوياً: `bash scripts/setup-android-sdk.sh`
+
+> لتفادي التنزيل مع كل جلسة، الصِق محتوى السكربت في حقل **Setup script** بإعدادات
+> البيئة أيضاً — يُنفَّذ مرّة واحدة عند بناء البيئة ثم يُخزَّن في ذاكرتها المؤقتة.
