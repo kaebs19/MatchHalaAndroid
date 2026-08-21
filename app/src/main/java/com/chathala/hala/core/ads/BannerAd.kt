@@ -1,46 +1,32 @@
 package com.chathala.hala.core.ads
 
-import android.content.Context
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
 
 /**
  * بانر AdMob متجاوب (Adaptive anchored) بعرض الشاشة.
- * يُدمَّر تلقائياً عند خروجه من التركيب.
+ *
+ * الـ `AdView` محفوظ في [BannerAdPool] تحت [slot]، فلا يُدمَّر عند التمرير خارج الشاشة
+ * أو مغادرتها: عند العودة يُعاد إرفاق نفس الإعلان بدل طلب إعلان جديد قد يُقابَل بـ
+ * no fill فيبقى الموضع فارغاً.
+ *
+ * @param slot مفتاح ثابت وفريد لهذا الموضع على الشاشة. موضعان ظاهران معاً يجب أن
+ *   يحملا مفتاحين مختلفين — الـ view الواحد لا يُرفَق بأبوين في آن.
  */
 @Composable
 fun BannerAd(
+    slot: String,
     modifier: Modifier = Modifier,
     adUnitId: String = AdConfig.bannerUnitId
 ) {
     if (!AdGate.rememberEnabled()) return
+    val context = LocalContext.current
     AndroidView(
         modifier = modifier.fillMaxWidth(),
-        factory = { ctx ->
-            AdView(ctx).apply {
-                setAdSize(adaptiveSize(ctx))
-                this.adUnitId = adUnitId
-                adListener = object : AdListener() {
-                    override fun onAdLoaded() = AdLog.loaded("بانر")
-                    override fun onAdFailedToLoad(error: LoadAdError) =
-                        AdLog.failure("بانر", error)
-                }
-                loadAd(AdRequest.Builder().build())
-            }
-        },
-        onRelease = { it.destroy() }
+        factory = { BannerAdPool.obtain(context, slot, adUnitId) },
+        onRelease = { BannerAdPool.release(slot) }
     )
-}
-
-private fun adaptiveSize(context: Context): AdSize {
-    val metrics = context.resources.displayMetrics
-    val widthDp = (metrics.widthPixels / metrics.density).toInt().coerceAtLeast(320)
-    return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp)
 }

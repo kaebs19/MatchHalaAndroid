@@ -206,7 +206,11 @@ fun DiscoverScreen(
         )
 
         if (showNativeOverlay) {
-            NativeAdOverlay(onDismiss = { showNativeOverlay = false })
+            NativeAdOverlay(onDismiss = {
+                showNativeOverlay = false
+                // نافذة تتكرّر كل 8 بطاقات — أسقِط الإعلان المعروض ليأتي غيره في المرة القادمة.
+                com.chathala.hala.core.ads.refreshNativeAd(DISCOVER_NATIVE_SLOT)
+            })
         }
     }
 
@@ -432,6 +436,7 @@ private fun CardStack(
 
         // بانر بين بطاقة المستخدم والأزرار السريعة
         com.chathala.hala.core.ads.BannerAd(
+            slot = "discover_stack",
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
         )
 
@@ -449,9 +454,12 @@ private fun CardStack(
     }
 }
 
+/** خانة الإعلان المدمج في نافذة الاكتشاف — تُعرض مراراً، فتُجدَّد بعد كل إغلاق. */
+private const val DISCOVER_NATIVE_SLOT = "discover_overlay"
+
 @Composable
 private fun NativeAdOverlay(onDismiss: () -> Unit) {
-    val ad = com.chathala.hala.core.ads.rememberNativeAd()
+    val ad = com.chathala.hala.core.ads.rememberNativeAd(DISCOVER_NATIVE_SLOT)
     Box(
         modifier = Modifier
             .fillMaxSize()

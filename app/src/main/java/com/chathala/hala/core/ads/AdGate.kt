@@ -21,7 +21,14 @@ object AdGate {
 
     /** يُستدعى مع كل تغيّر في المستخدم الحالي (دخول/خروج/تجديد اشتراك). */
     fun update(user: User?) {
-        _adsEnabled.value = user != null && !user.isPremium
+        val enabled = user != null && !user.isPremium
+        val was = _adsEnabled.value
+        _adsEnabled.value = enabled
+        // صار مشتركاً (أو خرج): تخلَّص من الإعلانات المخزّنة فوراً بدل إبقائها في الذاكرة.
+        if (was && !enabled) {
+            BannerAdPool.clearAll()
+            NativeAdPool.clearAll()
+        }
     }
 
     val enabled: Boolean get() = _adsEnabled.value

@@ -340,7 +340,7 @@ private fun ResultsGrid(
             // إعلان مدمج بين المستخدمين — يشغل خانة واحدة كبطاقة مستخدم فلا يكسر الشبكة
             if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
                 item(key = "ad_$index") {
-                    NativeAdGridItem()
+                    NativeAdGridItem(slot = "search_grid_${(index + 1) / AdConfig.SEARCH_NATIVE_EVERY}")
                 }
             }
         }
@@ -534,7 +534,9 @@ private fun ResultsList(
             }
             // ✅ إعلان مدمج كل SEARCH_NATIVE_EVERY نتيجة (بين بطاقات المستخدمين)
             if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
-                item(key = "ad_$index") { NativeAdListItem() }
+                item(key = "ad_$index") {
+                    NativeAdListItem(slot = "search_list_${(index + 1) / AdConfig.SEARCH_NATIVE_EVERY}")
+                }
             }
         }
         if (loadingMore) {
@@ -670,11 +672,14 @@ private fun SuggestionsList(
                 if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
                     if (gridLayout) {
                         item(key = "online_ad_$index") {
-                            NativeAdGridItem()
+                            NativeAdGridItem(slot = "online_grid_${(index + 1) / AdConfig.SEARCH_NATIVE_EVERY}")
                         }
                     } else {
                         item(key = "online_ad_$index", span = { GridItemSpan(maxLineSpan) }) {
-                            NativeAdListItem(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                            NativeAdListItem(
+                                slot = "online_list_${(index + 1) / AdConfig.SEARCH_NATIVE_EVERY}",
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                            )
                         }
                     }
                 }

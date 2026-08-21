@@ -164,7 +164,10 @@ fun ChatsScreen(
                             )
                             // بانر بعد كل N محادثة (لا يظهر للمشتركين)
                             if (adsEnabled && (index + 1) % AdConfig.CHAT_LIST_BANNER_EVERY == 0) {
+                                // مفتاح ثابت بترتيب البانر في القائمة (1، 2، 3…) لا بالفهرس،
+                                // فيبقى الإعلان نفسه عند إعادة ترتيب المحادثات أو العودة للشاشة.
                                 BannerAd(
+                                    slot = "chats_${(index + 1) / AdConfig.CHAT_LIST_BANNER_EVERY}",
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                                 )
                                 HorizontalDivider(
