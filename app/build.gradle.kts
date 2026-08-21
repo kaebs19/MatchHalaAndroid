@@ -21,8 +21,11 @@ android {
         applicationId = "com.chathala.hala"
         minSdk = 32
         targetSdk = 36
-        versionCode = 17
-        versionName = "2.2.0"
+        // مهم: الإنتاج في المتجر عند 19 (2.2.2) — بُني محلياً دون دفع رفع الرقم.
+        // من الآن يُرفع الرقم هنا ويُدفع قبل كل بناء، ليبقى كل إصدار قابلاً
+        // للتتبّع إلى كوده بالضبط (أعوزنا هذا في تشخيص انهيارات 2.2.2).
+        versionCode = 20
+        versionName = "2.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
