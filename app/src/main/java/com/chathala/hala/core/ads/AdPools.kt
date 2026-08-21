@@ -37,16 +37,28 @@ private const val RETRY_AFTER_MS = 30_000L
 /** أقصى عدد خانات خاملة (غير معروضة) نحتفظ بها قبل التخلّص من الأقدم. */
 private const val MAX_IDLE_SLOTS = 4
 
+/**
+ * مهلة حماية للخانة حديثة اللمس من الإزاحة.
+ *
+ * التركيب يقرأ حالة الخانة قبل أن يُشغّل `DisposableEffect` دالة الإرفاق، فتمرّ
+ * لحظة تكون فيها الخانة موجودة و`active == 0`. بدون هذه المهلة تُزيحها أوّل خانة
+ * أخرى تُرفَق، فيبقى العنصر مشتركاً في حالة خانة مهجورة ولا يظهر إعلانه أبداً.
+ */
+private const val EVICTION_GRACE_MS = 10_000L
+
 /** صلاحية الإعلان المدمج لدى AdMob ساعة تقريباً — نجدّده قبلها بهامش. */
 private const val NATIVE_TTL_MS = 45 * 60 * 1000L
 
 private val mainHandler = Handler(Looper.getMainLooper())
 
-private fun onMain(block: () -> Unit) {
-    if (Looper.myLooper() == Looper.getMainLooper()) block() else mainHandler.post(block)
-}
-
-/** يؤجّل إلى الدورة التالية للخيط الرئيسي — لتغييرٍ يجب ألّا يسبق استقرار التركيب. */
+/**
+ * يؤجّل إلى الخيط الرئيسي — كل حالة المخزن تُقرأ وتُكتب هناك (التركيب + ردود AdMob)،
+ * ونداءات التفريغ تأتي من [AdGate] على خيط خلفي.
+ *
+ * تأجيل دائم لا تنفيذ فوري عند وجودنا على الخيط الرئيسي أصلاً: التدمير يُستدعى من
+ * نفس اللحظة التي تُخفي فيها الإعلان، فلا بدّ أن تكتمل إعادة التركيب أوّلاً وإلّا
+ * بقي `NativeAdView` مربوطاً بإعلان مُدمَّر إطاراً كاملاً.
+ */
 private fun postMain(block: () -> Unit) {
     mainHandler.post(block)
 }
@@ -59,7 +71,7 @@ private fun postMain(block: () -> Unit) {
  */
 internal object BannerAdPool {
 
-    private class Slot(val view: AdView) {
+    private class Slot(val view: AdView, val widthDp: Int) {
         var loaded = false
         var requesting = false
         var lastFailAt = 0L
@@ -72,9 +84,19 @@ internal object BannerAdPool {
 
     /** يُعيد `AdView` الخانة (يُنشئه ويطلب إعلاناً أول مرة)، جاهزاً للإرفاق. */
     fun obtain(context: Context, key: String, adUnitId: String): AdView {
-        val appContext = context.applicationContext
         val now = System.currentTimeMillis()
-        val slot = slots[key] ?: newSlot(appContext, key, adUnitId)
+        // العرض يُقاس من سياق النشاط لا التطبيق: هو وحده يعرف نافذة العرض الحالية
+        // في وضع تعدّد النوافذ.
+        val widthDp = bannerWidthDp(context)
+
+        // مقاس البانر مثبَّت عند الإنشاء (`setAdSize` قبل التحميل)، والنشاط يُعاد
+        // إنشاؤه عند الدوران بينما يبقى المخزون حيّاً — فبانر الوضع الرأسي يظهر
+        // بعرض خاطئ في الأفقي. عند تغيّر العرض نبني بانراً بمقاس الاتجاه الجديد.
+        slots[key]?.takeIf { it.widthDp != widthDp }?.let { stale ->
+            slots.remove(key)
+            destroy(stale.view)
+        }
+        val slot = slots[key] ?: newSlot(context.applicationContext, key, adUnitId, widthDp)
 
         slot.active++
         slot.lastTouch = now
@@ -97,17 +119,17 @@ internal object BannerAdPool {
         if (slot.active == 0) slot.view.pause()
     }
 
-    fun clearAll() = onMain {
+    fun clearAll() = postMain {
         slots.values.forEach { destroy(it.view) }
         slots.clear()
     }
 
-    private fun newSlot(appContext: Context, key: String, adUnitId: String): Slot {
+    private fun newSlot(appContext: Context, key: String, adUnitId: String, widthDp: Int): Slot {
         val view = AdView(appContext).apply {
-            setAdSize(adaptiveBannerSize(appContext))
+            setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(appContext, widthDp))
             this.adUnitId = adUnitId
         }
-        val slot = Slot(view)
+        val slot = Slot(view, widthDp)
         view.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 slot.loaded = true
@@ -131,12 +153,13 @@ internal object BannerAdPool {
         slot.view.loadAd(AdRequest.Builder().build())
     }
 
-    /** يتخلّص من أقدم الخانات الخاملة فقط — المعروضة لا تُمسّ. */
+    /** يتخلّص من أقدم الخانات الخاملة فقط — المعروضة أو حديثة اللمس لا تُمسّ. */
     private fun trim() {
         var excess = slots.size - MAX_IDLE_SLOTS
         if (excess <= 0) return
+        val cutoff = System.currentTimeMillis() - EVICTION_GRACE_MS
         slots.entries
-            .filter { it.value.active == 0 }
+            .filter { it.value.active == 0 && it.value.lastTouch < cutoff }
             .sortedBy { it.value.lastTouch }
             .forEach { entry ->
                 if (excess <= 0) return
@@ -152,10 +175,10 @@ internal object BannerAdPool {
     }
 }
 
-internal fun adaptiveBannerSize(context: Context): AdSize {
+/** عرض نافذة العرض بالـ dp — أساس مقاس البانر المتجاوب، و«بصمة» الاتجاه الحالي. */
+private fun bannerWidthDp(context: Context): Int {
     val metrics = context.resources.displayMetrics
-    val widthDp = (metrics.widthPixels / metrics.density).toInt().coerceAtLeast(320)
-    return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp)
+    return (metrics.widthPixels / metrics.density).toInt().coerceAtLeast(320)
 }
 
 // ─────────────────────────────── المدمج ───────────────────────────────
@@ -183,7 +206,11 @@ internal object NativeAdPool {
      * يُعيد خانة المفتاح (يُنشئها فارغة إن لزم) **دون** بدء أي طلب.
      * الإنشاء هنا ضروري ليشترك التركيب في حالة `ad` قبل اكتمال التحميل.
      */
-    fun slotOf(key: String): Slot = slots.getOrPut(key) { Slot() }
+    fun slotOf(key: String): Slot = slots.getOrPut(key) {
+        // ختم الوقت عند الإنشاء: خانة بـ lastTouch = 0 تتصدّر ترتيب الإزاحة فتُحذف
+        // قبل أن يلحقها الإرفاق أصلاً.
+        Slot().apply { lastTouch = System.currentTimeMillis() }
+    }
 
     /** الخانة صارت معروضة: يبدأ التحميل إن لم يكن لديها إعلان صالح. */
     fun attach(context: Context, key: String) {
@@ -224,7 +251,7 @@ internal object NativeAdPool {
         slot.lastFailAt = 0L
     }
 
-    fun clearAll() = onMain {
+    fun clearAll() = postMain {
         slots.values.forEach { it.ad?.destroy(); it.ad = null }
         slots.clear()
     }
@@ -259,8 +286,9 @@ internal object NativeAdPool {
     private fun trim() {
         var excess = slots.size - MAX_IDLE_SLOTS
         if (excess <= 0) return
+        val cutoff = System.currentTimeMillis() - EVICTION_GRACE_MS
         slots.entries
-            .filter { it.value.active == 0 }
+            .filter { it.value.active == 0 && it.value.lastTouch < cutoff }
             .sortedBy { it.value.lastTouch }
             .forEach { entry ->
                 if (excess <= 0) return

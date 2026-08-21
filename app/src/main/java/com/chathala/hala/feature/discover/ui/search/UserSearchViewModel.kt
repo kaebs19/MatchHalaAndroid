@@ -187,15 +187,18 @@ class UserSearchViewModel(
                     minAge = f.minAgeParam, maxAge = f.maxAgeParam, limit = RECENT_PAGE
                 )
             }
-            val premium = (premiumDeferred.await() as? NetworkResult.Success)?.data?.users ?: emptyList()
-            val onlineData = (onlineDeferred.await() as? NetworkResult.Success)?.data
+            val premiumRes = premiumDeferred.await()
+            val onlineRes = onlineDeferred.await()
+            val recentRes = recentDeferred.await()
+            val premium = (premiumRes as? NetworkResult.Success)?.data?.users ?: emptyList()
+            val onlineData = (onlineRes as? NetworkResult.Success)?.data
             // لا نحذف المشتركين من قائمة المتصلين: شريط «المشتركون» شريط ترشيح أفقي
             // منفصل، وكان استبعادهم يُفرغ قسم «متصلون الآن» كلّما كان أغلب المتصلين
             // مشتركين — وهو الحال الغالب في قاعدة مستخدمين صغيرة.
             // distinctBy ليس ترفاً: مفتاح مكرّر في LazyGrid يرمي استثناءً ويُسقط الشاشة،
             // والعيّنة العشوائية من الخادم قد تُعيد نفس المستخدم مرّتين.
             val online = (onlineData?.users ?: emptyList()).distinctBy { it.id }
-            val recent = (recentDeferred.await() as? NetworkResult.Success)?.data ?: emptyList()
+            val recent = (recentRes as? NetworkResult.Success)?.data ?: emptyList()
 
             _state.update {
                 it.copy(
@@ -206,7 +209,12 @@ class UserSearchViewModel(
                     recentlyActive = recent.asRecentlyActive(exclude = online.map { u -> u.id }.toSet())
                 )
             }
-            lastSuggestionsAt = System.currentTimeMillis()
+            // الختم عند نجاح طلب واحد على الأقل: لو فشلت الثلاثة (انقطاع شبكة) لا نُجمّد
+            // إعادة المحاولة دقيقتين — العودة للشاشة يجب أن تُعيد المحاولة فوراً.
+            val anySucceeded = premiumRes is NetworkResult.Success ||
+                onlineRes is NetworkResult.Success ||
+                recentRes is NetworkResult.Success
+            if (anySucceeded) lastSuggestionsAt = System.currentTimeMillis()
         }
     }
 
