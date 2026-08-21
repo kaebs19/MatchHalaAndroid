@@ -181,6 +181,10 @@
     <string name="user_search_empty_desc">Try a different name or check the spelling</string>
     <string name="user_search_section_premium">Premium members</string>
     <string name="user_search_section_online">Online now</string>
+    <string name="user_search_section_recently_active">Recently active</string>
+    <string name="user_search_online_empty">No one is online right now — check back soon</string>
+    <string name="user_search_badge_online">Online</string>
+    <string name="user_search_active_ago">Active %1$s</string>
     <string name="user_search_section_recent">Recent searches</string>
     <string name="user_search_clear_recent">Clear</string>
     <string name="search_gender_all">All</string>

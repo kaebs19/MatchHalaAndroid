@@ -181,6 +181,10 @@
     <string name="user_search_empty_desc">جرّب اسماً مختلفاً أو تحقق من الإملاء</string>
     <string name="user_search_section_premium">مشتركون مميّزون</string>
     <string name="user_search_section_online">متصلون الآن</string>
+    <string name="user_search_section_recently_active">نشطون مؤخراً</string>
+    <string name="user_search_online_empty">لا أحد متصل الآن — جرّب بعد قليل</string>
+    <string name="user_search_badge_online">متصل</string>
+    <string name="user_search_active_ago">نشط %1$s</string>
     <string name="user_search_section_recent">عمليات بحث سابقة</string>
     <string name="user_search_clear_recent">مسح</string>
     <string name="search_gender_all">الكل</string>

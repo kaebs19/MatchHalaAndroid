@@ -149,9 +149,63 @@ class DiscoverRepository(
         resp.data ?: UserSearchData()
     }
 
+    /**
+     * مستخدمون نشطوا خلال آخر أسبوع وليسوا متصلين الآن — قسم «نشطون مؤخراً».
+     *
+     * المصدر الأول هو نقطة البحث نفسها (تُعيد `lastLogin` مع كل مستخدم). بعض
+     * إصدارات الخادم لا تُرسل `lastLogin` في نتائج البحث؛ عندها نسقط إلى بطاقات
+     * الاكتشاف: هي النقطة الوحيدة التي تدعم `lastActiveWithin` صراحةً وتُعيد
+     * `lastLogin` دائماً — فيبقى القسم مبنيّاً على نشاط حقيقي لا على تخمين.
+     */
+    suspend fun recentlyActiveUsers(
+        gender: String? = null,
+        country: String? = null,
+        minAge: Int? = null,
+        maxAge: Int? = null,
+        limit: Int = 24
+    ): NetworkResult<List<SearchUser>> {
+        val direct = suggestedUsers(
+            gender = gender, country = country, minAge = minAge, maxAge = maxAge,
+            random = true, limit = limit
+        )
+        if (direct is NetworkResult.Success) {
+            val offlineRecent = direct.data.users.filter { it.isOnline != true && it.lastLogin != null }
+            if (offlineRecent.isNotEmpty()) return NetworkResult.Success(offlineRecent)
+        }
+
+        val cards = fetchCards(
+            limit = limit,
+            filters = Filters(gender = gender, minAge = minAge, maxAge = maxAge, onlyRecent = true)
+        )
+        return when (cards) {
+            is NetworkResult.Success -> NetworkResult.Success(
+                cards.data.cards.filter { it.isOnline != true }.map { it.asSearchUser() }
+            )
+            // فشل البديل: لا نُفشل القسم كلّه إن كان البحث قد نجح — يبقى فارغاً فحسب.
+            is NetworkResult.Error ->
+                if (direct is NetworkResult.Success) NetworkResult.Success(emptyList<SearchUser>()) else cards
+        }
+    }
+
     private suspend fun bearer(): String {
         val token = tokenStorage.token.first()
             ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
         return "Bearer $token"
     }
 }
+
+/** بطاقة اكتشاف → مستخدم بحث، ليتوحّد عرض الأقسام في شاشة البحث. */
+private fun DiscoverCard.asSearchUser(): SearchUser = SearchUser(
+    id = id,
+    name = name,
+    profileImage = profileImage,
+    birthDate = birthDate,
+    gender = gender,
+    country = country,
+    bio = bio,
+    isOnline = isOnline,
+    isVerified = isVerified,
+    isPremium = isPremium,
+    distanceLabel = distanceLabel,
+    lastLogin = lastLogin
+)

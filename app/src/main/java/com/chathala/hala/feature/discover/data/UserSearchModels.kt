@@ -32,5 +32,10 @@ data class SearchUser(
     val isPremium: Boolean? = null,
     val distanceLabel: String? = null,
     /** هل أعجبتُ بهذا المستخدم؟ يأتي من الخادم لرسم حالة القلب. */
-    val isLiked: Boolean? = null
+    val isLiked: Boolean? = null,
+    /**
+     * آخر ظهور (ISO) — نفس الحقل الذي تُعيده بطاقات الاكتشاف ([DiscoverCard.lastLogin]).
+     * منه يُبنى قسم «نشطون مؤخراً» ووسم «نشط قبل …» على البطاقة.
+     */
+    val lastLogin: String? = null
 )

@@ -7,6 +7,7 @@ import com.chathala.hala.HalaApp
 import com.chathala.hala.core.network.ErrorMessages
 import com.chathala.hala.core.network.NetworkResult
 import com.chathala.hala.core.storage.AppPreferences
+import com.chathala.hala.core.util.ProfileFormatter
 import com.chathala.hala.feature.discover.data.DiscoverRepository
 import com.chathala.hala.feature.discover.data.SearchUser
 import com.chathala.hala.feature.user.data.UserRepository
@@ -56,6 +57,8 @@ data class UserSearchUiState(
     val online: List<SearchUser> = emptyList(),
     val onlineLoadingMore: Boolean = false,
     val onlineTotal: Int = 0,
+    /** نشطوا خلال الأسبوع الماضي وليسوا متصلين الآن — يُعرضون بعد قسم المتصلين. */
+    val recentlyActive: List<SearchUser> = emptyList(),
     val recent: List<String> = emptyList(),
     /** true = شبكة، false = قائمة. محفوظ في التفضيلات فلا يُعاد ضبطه كل تشغيل. */
     val gridLayout: Boolean = true,
@@ -68,7 +71,11 @@ data class UserSearchUiState(
     fun isLiked(user: SearchUser): Boolean =
         likedOverrides[user.id] ?: (user.isLiked == true)
 
-    val onlineCanLoadMore: Boolean get() = online.isNotEmpty() && online.size < onlineTotal
+    /**
+     * `isNotEmpty` سقط من الشرط: كان يقفل «تحميل المزيد» نهائياً متى خرجت الدفعة
+     * الأولى فارغة، فلا يتعافى القسم أبداً حتى لو كان الخادم يعرف مزيداً من المتصلين.
+     */
+    val onlineCanLoadMore: Boolean get() = online.size < onlineTotal
     val isSearchMode: Boolean get() = query.trim().length >= 2
 }
 
@@ -87,6 +94,9 @@ class UserSearchViewModel(
 
     private var searchJob: Job? = null
     private val pageSize = 20
+
+    /** وقت آخر تحميل ناجح للاقتراحات — لكبح التحديث عند كل عودة للشاشة. */
+    private var lastSuggestionsAt = 0L
 
     init {
         observeRecent()
@@ -157,7 +167,7 @@ class UserSearchViewModel(
         viewModelScope.launch {
             val f = _state.value.filters
             // random=true → مستخدمون مختلفون في كل دخول/تحديث
-            // ✅ جلب القائمتين بالتوازي (أسرع استجابة)
+            // القوائم الثلاث بالتوازي (أسرع استجابة)
             val premiumDeferred = async {
                 repo.suggestedUsers(
                     isPremium = true, gender = f.gender.api, country = f.country,
@@ -167,22 +177,49 @@ class UserSearchViewModel(
             val onlineDeferred = async {
                 repo.suggestedUsers(
                     online = true, gender = f.gender.api, country = f.country,
-                    minAge = f.minAgeParam, maxAge = f.maxAgeParam, random = true
+                    minAge = f.minAgeParam, maxAge = f.maxAgeParam, random = true,
+                    limit = ONLINE_PAGE
                 )
             }
-            val premiumRes = premiumDeferred.await()
-            val onlineRes = onlineDeferred.await()
-            val premium = (premiumRes as? NetworkResult.Success)?.data?.users ?: emptyList()
-            val premiumIds = premium.map { it.id }.toSet()
-            val onlineData = (onlineRes as? NetworkResult.Success)?.data
-            val online = (onlineData?.users ?: emptyList()).filter { it.id !in premiumIds }
+            val recentDeferred = async {
+                repo.recentlyActiveUsers(
+                    gender = f.gender.api, country = f.country,
+                    minAge = f.minAgeParam, maxAge = f.maxAgeParam, limit = RECENT_PAGE
+                )
+            }
+            val premium = (premiumDeferred.await() as? NetworkResult.Success)?.data?.users ?: emptyList()
+            val onlineData = (onlineDeferred.await() as? NetworkResult.Success)?.data
+            // لا نحذف المشتركين من قائمة المتصلين: شريط «المشتركون» شريط ترشيح أفقي
+            // منفصل، وكان استبعادهم يُفرغ قسم «متصلون الآن» كلّما كان أغلب المتصلين
+            // مشتركين — وهو الحال الغالب في قاعدة مستخدمين صغيرة.
+            // distinctBy ليس ترفاً: مفتاح مكرّر في LazyGrid يرمي استثناءً ويُسقط الشاشة،
+            // والعيّنة العشوائية من الخادم قد تُعيد نفس المستخدم مرّتين.
+            val online = (onlineData?.users ?: emptyList()).distinctBy { it.id }
+            val recent = (recentDeferred.await() as? NetworkResult.Success)?.data ?: emptyList()
+
             _state.update {
                 it.copy(
-                    suggestionsLoading = false, premium = premium, online = online,
-                    onlineTotal = onlineData?.total ?: online.size
+                    suggestionsLoading = false,
+                    premium = premium,
+                    online = online,
+                    onlineTotal = onlineData?.total ?: online.size,
+                    recentlyActive = recent.asRecentlyActive(exclude = online.map { u -> u.id }.toSet())
                 )
             }
+            lastSuggestionsAt = System.currentTimeMillis()
         }
+    }
+
+    /**
+     * تحديث الاقتراحات عند العودة للشاشة — «متصل الآن» يفسد بمرور الوقت، وViewModel
+     * يبقى حيّاً في مكدّس التنقّل فلا يُعاد `init`. مكبوح بـ[SUGGESTIONS_TTL_MS] حتى
+     * لا يُطلق طلباً مع كل رجفة في دورة الحياة.
+     */
+    fun onScreenResumed() {
+        val s = _state.value
+        if (s.isSearchMode || s.suggestionsLoading) return
+        if (System.currentTimeMillis() - lastSuggestionsAt < SUGGESTIONS_TTL_MS) return
+        loadSuggestions()
     }
 
     /** تحميل دفعة متصلين إضافية (عيّنة عشوائية مع إزالة التكرار). */
@@ -197,14 +234,18 @@ class UserSearchViewModel(
                 minAge = f.minAgeParam, maxAge = f.maxAgeParam, random = true, limit = 12
             )
             val batch = (res as? NetworkResult.Success)?.data?.users ?: emptyList()
-            val existing = (_state.value.premium.map { it.id } + _state.value.online.map { it.id }).toSet()
+            val existing = _state.value.online.map { it.id }.toSet()
             val fresh = batch.filterNot { it.id in existing }
+            val freshIds = fresh.map { it.id }.toSet()
             _state.update {
+                val merged = it.online + fresh
                 it.copy(
                     onlineLoadingMore = false,
-                    online = it.online + fresh,
+                    online = merged,
                     // لو لم تأتِ عناصر جديدة (نفدت العيّنة) أوقِف التحميل
-                    onlineTotal = if (fresh.isEmpty()) it.online.size else it.onlineTotal
+                    onlineTotal = if (fresh.isEmpty()) merged.size else it.onlineTotal,
+                    // مَن ظهر الآن ضمن المتصلين لا يُكرَّر في «نشطون مؤخراً»
+                    recentlyActive = it.recentlyActive.filterNot { u -> u.id in freshIds }
                 )
             }
         }
@@ -272,7 +313,7 @@ class UserSearchViewModel(
             is NetworkResult.Success -> {
                 val incoming = r.data.users
                 _state.update {
-                    val merged = if (reset) incoming else it.results + incoming
+                    val merged = (if (reset) incoming else it.results + incoming).distinctBy { u -> u.id }
                     it.copy(
                         loading = false, loadingMore = false, results = merged.byPriority(),
                         page = nextPage,
@@ -288,6 +329,13 @@ class UserSearchViewModel(
     }
 
     companion object {
+        /** حجم دفعة «متصلون الآن» — 12 كانت تُخرج قسماً هزيلاً في شبكة من عمودين. */
+        private const val ONLINE_PAGE = 24
+        private const val RECENT_PAGE = 24
+
+        /** عمر الاقتراحات قبل إعادة الجلب عند العودة للشاشة: دقيقتان. */
+        private const val SUGGESTIONS_TTL_MS = 2 * 60 * 1000L
+
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(
@@ -309,3 +357,16 @@ private fun List<SearchUser>.byPriority(): List<SearchUser> = sortedWith(
     compareByDescending<SearchUser> { it.isPremium == true }
         .thenByDescending { it.isOnline == true }
 )
+
+/**
+ * ترتيب «نشطون مؤخراً»: الأحدث ظهوراً أولاً، بلا مَن هو متصل الآن أو مكرّر.
+ *
+ * مَن لا يحمل `lastLogin` يبقى في القائمة (بعض إصدارات الخادم لا تُرسله) لكن في
+ * آخرها — فلا يُزاحم نشاطاً معروف الوقت.
+ */
+private fun List<SearchUser>.asRecentlyActive(exclude: Set<String>): List<SearchUser> =
+    asSequence()
+        .filter { it.isOnline != true && it.id !in exclude }
+        .distinctBy { it.id }
+        .sortedBy { ProfileFormatter.millisSince(it.lastLogin) ?: Long.MAX_VALUE }
+        .toList()
