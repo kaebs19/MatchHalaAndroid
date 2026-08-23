@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chathala.hala.R
+import com.chathala.hala.core.ads.AdConsent
+import com.chathala.hala.core.ads.findActivity
 import com.chathala.hala.feature.settings.ui.components.SettingsScaffold
 import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
@@ -113,12 +115,55 @@ fun PrivacyScreen(
                     }
                 }
             }
+
+            // خارج `when` عمداً: مدخل الموافقة لا يجوز أن يختفي لأن جلب إعدادات
+            // الخصوصية من الخادم فشل — هو التزام تنظيمي لا إعداد حساب.
+            AdPrivacyOptionsRow()
         }
 
         HalaSnackbarHost(
             hostState = snackbarHost,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+}
+
+/**
+ * مدخل إعادة فتح نموذج موافقة الإعلانات (UMP).
+ *
+ * يظهر فقط حين يوجبه النموذج — أي لمستخدمي المنطقة الاقتصادية الأوروبية وبريطانيا
+ * أساساً. خارجها لا معنى له فلا يُعرض.
+ */
+@Composable
+private fun AdPrivacyOptionsRow() {
+    val required by AdConsent.privacyOptionsRequired.collectAsStateWithLifecycle()
+    if (!required) return
+    val activity = LocalContext.current.findActivity() ?: return
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp)
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { AdConsent.showPrivacyOptions(activity) }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = S.get(R.string.privacy_ad_options),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = S.get(R.string.privacy_ad_options_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

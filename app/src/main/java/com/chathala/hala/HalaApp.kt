@@ -145,10 +145,8 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         super.onCreate()
         // يجب أن تُهيّأ معرّفات الجهاز قبل أي طلب شبكة (interceptor + repositories يقرؤونها)
         com.chathala.hala.core.device.DeviceIdentity.init(applicationContext)
-        // تهيئة AdMob (best-effort، لا تُعطّل الإقلاع)
-        runCatching {
-            com.google.android.gms.ads.MobileAds.initialize(this) {}
-        }
+        // تهيئة AdMob تُؤجَّل عمداً إلى ما بعد جمع الموافقة (UMP) وتجري على خيط
+        // خلفي — انظر core/ads/MobileAdsInitializer.
         tokenStorage = TokenStorage(applicationContext)
         userStorage = UserStorage(applicationContext, ApiClient.moshi)
         ApiClient.init(tokenStorage = tokenStorage, userStorage = userStorage)

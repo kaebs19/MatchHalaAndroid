@@ -15,8 +15,9 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
  * لا ننتظر التحميل أبداً حتى لا نُعطّل المستخدم (يحقّق شرط ألّا يتجاوز التأخير 5 ثوانٍ).
  *
  * مَواضع العرض:
- *  - فتح محادثة: مرة كل نصف ساعة كحدّ أقصى ([maybeShowOnChatOpen]).
- *  - الاكتشاف: بعد كل 10 بطاقات ([showNow]).
+ *  - فتح محادثة: بفاصل [AdConfig.CHAT_OPEN_INTERSTITIAL_INTERVAL_MS] كحدّ أدنى
+ *    ([maybeShowOnChatOpen]).
+ *  - الاكتشاف: بعد كل [AdConfig.DISCOVER_INTERSTITIAL_EVERY_CARDS] بطاقة ([showNow]).
  */
 object InterstitialAdManager {
 
@@ -53,7 +54,7 @@ object InterstitialAdManager {
     /** يعرض البيني فوراً إن كان جاهزاً. يرجّع true لو عُرض. */
     fun showNow(activity: Activity): Boolean = showIfReady(activity)
 
-    /** يعرض البيني عند فتح محادثة بشرط مرور نصف ساعة على آخر عرض. */
+    /** يعرض البيني عند فتح محادثة بشرط مرور مدة [AdConfig.CHAT_OPEN_INTERSTITIAL_INTERVAL_MS] على آخر عرض. */
     fun maybeShowOnChatOpen(activity: Activity) {
         val now = System.currentTimeMillis()
         if (now - lastChatOpenShownAt < AdConfig.CHAT_OPEN_INTERSTITIAL_INTERVAL_MS) {

@@ -217,6 +217,8 @@
     <string name="privacy_visibility_private">Private</string>
     <string name="privacy_last_seen">Show last seen</string>
     <string name="privacy_notification_sound">Notification sound</string>
+    <string name="privacy_ad_options">Ad privacy options</string>
+    <string name="privacy_ad_options_desc">Change your consent for personalised ads</string>
 
     <!-- About -->
     <string name="about_title">About</string>

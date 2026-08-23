@@ -217,6 +217,8 @@
     <string name="privacy_visibility_private">خاص</string>
     <string name="privacy_last_seen">إظهار آخر ظهور</string>
     <string name="privacy_notification_sound">صوت الإشعارات</string>
+    <string name="privacy_ad_options">خيارات خصوصية الإعلانات</string>
+    <string name="privacy_ad_options_desc">تعديل موافقتك على الإعلانات المخصّصة</string>
 
     <!-- About -->
     <string name="about_title">حول التطبيق</string>

@@ -115,7 +115,7 @@ fun DiscoverScreen(
         }
     }
 
-    // إعلان بيني بعد كل 10 بطاقات
+    // إعلان بيني بعد كل AdConfig.DISCOVER_INTERSTITIAL_EVERY_CARDS بطاقة
     LaunchedEffect(Unit) {
         com.chathala.hala.core.ads.InterstitialAdManager.preload(context)
         viewModel.showInterstitial.collect {
@@ -434,10 +434,13 @@ private fun CardStack(
             )
         }
 
-        // بانر بين بطاقة المستخدم والأزرار السريعة
+        // بانر بين بطاقة المستخدم والأزرار السريعة.
+        // الفجوة السفلية (16dp) متعمَّدة لا جمالية: أزرار التمرير تحتها تُنقر بسرعة
+        // وتتابع، وإعلان ملاصق لها = نقرات عرضية — وهي مخالفة صريحة لسياسة AdMob
+        // تُبطل النقرات وقد تُوقف الوحدة.
         com.chathala.hala.core.ads.BannerAd(
             slot = "discover_stack",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
         )
 
         SwipeActionButtons(
