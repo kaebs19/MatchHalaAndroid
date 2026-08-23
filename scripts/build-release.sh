@@ -228,7 +228,9 @@ fi
     if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
         printf 'commit:      %s\n' "$(git -C "$ROOT" rev-parse HEAD)"
         printf 'branch:      %s\n' "$(git -C "$ROOT" rev-parse --abbrev-ref HEAD)"
-        [ -n "$(git -C "$ROOT" status --porcelain)" ] && printf 'dirty:       نعم — الحزمة لا تطابق الـ commit تماماً\n'
+        # نستثني مجلّد إخراج السكربت نفسه: هو غير مُتتبَّع حتماً وقت البناء الأوّل،
+        # فكان يختم كل حزمة بـ dirty كذباً ويُفقد السطر معناه.
+        [ -n "$(git -C "$ROOT" status --porcelain -- ':!distribution/release')" ] && printf 'dirty:       نعم — الحزمة لا تطابق الـ commit تماماً\n'
     fi
     printf 'sha256:      %s\n' "$(sha256sum "$AAB" 2>/dev/null | cut -d" " -f1)"
 } > "$DEST/build-info.txt"
