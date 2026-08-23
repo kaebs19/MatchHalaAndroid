@@ -3,6 +3,7 @@ package com.chathala.hala.core.ads
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.ViewGroup
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +35,14 @@ import com.google.android.gms.ads.nativead.NativeAd
 /** أقل فاصل بين محاولتَي تحميل لخانة فشلت — لا نُغرق AdMob بطلبات فاشلة. */
 private const val RETRY_AFTER_MS = 30_000L
 
-/** أقصى عدد خانات خاملة (غير معروضة) نحتفظ بها قبل التخلّص من الأقدم. */
+/**
+ * أقصى عدد خانات **خاملة** (غير معروضة) نحتفظ بها قبل التخلّص من الأقدم.
+ *
+ * يُقاس على الخاملة وحدها لا على مجموع الخانات: قائمة محادثات طويلة فيها بانر بعد
+ * كل خمس محادثات تُنشئ خانات بعدد التمرير، فمقارنة المجموع كانت تُزيح خانة رآها
+ * المستخدم قبل ثوانٍ، والعودة إليها تعني طلباً جديداً — و«لا امتلاء» يترك مكانه
+ * فارغاً بعد أن كان فيه إعلان.
+ */
 private const val MAX_IDLE_SLOTS = 4
 
 /**
@@ -101,6 +109,11 @@ internal object BannerAdPool {
         slot.active++
         slot.lastTouch = now
         // الـ view قد يكون ما يزال مُرفَقاً بالشاشة السابقة — الإضافة بأبٍ قائم تُسقط التطبيق.
+        // لكن إن كان مرفَقاً وللخانة تركيب حيّ آخر، فالانتزاع يُفرِّغ بانراً ظاهراً:
+        // مفتاح مكرَّر بين موضعين، وهو خطأ استدعاء يستحقّ أثراً في السجل.
+        if (slot.view.parent != null && slot.active > 1) {
+            Log.w(AdLog.TAG, "خانة البانر «$key» مطلوبة من تركيبين معاً — الـ view يُنتزع من الأول")
+        }
         (slot.view.parent as? ViewGroup)?.removeView(slot.view)
         slot.view.resume()
 
@@ -155,11 +168,12 @@ internal object BannerAdPool {
 
     /** يتخلّص من أقدم الخانات الخاملة فقط — المعروضة أو حديثة اللمس لا تُمسّ. */
     private fun trim() {
-        var excess = slots.size - MAX_IDLE_SLOTS
+        val idle = slots.entries.filter { it.value.active == 0 }
+        var excess = idle.size - MAX_IDLE_SLOTS
         if (excess <= 0) return
         val cutoff = System.currentTimeMillis() - EVICTION_GRACE_MS
-        slots.entries
-            .filter { it.value.active == 0 && it.value.lastTouch < cutoff }
+        idle
+            .filter { it.value.lastTouch < cutoff }
             .sortedBy { it.value.lastTouch }
             .forEach { entry ->
                 if (excess <= 0) return
@@ -284,11 +298,12 @@ internal object NativeAdPool {
     }
 
     private fun trim() {
-        var excess = slots.size - MAX_IDLE_SLOTS
+        val idle = slots.entries.filter { it.value.active == 0 }
+        var excess = idle.size - MAX_IDLE_SLOTS
         if (excess <= 0) return
         val cutoff = System.currentTimeMillis() - EVICTION_GRACE_MS
-        slots.entries
-            .filter { it.value.active == 0 && it.value.lastTouch < cutoff }
+        idle
+            .filter { it.value.lastTouch < cutoff }
             .sortedBy { it.value.lastTouch }
             .forEach { entry ->
                 if (excess <= 0) return
