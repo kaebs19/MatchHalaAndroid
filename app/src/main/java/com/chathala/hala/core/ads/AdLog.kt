@@ -23,6 +23,11 @@ internal object AdLog {
         )
     }
 
+    /** أثر دورة حياة خانة البانر — للإجابة عن «هل ضاع إعلان محمّل أم لم يصل أصلاً؟». */
+    fun slot(message: String) {
+        Log.i(TAG, "خانة: $message")
+    }
+
     fun loaded(placement: String) {
         Log.i(TAG, "$placement تم تحميل الإعلان")
     }

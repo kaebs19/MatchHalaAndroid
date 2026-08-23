@@ -1,5 +1,6 @@
 package com.chathala.hala.core.ads
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -8,7 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 
 /**
- * بانر AdMob متجاوب (Adaptive anchored) بعرض الشاشة.
+ * بانر AdMob متجاوب (Adaptive anchored) بعرض الموضع الذي يشغله.
  *
  * الـ `AdView` محفوظ في [BannerAdPool] تحت [slot]، فلا يُدمَّر عند التمرير خارج الشاشة
  * أو مغادرتها: عند العودة يُعاد إرفاق نفس الإعلان بدل طلب إعلان جديد قد يُقابَل بـ
@@ -25,17 +26,29 @@ fun BannerAd(
 ) {
     if (!AdGate.rememberEnabled()) return
     val context = LocalContext.current
-    // `key(slot)` ليس تجميلاً: `factory` تُنفَّذ مرّة واحدة ولا تُعاد عند تغيّر
-    // الوسائط. وقائمة المحادثات تشتقّ المفتاح من ترتيب العنصر بينما عناصرها
-    // مُفتَّحة بمعرّف المحادثة — فوصول رسالة يُعيد ترتيب القائمة فيتبدّل [slot]
-    // على تركيب قائم: يظل معروضاً view الخانة القديمة، ويبقى عدّادها `active`
-    // مرفوعاً أبداً، ثم أوّل تركيب يطلب تلك الخانة بحقّ ينتزع الـ view من الشاشة
-    // (`removeView`) فيختفي بانر ظاهر. الـ key يفرض تخلّصاً وإنشاءً نظيفين.
-    key(slot) {
-        AndroidView(
-            modifier = modifier.fillMaxWidth(),
-            factory = { BannerAdPool.obtain(context, slot, adUnitId) },
-            onRelease = { BannerAdPool.release(slot) }
-        )
+    // العرض يُقاس من التخطيط نفسه لا من `displayMetrics`.
+    //
+    // القياس السابق `displayMetrics.widthPixels / density` كان يردّ **ارتفاع** الشاشة
+    // أحياناً (رُصد على الجهاز: تذبذب 832dp ↔ 384dp على هاتف 1080×2340 بكثافة 2.8125)
+    // فيُطلب بانر متجاوب بعرض 832dp لا وجود له على هذا الجهاز — ثم يتبدّل الرقم
+    // فيهدم المخزن الـ AdView ويعيد بناءه، ومعه طلب جديد. أي: مقاس خاطئ يُقابَل
+    // بـ no fill، وإعلان قائم يُفقَد عند كل تذبذب.
+    //
+    // وهذا أيضاً ما توصي به Google للبانر المتجاوب: عرض **الحاوية** لا عرض الشاشة —
+    // وهما يختلفان هنا فعلاً بمقدار الحشو الأفقي.
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val widthDp = maxWidth.value.toInt().coerceAtLeast(MIN_BANNER_WIDTH_DP)
+        // المفتاح يحمل العرض: تغيّره الحقيقي (دوران، تعدّد نوافذ) يُعيد البناء بمقاس
+        // صحيح، ولولاه لبقي `factory` على مقاسه الأول لأنها لا تُعاد عند تغيّر الوسائط.
+        key(slot, widthDp) {
+            AndroidView(
+                modifier = Modifier.fillMaxWidth(),
+                factory = { BannerAdPool.obtain(context, slot, adUnitId, widthDp) },
+                onRelease = { BannerAdPool.release(slot) }
+            )
+        }
     }
 }
+
+/** أضيق عرض يقبله البانر المتجاوب لدى AdMob. */
+private const val MIN_BANNER_WIDTH_DP = 320

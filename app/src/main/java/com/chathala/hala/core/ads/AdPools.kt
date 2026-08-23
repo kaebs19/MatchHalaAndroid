@@ -35,6 +35,9 @@ import com.google.android.gms.ads.nativead.NativeAd
 /** أقل فاصل بين محاولتَي تحميل لخانة فشلت — لا نُغرق AdMob بطلبات فاشلة. */
 private const val RETRY_AFTER_MS = 30_000L
 
+/** سقف التراجع الأسّي بين المحاولات — خمس دقائق. */
+private const val MAX_RETRY_MS = 5 * 60 * 1000L
+
 /**
  * أقصى عدد خانات **خاملة** (غير معروضة) نحتفظ بها قبل التخلّص من الأقدم.
  *
@@ -83,6 +86,9 @@ internal object BannerAdPool {
         var loaded = false
         var requesting = false
         var lastFailAt = 0L
+        /** إخفاقات متتالية — أساس التراجع الأسّي بين المحاولات. */
+        var failures = 0
+        var retryScheduled = false
         /** عدّاد لا راية: أثناء التنقّل قد تُرفَق الشاشة الجديدة قبل تحرير القديمة. */
         var active = 0
         var lastTouch = 0L
@@ -90,21 +96,28 @@ internal object BannerAdPool {
 
     private val slots = LinkedHashMap<String, Slot>()
 
-    /** يُعيد `AdView` الخانة (يُنشئه ويطلب إعلاناً أول مرة)، جاهزاً للإرفاق. */
-    fun obtain(context: Context, key: String, adUnitId: String): AdView {
+    /**
+     * يُعيد `AdView` الخانة (يُنشئه ويطلب إعلاناً أول مرة)، جاهزاً للإرفاق.
+     *
+     * [widthDp] يأتي مقيساً من التخطيط ([BannerAd])، لا من `displayMetrics` — انظر
+     * التعليل هناك.
+     */
+    fun obtain(context: Context, key: String, adUnitId: String, widthDp: Int): AdView {
         val now = System.currentTimeMillis()
-        // العرض يُقاس من سياق النشاط لا التطبيق: هو وحده يعرف نافذة العرض الحالية
-        // في وضع تعدّد النوافذ.
-        val widthDp = bannerWidthDp(context)
 
         // مقاس البانر مثبَّت عند الإنشاء (`setAdSize` قبل التحميل)، والنشاط يُعاد
         // إنشاؤه عند الدوران بينما يبقى المخزون حيّاً — فبانر الوضع الرأسي يظهر
         // بعرض خاطئ في الأفقي. عند تغيّر العرض نبني بانراً بمقاس الاتجاه الجديد.
         slots[key]?.takeIf { it.widthDp != widthDp }?.let { stale ->
+            AdLog.slot("«$key» تغيّر العرض ${stale.widthDp}→$widthDp، إعادة بناء (محمّل=${stale.loaded})")
             slots.remove(key)
             destroy(stale.view)
         }
-        val slot = slots[key] ?: newSlot(context.applicationContext, key, adUnitId, widthDp)
+        val existing = slots[key]
+        if (existing != null) {
+            AdLog.slot("«$key» إعادة استعمال — محمّل=${existing.loaded} جارٍ=${existing.requesting}")
+        }
+        val slot = existing ?: newSlot(context.applicationContext, key, adUnitId, widthDp)
 
         slot.active++
         slot.lastTouch = now
@@ -117,7 +130,7 @@ internal object BannerAdPool {
         (slot.view.parent as? ViewGroup)?.removeView(slot.view)
         slot.view.resume()
 
-        if (!slot.loaded && !slot.requesting && now - slot.lastFailAt >= RETRY_AFTER_MS) {
+        if (!slot.loaded && !slot.requesting && now - slot.lastFailAt >= retryDelay(slot)) {
             request(slot)
         }
         trim()
@@ -147,6 +160,7 @@ internal object BannerAdPool {
             override fun onAdLoaded() {
                 slot.loaded = true
                 slot.requesting = false
+                slot.failures = 0
                 AdLog.loaded("بانر")
             }
 
@@ -154,16 +168,46 @@ internal object BannerAdPool {
                 slot.loaded = false
                 slot.requesting = false
                 slot.lastFailAt = System.currentTimeMillis()
+                slot.failures++
                 AdLog.failure("بانر", error)
+                scheduleRetry(key, slot)
             }
         }
         slots[key] = slot
+        AdLog.slot("«$key» خانة جديدة (المجموع=${slots.size})")
         return slot
     }
 
     private fun request(slot: Slot) {
         slot.requesting = true
         slot.view.loadAd(AdRequest.Builder().build())
+    }
+
+    /** تراجع أسّي: 30ث ثم 60 ثم 120… بسقف [MAX_RETRY_MS]. */
+    private fun retryDelay(slot: Slot): Long =
+        (RETRY_AFTER_MS shl (slot.failures - 1).coerceIn(0, 4)).coerceAtMost(MAX_RETRY_MS)
+
+    /**
+     * يعيد المحاولة لخانة **معروضة** فشل طلبها.
+     *
+     * بدون هذا يبقى الموضع فارغاً ما دام المستخدم واقفاً على الشاشة: `obtain` وحده
+     * كان يطلق الطلبات، فلا شيء يعيد المحاولة حتى يخرج المستخدم ويعود. ومع نسبة
+     * تعبئة منخفضة يعني ذلك أن أغلب المواضع تُقابَل برفض واحد ثم تُترك بيضاء.
+     *
+     * لا نعيد المحاولة لخانة غير معروضة: طلبٌ لا يراه أحد يُهدر ولا يُحتسب ظهوراً.
+     */
+    private fun scheduleRetry(key: String, slot: Slot) {
+        if (slot.retryScheduled || slot.active == 0) return
+        slot.retryScheduled = true
+        mainHandler.postDelayed({
+            slot.retryScheduled = false
+            if (slots[key] !== slot) return@postDelayed
+            if (slot.loaded || slot.requesting || slot.active == 0 || !AdGate.enabled) {
+                return@postDelayed
+            }
+            AdLog.slot("«$key» إعادة محاولة (بعد ${slot.failures} إخفاق)")
+            request(slot)
+        }, retryDelay(slot))
     }
 
     /** يتخلّص من أقدم الخانات الخاملة فقط — المعروضة أو حديثة اللمس لا تُمسّ. */
@@ -177,6 +221,7 @@ internal object BannerAdPool {
             .sortedBy { it.value.lastTouch }
             .forEach { entry ->
                 if (excess <= 0) return
+                AdLog.slot("«${entry.key}» إزاحة خانة خاملة (محمّل=${entry.value.loaded})")
                 slots.remove(entry.key)
                 destroy(entry.value.view)
                 excess--
@@ -187,12 +232,6 @@ internal object BannerAdPool {
         (view.parent as? ViewGroup)?.removeView(view)
         view.destroy()
     }
-}
-
-/** عرض نافذة العرض بالـ dp — أساس مقاس البانر المتجاوب، و«بصمة» الاتجاه الحالي. */
-private fun bannerWidthDp(context: Context): Int {
-    val metrics = context.resources.displayMetrics
-    return (metrics.widthPixels / metrics.density).toInt().coerceAtLeast(320)
 }
 
 // ─────────────────────────────── المدمج ───────────────────────────────
