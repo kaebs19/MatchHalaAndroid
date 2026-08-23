@@ -1,5 +1,5 @@
-• Fixed crashes on the Visitors screen and in chats
-• Ads no longer disappear when navigating between screens
-• Search: "Online now" works again, plus a new "Recently active" section
-• Clearer user cards showing last-seen activity
-• Performance and memory improvements
+• Your subscription is restored automatically on a new device, plus a manual restore button
+• Fixed ads disappearing or loading at the wrong size
+• Ad privacy options are now available in Settings → Privacy
+• Interests now appear on user profiles
+• Updated ad libraries and stability improvements
