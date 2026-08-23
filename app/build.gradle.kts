@@ -133,6 +133,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.play.services.location)
     implementation(libs.play.services.ads)
+    implementation(libs.user.messaging.platform)
 
     implementation(libs.socketio.client) {
         // socket.io-client يحمل json-java قديم غير متوافق — نستبعده ونستخدم Android's org.json

@@ -34,6 +34,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val app = applicationContext as HalaApp
+        // نموذج موافقة الخصوصية (UMP) — شرط لعرض الإعلانات في أوروبا، ويرفع التعبئة عموماً
+        com.chathala.hala.core.ads.AdConsent.gather(this)
         PushIntentCoordinator.handle(intent)
         setContent {
             val theme by app.appPreferences.theme.collectAsState(initial = AppTheme.SYSTEM)

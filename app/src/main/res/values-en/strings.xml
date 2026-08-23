@@ -846,6 +846,8 @@
     <string name="billing_plan_unavailable">This plan is unavailable right now</string>
     <string name="billing_no_offer">No offer available for this plan</string>
     <string name="billing_verify_failed">Could not verify the purchase — if you were charged it will be refunded automatically</string>
+    <string name="billing_restore">Restore purchases</string>
+    <string name="billing_restore_none">No purchases to restore on this Google account</string>
 
     <!-- com/chathala/hala/feature/premium/data/SubscriptionModels.kt -->
     <string name="plan_weekly">Weekly</string>
@@ -1150,7 +1152,8 @@
     <string name="profile_liked_you">Liked you</string>
     <string name="profile_premium_user">Premium member</string>
     <string name="label_location">Location</string>
-    <string name="profile_about_me">About me</string>
+    <string name="profile_interests">Interests</string>
+    <string name="profile_bio">About</string>
     <string name="profile_photos">Photos</string>
     <string name="label_friend">Friend</string>
     <string name="label_request_sent">Sent</string>

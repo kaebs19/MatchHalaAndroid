@@ -851,6 +851,8 @@
     <string name="billing_plan_unavailable">الباقة غير متاحة حالياً</string>
     <string name="billing_no_offer">لا يوجد عرض متاح لهذه الباقة</string>
     <string name="billing_verify_failed">تعذّر التحقق من الشراء — إن خُصم المبلغ سيُسترجع تلقائياً</string>
+    <string name="billing_restore">استعادة المشتريات</string>
+    <string name="billing_restore_none">لا توجد مشتريات لاستعادتها على حساب Google هذا</string>
 
     <!-- com/chathala/hala/feature/premium/data/SubscriptionModels.kt -->
     <string name="plan_weekly">أسبوعي</string>
@@ -1155,7 +1157,8 @@
     <string name="profile_liked_you">أعجب بك</string>
     <string name="profile_premium_user">مستخدم مميز</string>
     <string name="label_location">الموقع</string>
-    <string name="profile_about_me">نبذة عني</string>
+    <string name="profile_interests">الاهتمامات</string>
+    <string name="profile_bio">النبذة</string>
     <string name="profile_photos">الصور</string>
     <string name="label_friend">صديق</string>
     <string name="label_request_sent">مُرسل</string>

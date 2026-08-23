@@ -26,4 +26,8 @@ internal object AdLog {
     fun loaded(placement: String) {
         Log.i(TAG, "$placement تم تحميل الإعلان")
     }
+
+    fun consent(message: String) {
+        Log.i(TAG, "الموافقة: $message")
+    }
 }

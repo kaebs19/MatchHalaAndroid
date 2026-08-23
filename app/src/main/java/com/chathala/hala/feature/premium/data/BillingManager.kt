@@ -161,7 +161,12 @@ class BillingManager(private val appContext: Context) {
         billingClient.launchBillingFlow(activity, flowParams)
     }
 
-    /** استرجاع المشتريات القائمة (لإعادة تفعيل premium على جهاز جديد أو بعد إعادة تثبيت). */
+    /**
+     * استرجاع المشتريات القائمة (لإعادة تفعيل premium على جهاز جديد أو بعد إعادة تثبيت).
+     * تُستدعى تلقائياً بعد الاتصال، ويدوياً من زر «استعادة المشتريات».
+     * عند خلوّ الحساب من مشتريات يُبثّ [BillingEvent.RestoreEmpty] — يصل فقط لمن
+     * يستمع وقتها (زر الاستعادة)، أما الاسترجاع الصامت عند الإقلاع فلا مستمع له.
+     */
     suspend fun restorePurchases() {
         if (!billingClient.isReady) return
         val params = QueryPurchasesParams.newBuilder()
@@ -169,7 +174,15 @@ class BillingManager(private val appContext: Context) {
             .build()
         val result = billingClient.queryPurchasesAsync(params)
         if (result.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-            result.purchasesList.forEach { handlePurchase(it) }
+            // نعدّ فقط ما سيُعالج فعلاً — شراء PENDING مثلاً يتجاهله handlePurchase،
+            // فلولا هذا الفلتر لبقي زر الاستعادة يدور بلا حدث يُنهيه.
+            val restorable = result.purchasesList
+                .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+            if (restorable.isEmpty()) {
+                _events.tryEmit(BillingEvent.RestoreEmpty)
+            } else {
+                restorable.forEach { handlePurchase(it) }
+            }
         }
     }
 
@@ -201,5 +214,7 @@ class BillingManager(private val appContext: Context) {
 sealed interface BillingEvent {
     data object PurchaseVerified : BillingEvent
     data object Cancelled : BillingEvent
+    /** طلب استعادة ولم يوجد أي شراء قائم على حساب Google هذا. */
+    data object RestoreEmpty : BillingEvent
     data class Error(val message: String) : BillingEvent
 }

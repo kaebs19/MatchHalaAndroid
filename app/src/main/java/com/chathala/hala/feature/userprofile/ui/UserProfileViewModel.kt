@@ -55,7 +55,8 @@ class UserProfileViewModel(
     private val reporting: ReportRepository,
     private val userRepo: UserRepository,
     private val friends: FriendsRepository,
-    private val visitors: com.chathala.hala.feature.visitors.data.VisitorsRepository
+    private val visitors: com.chathala.hala.feature.visitors.data.VisitorsRepository,
+    private val profileRepo: com.chathala.hala.feature.profile.data.ProfileRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UserProfileState())
@@ -71,6 +72,9 @@ class UserProfileViewModel(
         load()
         loadFriendStatus()
         recordVisit()
+        // فهرس الاهتمامات قد يكون فارغاً إن لم يُفتح تبويب الملف الشخصي بعد،
+        // فتُعرض المفاتيح خاماً بدل الأسماء — نجلبه صامتاً.
+        viewModelScope.launch { runCatching { profileRepo.fetchInterests() } }
         viewModelScope.launch {
             userRepo.currentUser.collect { u ->
                 _state.update { it.copy(currentUserPremium = u?.isPremium == true) }
@@ -306,7 +310,8 @@ class UserProfileViewModel(
                     reporting = app.reportRepository,
                     userRepo = app.userRepository,
                     friends = app.friendsRepository,
-                    visitors = app.visitorsRepository
+                    visitors = app.visitorsRepository,
+                    profileRepo = app.profileRepository
                 ) as T
             }
         }

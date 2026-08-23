@@ -208,7 +208,14 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
 
         // بوابة الإعلانات تتبع حالة الاشتراك — لا إعلانات للمشتركين
         userRepository.currentUser
-            .onEach { com.chathala.hala.core.ads.AdGate.update(it) }
+            .onEach { user ->
+                com.chathala.hala.core.ads.AdGate.update(user)
+                // استرجاع صامت للمشتريات عند أول معرفة بالمستخدم (جهاز جديد /
+                // إعادة تثبيت): connect() يستدعي restorePurchases() بعد الاتصال،
+                // والتحقق يمرّ بالخادم فيحتاج جلسة — لذا ننتظر user != null.
+                // آمن للتكرار: connect() يعود فوراً إن كان العميل جاهزاً.
+                if (user != null) billingManager.connect()
+            }
             .launchIn(appScope)
 
         HalaNotificationChannels.registerAll(this)

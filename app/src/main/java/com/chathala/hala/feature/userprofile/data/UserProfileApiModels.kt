@@ -25,6 +25,8 @@ data class UserProfile(
     val gender: String? = null,
     val country: String? = null,
     val bio: String? = null,
+    /** مفاتيح الاهتمامات (`football`)؛ الأسماء تُترجَم عبر InterestsCatalog. */
+    val interests: List<String> = emptyList(),
     val isOnline: Boolean? = null,
     val lastLogin: String? = null,
     val isPremium: Boolean? = null,
