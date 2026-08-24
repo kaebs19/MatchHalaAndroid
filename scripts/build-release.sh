@@ -90,7 +90,15 @@ check_version() {
 
 # ── 3. ملاحظات المتجر ───────────────────────────────────────
 # Play Console يقصّ ما يتجاوز 500 حرف بلا تحذير. نعدّ بالأحرف لا بالبايتات:
-# العربية متعدّدة البايتات، والعدّ بالبايت يُفشل نصّاً سليماً.
+# العربية متعدّدة البايتات، والعدّ بالبايت يضخّم الرقم للضعف تقريباً.
+#
+# `wc -m` لا يصلح هنا: يعدّ الأحرف فقط إن كانت لغة النظام UTF-8، وإلّا ارتدّ
+# صامتاً إلى عدّ البايتات (يحدث في حاويات CI بلا LANG). فنحذف بايتات المتابعة
+# في UTF-8 (0x80–0xBF) ونعدّ الباقي — عددُ الأحرف بالضبط، مهما كانت اللغة.
+utf8_chars() {
+    LC_ALL=C tr -d '\200-\277' < "$1" | wc -c | tr -d '[:space:]'
+}
+
 check_whatsnew() {
     if [ ! -d "$WHATSNEW_DIR" ]; then
         fail "لا يوجد مجلّد ملاحظات الإصدار: $WHATSNEW_DIR"
@@ -100,7 +108,7 @@ check_whatsnew() {
     for file in "$WHATSNEW_DIR"/whatsnew-*; do
         [ -f "$file" ] || continue
         found=1
-        chars="$(wc -m < "$file" | tr -d '[:space:]')"
+        chars="$(utf8_chars "$file")"
         if [ "$chars" -gt "$WHATSNEW_LIMIT" ]; then
             fail "$(basename "$file"): $chars حرفاً — يتجاوز الحدّ ($WHATSNEW_LIMIT)."
         elif [ "$chars" -lt 2 ]; then
