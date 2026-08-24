@@ -1,5 +1,5 @@
-• Your subscription is restored automatically on a new device, plus a manual restore button
-• Fixed ads disappearing or loading at the wrong size
-• Ad privacy options are now available in Settings → Privacy
-• Interests now appear on user profiles
-• Updated ad libraries and stability improvements
+• In-app alert when a new message arrives — tap it to open the chat
+• Fixed: tapping a chat request notification showed "no longer available" instead of opening it
+• Tapping any notification now always opens a sensible destination
+• Official app logo in notifications and sign-in screens
+• Ads no longer disappear after they load
