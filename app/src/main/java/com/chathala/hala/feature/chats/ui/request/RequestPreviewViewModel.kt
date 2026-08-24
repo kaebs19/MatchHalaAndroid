@@ -33,6 +33,10 @@ import kotlinx.coroutines.launch
 data class RequestPreviewUiState(
     val loading: Boolean = true,
     val notFound: Boolean = false,
+    /** فشل شبكة/خادم — قابل لإعادة المحاولة، ولا يعني أن الطلب اختفى. */
+    val error: String? = null,
+    /** الطلب حُسم وصار محادثة قائمة — الوجهة الصحيحة هي المحادثة لا شاشة اعتذار. */
+    val redirectToChat: String? = null,
     val request: PendingRequest? = null,
     val processing: Boolean = false,
     val reporting: Boolean = false,
@@ -66,22 +70,52 @@ class RequestPreviewViewModel(
     }
 
     fun load() {
-        _state.update { it.copy(loading = true) }
+        _state.update { it.copy(loading = true, error = null) }
         viewModelScope.launch {
             when (val r = repo.fetchPendingRequests()) {
                 is NetworkResult.Success -> {
                     val req = r.data.conversations.firstOrNull { it.id == conversationId }
-                    _state.update {
-                        it.copy(
-                            loading = false,
-                            request = req,
-                            notFound = req == null
-                        )
+                    if (req != null) {
+                        _state.update { it.copy(loading = false, request = req, notFound = false) }
+                    } else {
+                        resolveSettled()
                     }
                 }
                 is NetworkResult.Error -> {
+                    // فشل الجلب ليس «طلباً اختفى». كان يُعرض هنا اعتذارٌ نهائي بلا
+                    // إعادة محاولة، فيظنّ من انقطعت شبكته لحظةً أن الطلب ضاع.
+                    _state.update { it.copy(loading = false, error = ErrorMessages.friendly(r)) }
+                }
+            }
+        }
+    }
+
+    /**
+     * الطلب ليس ضمن المعلّقة — والسبب الغالب أنه **قُبل** فصار محادثة، لا أنه اختفى.
+     *
+     * قائمة `fetchPendingRequests` تحمل الطلبات الواردة المعلّقة وحدها، فكلّ ما
+     * خرج منها كان يسقط على شاشة «لم يعد هذا الطلب متاحاً»: طلبٌ قبلتَه، ومحادثة
+     * أنت مُنشئها فطلبها معلّق عند الطرف الآخر لا عندك، وإشعارٌ قديم لطلبٍ حُسم.
+     * نسأل الخادم عن المحادثة نفسها بدل افتراض الأسوأ، وننقل المستخدم إليها.
+     */
+    private suspend fun resolveSettled() {
+        when (val c = repo.fetchConversation(conversationId)) {
+            is NetworkResult.Success -> {
+                // المرفوض والمنتهي وحدهما بلا وجهة؛ ما عداهما محادثة تُفتح —
+                // بما فيها `pending` التي أنت مُنشئها (كما تفعل قائمة المحادثات).
+                val status = c.data.status
+                if (status == "rejected" || status == "expired") {
                     _state.update { it.copy(loading = false, notFound = true) }
-                    _message.tryEmit(ErrorMessages.friendly(r))
+                } else {
+                    _state.update { it.copy(loading = false, redirectToChat = conversationId) }
+                }
+            }
+            is NetworkResult.Error -> {
+                // 404 وحده يعني أنها زالت فعلاً؛ وغيره خطأ يستحقّ إعادة محاولة.
+                if (c.isNotFound) {
+                    _state.update { it.copy(loading = false, notFound = true) }
+                } else {
+                    _state.update { it.copy(loading = false, error = ErrorMessages.friendly(c)) }
                 }
             }
         }

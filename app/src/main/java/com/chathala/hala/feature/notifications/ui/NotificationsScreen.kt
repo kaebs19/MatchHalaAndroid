@@ -133,17 +133,31 @@ fun NotificationsScreen(
                                 ?: (item.data?.get("userId") as? String)
                                 ?: item.sender?.id
                             val action = item.data?.get("action") as? String
+
+                            // وجهة احتياطية: نوعٌ لا نعرفه، أو معرّف ناقص في الحمولة،
+                            // كان يجعل النقر **بلا أثر إطلاقاً** — فيظنّ المستخدم أن
+                            // الإشعار معطوب. الخادم يضيف أنواعاً لا يعرفها إصدار
+                            // مثبَّت قديم، فالاحتياط هنا ليس ترفاً.
+                            fun openBestEffort() {
+                                when {
+                                    !convId.isNullOrBlank() -> onOpenConversation(convId)
+                                    !senderId.isNullOrBlank() -> onOpenUserProfile(senderId)
+                                }
+                            }
+
                             when (item.type) {
                                 "conversation_request" -> {
-                                    if (!convId.isNullOrBlank()) {
-                                        // action=accepted → المحادثة صارت نشطة → افتحها؛
-                                        // طلب جديد/رفض/إلغاء → معاينة الطلب
-                                        if (action == "accepted") onOpenConversation(convId)
-                                        else onOpenRequestPreview(convId)
-                                    }
+                                    // action=accepted → المحادثة صارت نشطة → افتحها؛
+                                    // طلب جديد/رفض/إلغاء → معاينة الطلب. وإن كان الطلب
+                                    // قد حُسم فعلاً فالمعاينة تنقل إلى المحادثة وحدها
+                                    // (انظر RequestPreviewViewModel.resolveSettled).
+                                    if (convId.isNullOrBlank()) openBestEffort()
+                                    else if (action == "accepted") onOpenConversation(convId)
+                                    else onOpenRequestPreview(convId)
                                 }
                                 "super_like" -> {
                                     if (!convId.isNullOrBlank()) onOpenRequestPreview(convId)
+                                    else openBestEffort()
                                 }
                                 "conversation_accepted",
                                 "new_message",
@@ -152,6 +166,7 @@ fun NotificationsScreen(
                                 "conversation_reminder",
                                 "flagged_message" -> {
                                     if (!convId.isNullOrBlank()) onOpenConversation(convId)
+                                    else openBestEffort()
                                 }
                                 "new_match",
                                 "new_like", "like",
@@ -161,8 +176,9 @@ fun NotificationsScreen(
                                 "friend_request",
                                 "friend_accepted" -> {
                                     if (!senderId.isNullOrBlank()) onOpenUserProfile(senderId)
+                                    else openBestEffort()
                                 }
-                                else -> Unit
+                                else -> openBestEffort()
                             }
                         },
                         onDelete = viewModel::delete,

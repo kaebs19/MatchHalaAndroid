@@ -60,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.chathala.hala.feature.chats.ui.pending.components.GreetingDialog
 import com.chathala.hala.feature.reporting.ui.ReportUserSheet
+import com.chathala.hala.ui.components.ErrorState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
 import com.chathala.hala.ui.components.HalaAsyncImage
@@ -88,6 +89,11 @@ fun RequestPreviewScreen(
     }
     LaunchedEffect(state.rejected) {
         if (state.rejected) onBack()
+    }
+    // الطلب حُسم وصار محادثة — ننقل المستخدم إليها بدل شاشة اعتذار. الانتقال
+    // يُسقط هذه الشاشة من المكدّس (popUpTo في HalaNavGraph) فلا يعود إليها الرجوع.
+    LaunchedEffect(state.redirectToChat) {
+        state.redirectToChat?.let(onOpenConversation)
     }
     // ملاحظة: notFound لم يعد يُغلق الشاشة تلقائياً — نعرض حالة واضحة بدلاً من الارتداد الصامت
 
@@ -173,6 +179,10 @@ fun RequestPreviewScreen(
                     onAccept = { viewModel.accept() },
                     onAcceptWithGreeting = { showGreeting = true },
                     onReject = { viewModel.reject() }
+                )
+                state.error != null -> ErrorState(
+                    message = state.error ?: "",
+                    onRetry = viewModel::load
                 )
                 state.notFound -> RequestUnavailable(onBack = onBack)
             }
