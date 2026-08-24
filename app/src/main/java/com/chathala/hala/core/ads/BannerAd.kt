@@ -3,8 +3,10 @@ package com.chathala.hala.core.ads
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -38,6 +40,13 @@ fun BannerAd(
     // وهما يختلفان هنا فعلاً بمقدار الحشو الأفقي.
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val widthDp = maxWidth.value.toInt().coerceAtLeast(MIN_BANNER_WIDTH_DP)
+        // تشخيص: رُصد على الجهاز عرض مقيس 752dp على شاشة رأسية عرضها 384dp — وهو
+        // ارتفاع منطقة المحتوى. مقارنته بعرض الإعداد تكشف إن كانت النافذة تُبلّغ
+        // اتجاهاً أفقياً لحظياً أم أن قيود التخطيط وحدها هي الشاذّة.
+        val configWidthDp = LocalConfiguration.current.screenWidthDp
+        LaunchedEffect(slot, widthDp) {
+            AdLog.slot("«$slot» عرض مقيس=${widthDp}dp عرض الإعداد=${configWidthDp}dp")
+        }
         // المفتاح يحمل العرض: تغيّره الحقيقي (دوران، تعدّد نوافذ) يُعيد البناء بمقاس
         // صحيح، ولولاه لبقي `factory` على مقاسه الأول لأنها لا تُعاد عند تغيّر الوسائط.
         key(slot, widthDp) {

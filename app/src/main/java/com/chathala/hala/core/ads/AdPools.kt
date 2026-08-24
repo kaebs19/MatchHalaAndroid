@@ -108,10 +108,22 @@ internal object BannerAdPool {
         // مقاس البانر مثبَّت عند الإنشاء (`setAdSize` قبل التحميل)، والنشاط يُعاد
         // إنشاؤه عند الدوران بينما يبقى المخزون حيّاً — فبانر الوضع الرأسي يظهر
         // بعرض خاطئ في الأفقي. عند تغيّر العرض نبني بانراً بمقاس الاتجاه الجديد.
+        // مقاس البانر مثبَّت عند الإنشاء (`setAdSize` قبل التحميل)، فتغيّر العرض يوجب
+        // بناء `AdView` جديداً. لكن **لا نهدم إعلاناً محمّلاً من أجل ذلك**: رُصد على
+        // الجهاز عرضٌ عابر خاطئ (752dp — وهو ارتفاع منطقة المحتوى لا عرضها، والدوران
+        // التلقائي مطفأ) يصل بعد ثوانٍ من التحميل فيُتلف إعلاناً ظاهراً، ويُقابَل
+        // الطلب التالي بـ no fill فيبقى الموضع أبيض. بانر بمقاس قديم أهون بكثير من
+        // موضع فارغ، فنؤجّل العرض الجديد إلى أوّل لحظة لا يوجد فيها ما نُتلفه.
         slots[key]?.takeIf { it.widthDp != widthDp }?.let { stale ->
-            AdLog.slot("«$key» تغيّر العرض ${stale.widthDp}→$widthDp، إعادة بناء (محمّل=${stale.loaded})")
-            slots.remove(key)
-            destroy(stale.view)
+            if (stale.loaded) {
+                // نتجاهله ولا نخزّنه: متى فقدت الخانة إعلانها وعاد `obtain` بعرض
+                // مختلف، أعادت هذه الكتلة نفسها البناء بالمقاس الصحيح.
+                AdLog.slot("«$key» عرض جديد ${stale.widthDp}→$widthDp أُهمل — الإعلان محمّل")
+            } else {
+                AdLog.slot("«$key» تغيّر العرض ${stale.widthDp}→$widthDp، إعادة بناء")
+                slots.remove(key)
+                destroy(stale.view)
+            }
         }
         val existing = slots[key]
         if (existing != null) {
@@ -174,7 +186,7 @@ internal object BannerAdPool {
             }
         }
         slots[key] = slot
-        AdLog.slot("«$key» خانة جديدة (المجموع=${slots.size})")
+        AdLog.slot("«$key» خانة جديدة بعرض ${widthDp}dp (المجموع=${slots.size})")
         return slot
     }
 
