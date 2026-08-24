@@ -75,6 +75,16 @@ class HalaMessagingService : FirebaseMessagingService() {
             }
         }
 
+        // التطبيق مفتوح أمام المستخدم: الشريط الداخلي (المدفوع بالسوكِت) هو الذي
+        // سيُظهر الرسالة — وإشعار شريط الحالة معها يعني إشعارين للرسالة الواحدة،
+        // أحدهما في مكان لا ينظر إليه أحد وهو يستعمل التطبيق. نكتمه للرسائل فقط،
+        // فبقية الأنواع (إعجاب، تنبيه، إعلان رسمي) لا شريط داخلياً لها.
+        val isMessage = type == "message" || type == "new_message"
+        if (isMessage && InAppAlerts.appInForeground) {
+            Log.d(TAG, "رسالة والتطبيق في المقدّمة — يكفي الشريط الداخلي")
+            return
+        }
+
         showSystemNotification(
             context = applicationContext,
             title = title,
@@ -114,12 +124,18 @@ class HalaMessagingService : FirebaseMessagingService() {
 
             // Large Icon:
             //  - إشعار من مستخدم (فيه senderImage) → صورة المُرسِل دائرية (احترافي مثل تطبيقات المراسلة)
-            //  - غير ذلك → الشعار الرسمي الملوّن
-            // الأيقونة الصغيرة تبقى أحادية اللون بإلزام النظام.
+            //  - غير ذلك → **أيقونة التطبيق الرسمية** (`mipmap/ic_launcher`)
+            //
+            // مصدرها أيقونة المشغّل نفسها لا نسخة منفصلة: هي ما يراه المستخدم على
+            // شاشته، فيربط الإشعار بالتطبيق فوراً — وتبقى متطابقة تلقائياً مع أي
+            // تغيير للهوية مستقبلاً بدل أن تتخلّف نسخة ثانية عنها.
+            // `AdaptiveIconDrawable` تُرسَم كاملة (خلفية + مقدّمة) عبر toBitmap.
+            //
+            // الأيقونة الصغيرة تبقى أحادية اللون بإلزام النظام (يطمس أي لون فيها).
             val senderImage = extras["senderImage"]?.takeIf { it.isNotBlank() }
             val largeIcon = (senderImage?.let { loadCircularBitmap(context, it, 128) })
                 ?: runCatching {
-                    ContextCompat.getDrawable(context, R.drawable.dardasha_hala_log)?.toBitmap(128, 128)
+                    ContextCompat.getDrawable(context, R.mipmap.ic_launcher)?.toBitmap(128, 128)
                 }.getOrNull()
 
             val builder = NotificationCompat.Builder(context, channelId)

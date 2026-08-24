@@ -141,8 +141,43 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var appPreferences: AppPreferences
         private set
 
+    /**
+     * يتتبّع وجود نشاطٍ مرئي، ليعرف [com.chathala.hala.feature.push.HalaMessagingService]
+     * متى يكتم إشعار النظام لصالح الشريط الداخلي.
+     *
+     * عبر `ActivityLifecycleCallbacks` لا `ProcessLifecycleOwner`: الأخير يلزمه
+     * `lifecycle-process` وليست من تبعيات المشروع، والعدّاد هنا يكفي — التطبيق ذو
+     * نشاطٍ واحد.
+     */
+    private fun trackForeground() {
+        registerActivityLifecycleCallbacks(object : android.app.Application.ActivityLifecycleCallbacks {
+            private var started = 0
+
+            override fun onActivityStarted(activity: android.app.Activity) {
+                started++
+                com.chathala.hala.feature.push.InAppAlerts.appInForeground = true
+            }
+
+            override fun onActivityStopped(activity: android.app.Activity) {
+                started = (started - 1).coerceAtLeast(0)
+                if (started == 0) {
+                    com.chathala.hala.feature.push.InAppAlerts.appInForeground = false
+                    // شريطٌ معلّق لا معنى له عند العودة بعد دقائق.
+                    com.chathala.hala.feature.push.InAppAlerts.dismiss()
+                }
+            }
+
+            override fun onActivityCreated(activity: android.app.Activity, bundle: android.os.Bundle?) = Unit
+            override fun onActivityResumed(activity: android.app.Activity) = Unit
+            override fun onActivityPaused(activity: android.app.Activity) = Unit
+            override fun onActivitySaveInstanceState(activity: android.app.Activity, bundle: android.os.Bundle) = Unit
+            override fun onActivityDestroyed(activity: android.app.Activity) = Unit
+        })
+    }
+
     override fun onCreate() {
         super.onCreate()
+        trackForeground()
         // يجب أن تُهيّأ معرّفات الجهاز قبل أي طلب شبكة (interceptor + repositories يقرؤونها)
         com.chathala.hala.core.device.DeviceIdentity.init(applicationContext)
         // تهيئة AdMob تُؤجَّل عمداً إلى ما بعد جمع الموافقة (UMP) وتجري على خيط
@@ -208,6 +243,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         userRepository.currentUser
             .onEach { user ->
                 com.chathala.hala.core.ads.AdGate.update(user)
+                com.chathala.hala.feature.push.InAppAlerts.setCurrentUser(user?.id)
                 // استرجاع صامت للمشتريات عند أول معرفة بالمستخدم (جهاز جديد /
                 // إعادة تثبيت): connect() يستدعي restorePurchases() بعد الاتصال،
                 // والتحقق يمرّ بالخادم فيحتاج جلسة — لذا ننتظر user != null.
@@ -221,6 +257,9 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         // الاستجابة لطلب السيرفر بتحديث FCM token (عند connect لـ Socket)
         socket.incoming
             .onEach { event ->
+                if (event is SocketEvent.NewMessage) {
+                    com.chathala.hala.feature.push.InAppAlerts.onNewMessage(event.json)
+                }
                 if (event is SocketEvent.RequestFcmToken) {
                     runCatching { deviceTokenRepository.ensureSynced() }
                 }

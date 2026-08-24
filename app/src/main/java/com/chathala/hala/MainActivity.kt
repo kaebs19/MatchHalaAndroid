@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -14,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
@@ -54,17 +56,32 @@ class MainActivity : ComponentActivity() {
                 // كل النصوص تمرّ عبر S.get الذي يقرأ LocaleManager مباشرةً بدل CompositionLocal.
                 CompositionLocalProvider(LocalLayoutDirection provides direction) {
                     Surface(modifier = Modifier.fillMaxSize()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .statusBarsPadding()
-                                .navigationBarsPadding()
-                        ) {
-                            // لا نستخدم key(language): كان سيُعيد إنشاء NavController ويمسح
-                            // مكدس التنقّل. التحديث الفوري مضمون لأن S.get يقرأ
-                            // LocaleManager.current (حالة Compose) فيُعاد تركيب كل نص وحده.
-                            OfflineBanner()
-                            HalaNavGraph()
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .statusBarsPadding()
+                                    .navigationBarsPadding()
+                            ) {
+                                // لا نستخدم key(language): كان سيُعيد إنشاء NavController ويمسح
+                                // مكدس التنقّل. التحديث الفوري مضمون لأن S.get يقرأ
+                                // LocaleManager.current (حالة Compose) فيُعاد تركيب كل نص وحده.
+                                OfflineBanner()
+                                HalaNavGraph()
+                            }
+
+                            // شريط الرسالة الواردة — خارج شجرة التنقّل عمداً: يعلو أي
+                            // شاشة، ولا يُعاد تركيبه مع كل انتقال، ويصل النقرَ إلى
+                            // المحادثة عبر PushIntentCoordinator بلا NavController.
+                            com.chathala.hala.feature.push.InAppMessageBanner(
+                                onOpenConversation = {
+                                    com.chathala.hala.feature.push.PushIntentCoordinator
+                                        .requestConversation(it)
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .statusBarsPadding()
+                            )
                         }
                     }
                 }

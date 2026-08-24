@@ -49,6 +49,18 @@ object PushIntentCoordinator {
         intent.removeExtra("data_conversation_id")
     }
 
+    /**
+     * يطلب فتح محادثة من داخل التطبيق (نقر على الشريط الداخلي).
+     *
+     * عبر نفس القناة التي يسلكها deep link الإشعار: `HalaNavGraph` يراقبها ويفتح
+     * المحادثة أياً كانت الشاشة الحالية — فلا حاجة لتمرير `NavController` إلى شريط
+     * يعيش فوق شجرة التنقّل كلّها.
+     */
+    fun requestConversation(conversationId: String) {
+        if (conversationId.isBlank()) return
+        _pendingConversationId.value = conversationId
+    }
+
     /** يستهلك تبديل التبويب — يُستدعى من MainScreen بعد تطبيق التبديل. */
     fun consumeTab() {
         _pendingTab.value = null

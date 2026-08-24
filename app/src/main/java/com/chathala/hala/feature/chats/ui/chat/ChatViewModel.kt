@@ -171,6 +171,8 @@ class ChatViewModel(
     val audioPlayer = AudioPlayer()
 
     init {
+        // المحادثة معروضة الآن: رسائلها تصل أمام المستخدم مباشرةً، فلا شريط داخلياً لها.
+        com.chathala.hala.feature.push.InAppAlerts.setActiveConversation(conversationId)
         viewModelScope.launch {
             userRepo.currentUser.collect { u ->
                 _state.update {
@@ -1403,6 +1405,7 @@ class ChatViewModel(
     @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onCleared() {
         super.onCleared()
+        com.chathala.hala.feature.push.InAppAlerts.setActiveConversation(null)
         recordTimerJob?.cancel()
         recorder.cancel()
         audioPlayer.stop()
