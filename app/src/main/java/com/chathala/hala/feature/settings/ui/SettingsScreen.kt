@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Shield
@@ -60,6 +61,7 @@ import com.chathala.hala.R
 import com.chathala.hala.core.i18n.LocaleManager
 import com.chathala.hala.core.storage.AppLanguage
 import com.chathala.hala.core.storage.AppTheme
+import com.chathala.hala.core.storage.ChatWallpaper
 import com.chathala.hala.core.util.showToast
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
@@ -83,9 +85,11 @@ fun SettingsScreen(
 ) {
     val theme by viewModel.theme.collectAsStateWithLifecycle(initialValue = AppTheme.SYSTEM)
     val language by viewModel.language.collectAsStateWithLifecycle(initialValue = LocaleManager.current)
+    val chatWallpaper by viewModel.chatWallpaper.collectAsStateWithLifecycle(initialValue = ChatWallpaper.HEARTS)
 
     var showThemeSheet by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
+    var showWallpaperSheet by remember { mutableStateOf(false) }
     val snackbarHost = rememberHalaSnackbarHost()
 
     LaunchedEffect(Unit) {
@@ -132,6 +136,13 @@ fun SettingsScreen(
                         AppLanguage.ENGLISH -> "English"
                     },
                     onClick = { showLanguageSheet = true }
+                )
+                SettingsItem(
+                    icon = Icons.Filled.Wallpaper,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    label = S.get(R.string.settings_chat_wallpaper),
+                    value = S.get(chatWallpaper.labelRes),
+                    onClick = { showWallpaperSheet = true }
                 )
             }
 
@@ -231,6 +242,10 @@ fun SettingsScreen(
 
     if (showLanguageSheet) {
         LanguagePickerSheet(onDismiss = { showLanguageSheet = false })
+    }
+
+    if (showWallpaperSheet) {
+        ChatWallpaperPickerSheet(onDismiss = { showWallpaperSheet = false })
     }
 
     if (showThemeSheet) {

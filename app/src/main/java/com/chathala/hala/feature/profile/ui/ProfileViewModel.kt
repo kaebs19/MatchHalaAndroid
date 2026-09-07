@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 
@@ -36,8 +37,13 @@ import okhttp3.MultipartBody
 class ProfileViewModel(
     private val userRepo: UserRepository,
     private val profileRepo: ProfileRepository,
-    private val authRepo: AuthRepository
+    private val authRepo: AuthRepository,
+    private val friendsRepo: com.chathala.hala.feature.friends.data.FriendsRepository
 ) : ViewModel() {
+
+    /** عدّادات بطاقة النشاط (أصدقاء/محادثات/إعجابات/زوّار) — تُجلب صامتة. */
+    private val _stats = MutableStateFlow(com.chathala.hala.feature.profile.data.ProfileStats())
+    val stats: StateFlow<com.chathala.hala.feature.profile.data.ProfileStats> = _stats.asStateFlow()
 
     val user: StateFlow<User?> = userRepo.currentUser.stateIn(
         scope = viewModelScope,
@@ -56,6 +62,7 @@ class ProfileViewModel(
 
     init {
         refresh()
+        loadStats()
         // شرائح الاهتمامات تعرض مفاتيح خاماً حتى يُملأ الفهرس — نجلبه صامتاً عند فتح الشاشة
         viewModelScope.launch { profileRepo.fetchInterests() }
     }
@@ -70,10 +77,33 @@ class ProfileViewModel(
         }
     }
 
+    /** الإحصاءات والأصدقاء بالتوازي؛ أي فشل يُبقي القيمة السابقة بصمت. */
+    fun loadStats() {
+        viewModelScope.launch {
+            val statsDeferred = async { profileRepo.fetchStats() }
+            val friendsDeferred = async { friendsRepo.list() }
+            val stats = statsDeferred.await()
+            val friends = friendsDeferred.await()
+            _stats.update { current ->
+                var next = current
+                if (stats is NetworkResult.Success<*>) {
+                    val d = stats.data as com.chathala.hala.feature.profile.data.MyStatsData
+                    next = next.copy(conversations = d.conversations, likes = d.likes, visitors = d.visitors)
+                }
+                if (friends is NetworkResult.Success<*>) {
+                    val d = friends.data as com.chathala.hala.feature.friends.data.FriendsListData
+                    next = next.copy(friends = d.totalCount, pendingRequests = d.pendingCount)
+                }
+                next
+            }
+        }
+    }
+
     /** Pull-to-refresh — يعرض مؤشر. */
     fun pullToRefresh() {
         if (_refreshing.value) return
         _refreshing.value = true
+        loadStats()
         viewModelScope.launch {
             when (val r = userRepo.refresh()) {
                 is NetworkResult.Success -> _message.tryEmit(S.get(R.string.conv_updated))
@@ -133,7 +163,8 @@ class ProfileViewModel(
                 return ProfileViewModel(
                     userRepo = app.userRepository,
                     profileRepo = app.profileRepository,
-                    authRepo = app.authRepository
+                    authRepo = app.authRepository,
+                    friendsRepo = app.friendsRepository
                 ) as T
             }
         }

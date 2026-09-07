@@ -1,6 +1,9 @@
 package com.chathala.hala.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -38,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,15 +55,10 @@ fun AuthScaffold(
     /** يعرض زر تبديل اللغة في أعلى الهيدر — لشاشات الدخول قبل توفّر الإعدادات. */
     showLanguageToggle: Boolean = false,
     headerExtra: (@Composable () -> Unit)? = null,
+    /** يُثبَّت أسفل الشاشة خارج منطقة التمرير — لسطر الشروط والخصوصية. */
+    footer: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val heroGradient = Brush.linearGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.secondary
-        )
-    )
-
     // ظهور تدريجي للنموذج عند فتح الشاشة (تلاشٍ + انزلاق لأعلى)
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { appeared = true }
@@ -76,95 +73,117 @@ fun AuthScaffold(
         label = "form-offset"
     )
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        // ── الهيدر المتدرّج (Hero) ──
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp))
-                .background(heroGradient)
-                .padding(horizontal = 24.dp)
-                .padding(top = 12.dp, bottom = 36.dp)
-        ) {
-            if (onBack != null) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.align(Alignment.TopStart)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-
-            if (showLanguageToggle) {
-                LanguageToggleChip(modifier = Modifier.align(Alignment.TopEnd))
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AuthLogoBadge()
-                Spacer(Modifier.height(20.dp))
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.85f),
-                    textAlign = TextAlign.Center
-                )
-                if (headerExtra != null) {
-                    Spacer(Modifier.height(6.dp))
-                    headerExtra()
-                }
-            }
-        }
-
-        // ── النموذج (مع ظهور تدريجي) ──
+    Column(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .alpha(formAlpha)
-                .layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    layout(placeable.width, placeable.height) {
-                        placeable.place(0, formOffset.toInt())
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // ── الهيدر: خلفية الثيم نفسها بلا متدرّج، الشعار هو البطل ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 12.dp)
+            ) {
+                if (onBack != null) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
-                .padding(horizontal = 24.dp)
-                .padding(top = 28.dp, bottom = 32.dp)
-        ) {
-            content()
+
+                if (showLanguageToggle) {
+                    LanguageToggleChip(modifier = Modifier.align(Alignment.TopEnd))
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 44.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AuthLogoBadge()
+                    Spacer(Modifier.height(22.dp))
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    if (headerExtra != null) {
+                        Spacer(Modifier.height(6.dp))
+                        headerExtra()
+                    }
+                }
+            }
+
+            // ── النموذج (مع ظهور تدريجي) ──
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(formAlpha)
+                    .layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        layout(placeable.width, placeable.height) {
+                            placeable.place(0, formOffset.toInt())
+                        }
+                    }
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 32.dp, bottom = 24.dp)
+            ) {
+                content()
+            }
+        }
+
+        if (footer != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 8.dp, bottom = 12.dp)
+            ) {
+                footer()
+            }
         }
     }
 }
 
-/** شارة الشعار في الهيدر: شعار التطبيق داخل دائرة بيضاء تُبرزه فوق المتدرّج. */
+/**
+ * شارة الشعار: الشعار كبيراً داخل دائرة بحلقة وردية رفيعة وظلّ ناعم — يحمل الهوية
+ * بعدما زال المتدرّج، ويعمل على الأبيض والأسود معاً.
+ */
 @Composable
 private fun AuthLogoBadge() {
+    val ring = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
-            .size(104.dp)
+            .size(148.dp)
+            .shadow(
+                elevation = 14.dp,
+                shape = CircleShape,
+                ambientColor = ring.copy(alpha = 0.35f),
+                spotColor = ring.copy(alpha = 0.35f)
+            )
             .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.18f))   // هالة خارجية شفّافة
-            .padding(7.dp)
-            .clip(CircleShape)
-            .background(Color.White),                       // دائرة بيضاء تُبرز الشعار
+            .background(MaterialTheme.colorScheme.surface)
+            .border(2.dp, ring.copy(alpha = 0.55f), CircleShape)
+            .padding(10.dp),
         contentAlignment = Alignment.Center
     ) {
         val logoRes = LogoConfig.defaultLogoRes
@@ -174,7 +193,7 @@ private fun AuthLogoBadge() {
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(74.dp)
+                    .size(124.dp)
                     .clip(CircleShape)
             )
         } else {
@@ -182,7 +201,7 @@ private fun AuthLogoBadge() {
                 imageVector = Icons.AutoMirrored.Rounded.Chat,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(46.dp)
+                modifier = Modifier.size(64.dp)
             )
         }
     }

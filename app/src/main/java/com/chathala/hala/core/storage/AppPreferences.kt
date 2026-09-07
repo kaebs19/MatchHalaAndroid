@@ -44,6 +44,17 @@ enum class AppLanguage(val tag: String) {
     }
 }
 
+/** خلفية شاشة المحادثة — نقش مرسوم برمجياً يتلوّن بلون الثيم. */
+enum class ChatWallpaper {
+    HEARTS, NONE, STARS, BUBBLES, DOTS, WAVES;
+
+    companion object {
+        /** القلوب هي الافتراضي — هويّة التطبيق. */
+        fun fromString(s: String?): ChatWallpaper =
+            entries.firstOrNull { it.name == s } ?: HEARTS
+    }
+}
+
 /** تخزين تفضيلات التطبيق (ليست خاصة بالمستخدم — تبقى بعد Logout). */
 class AppPreferences(private val context: Context) {
 
@@ -58,6 +69,18 @@ class AppPreferences(private val context: Context) {
 
     suspend fun setTheme(theme: AppTheme) {
         context.appPrefs.edit { it[themeKey] = theme.name }
+    }
+
+    // ── خلفية المحادثة ──
+
+    private val chatWallpaperKey = stringPreferencesKey("chat_wallpaper")
+
+    val chatWallpaper: Flow<ChatWallpaper> = context.appPrefs.data.map {
+        ChatWallpaper.fromString(it[chatWallpaperKey])
+    }
+
+    suspend fun setChatWallpaper(wallpaper: ChatWallpaper) {
+        context.appPrefs.edit { it[chatWallpaperKey] = wallpaper.name }
     }
 
     // ── لغة الواجهة ──

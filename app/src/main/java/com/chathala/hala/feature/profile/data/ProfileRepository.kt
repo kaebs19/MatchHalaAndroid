@@ -29,6 +29,13 @@ class ProfileRepository(
             S.serverOr(resp.message, R.string.profile_data_updated)
         }
 
+    suspend fun fetchStats(): NetworkResult<MyStatsData> =
+        safeApiCall {
+            val token = storage.token.first()
+                ?: throw IllegalStateException(S.get(R.string.err_no_session_signin))
+            api.getMyStats(bearer = "Bearer $token").data ?: MyStatsData()
+        }
+
     suspend fun uploadProfileImage(part: MultipartBody.Part): NetworkResult<String> =
         safeApiCall {
             val token = storage.token.first()

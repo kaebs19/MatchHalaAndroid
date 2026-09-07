@@ -190,6 +190,13 @@ fun EditProfileScreen(
                 onPick = pickPhoto
             )
 
+            // صور جاهزة — بديل سريع لمن لا يريد رفع صورته
+            com.chathala.hala.feature.profile.ui.components.PresetAvatarRow(
+                currentImageUrl = state.imageUrl,
+                enabled = !state.uploading,
+                onSelect = viewModel::selectPresetAvatar
+            )
+
             // تحذير المحتوى — بارز قبل الحقول
             ContentWarningCard()
 

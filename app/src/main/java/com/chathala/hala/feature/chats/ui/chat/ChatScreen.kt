@@ -83,6 +83,7 @@ import com.chathala.hala.feature.chats.ui.chat.components.ChatModeDialog
 import com.chathala.hala.feature.chats.ui.chat.components.ImagePreviewScreen
 import com.chathala.hala.feature.chats.ui.chat.components.ForwardSheet
 import com.chathala.hala.feature.chats.ui.chat.components.MessageBubble
+import com.chathala.hala.ui.components.chatWallpaper
 import com.chathala.hala.feature.chats.ui.chat.components.MuteDialog
 import com.chathala.hala.feature.chats.ui.chat.components.EditMessageDialog
 import com.chathala.hala.feature.chats.ui.chat.components.MessageContextMenu
@@ -120,6 +121,8 @@ fun ChatScreen(
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val sensitiveContentEnabled by AppPreferences(context).sensitiveContentEnabled
         .collectAsStateWithLifecycle(initialValue = false)
+    val chatWallpaper by AppPreferences(context).chatWallpaper
+        .collectAsStateWithLifecycle(initialValue = com.chathala.hala.core.storage.ChatWallpaper.HEARTS)
     var menuExpanded by remember { mutableStateOf(false) }
     var showMuteDialog by remember { mutableStateOf(false) }
     var showChatModeDialog by remember { mutableStateOf(false) }
@@ -324,6 +327,7 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
+                    .chatWallpaper(chatWallpaper)
             ) {
                 when {
                     state.loading -> CircularProgressIndicator(

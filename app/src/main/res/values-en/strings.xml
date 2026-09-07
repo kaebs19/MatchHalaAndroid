@@ -99,6 +99,24 @@
     <string name="profile_label_id">Hala ID</string>
     <string name="profile_label_joined">Member since</string>
     <string name="profile_section_basic">Basic information</string>
+    <string name="profile_stat_friends">Friends</string>
+    <string name="profile_stat_chats">Chats</string>
+    <string name="profile_stat_likes">Likes</string>
+    <string name="profile_stat_visitors">Visitors</string>
+    <string name="profile_verified_chip">Verified</string>
+    <string name="profile_completion_title">Complete your profile</string>
+    <string name="profile_completion_subtitle">A complete profile shows up more and gets more attention</string>
+    <string name="profile_missing_name">Name</string>
+    <string name="profile_missing_photo">Photo</string>
+    <string name="profile_missing_bio">Bio</string>
+    <string name="profile_missing_gender">Gender</string>
+    <string name="profile_missing_birth">Birth date</string>
+    <string name="profile_missing_country">Country</string>
+    <string name="profile_missing_interests">Interests</string>
+    <string name="profile_my_info_title">My Info</string>
+    <string name="profile_my_info_subtitle">Info, bio, interests &amp; photos</string>
+    <string name="profile_friends_subtitle">Your friends and friend requests</string>
+    <string name="profile_friend_requests_badge">%d requests</string>
     <string name="profile_label_gender">Gender</string>
     <string name="profile_label_age">Age</string>
     <string name="profile_label_country">Country</string>
@@ -135,6 +153,15 @@
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_theme_title">Choose a theme</string>
+    <string name="settings_chat_wallpaper">Chat wallpaper</string>
+    <string name="settings_chat_wallpaper_title">Choose a chat wallpaper</string>
+    <string name="settings_chat_wallpaper_hint">Applies to all chats and follows your theme colors</string>
+    <string name="chat_wallpaper_hearts">Hearts</string>
+    <string name="chat_wallpaper_none">Plain</string>
+    <string name="chat_wallpaper_stars">Stars</string>
+    <string name="chat_wallpaper_bubbles">Bubbles</string>
+    <string name="chat_wallpaper_dots">Dots</string>
+    <string name="chat_wallpaper_waves">Waves</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_title">Choose a language</string>
     <string name="settings_section_docs">Documents</string>
@@ -336,6 +363,8 @@
     <string name="avatar_section_title">Profile photo</string>
     <string name="avatar_section_hint">Pick a ready-made avatar or upload your own</string>
     <string name="avatar_upload">From my device</string>
+    <string name="edit_profile_preset_avatars">Ready-made avatars</string>
+    <string name="edit_profile_preset_hint">Pick one to use it as your profile photo right away</string>
 
     <!-- Content policy acknowledgment -->
     <string name="policy_title">Content and conduct policy</string>
@@ -1156,6 +1185,8 @@
     <string name="label_location">Location</string>
     <string name="profile_interests">Interests</string>
     <string name="profile_bio">About</string>
+    <string name="profile_no_details_title">No details added yet</string>
+    <string name="profile_no_details_subtitle">Try starting a conversation to get to know them</string>
     <string name="profile_photos">Photos</string>
     <string name="label_friend">Friend</string>
     <string name="label_request_sent">Sent</string>

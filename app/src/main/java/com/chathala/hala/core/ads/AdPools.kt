@@ -211,10 +211,21 @@ internal object BannerAdPool {
     private fun scheduleRetry(key: String, slot: Slot) {
         if (slot.retryScheduled || slot.active == 0) return
         slot.retryScheduled = true
+        // بصمة الإخفاق الذي أطلق هذه الجدولة — لكشف تحديث الـ SDK التلقائي (أدناه).
+        val failAtWhenScheduled = slot.lastFailAt
         mainHandler.postDelayed({
             slot.retryScheduled = false
             if (slots[key] !== slot) return@postDelayed
             if (slot.loaded || slot.requesting || slot.active == 0 || !AdGate.enabled) {
+                return@postDelayed
+            }
+            // إن كان التحديث التلقائي مفعّلاً في إعدادات الوحدة (الافتراضي 60 ثانية)
+            // فالـ SDK يعيد الطلب من تلقاء نفسه بعد الفشل أيضاً — ورُصد ذلك على الإنتاج
+            // (`code=3` كل 60 ثانية). محاولتنا اليدوية فوقه كانت **تضاعف** الطلبات
+            // الفاشلة للخانة الواحدة بلا ظهور إضافي، فتهبط نسبة التعبئة (Match rate)
+            // في لوحة AdMob. وصول إخفاق جديد منذ الجدولة = الـ SDK يتولّى الأمر، فنتنحّى.
+            if (slot.lastFailAt != failAtWhenScheduled) {
+                AdLog.slot("«$key» التحديث التلقائي يعيد المحاولة — لا طلب يدوي")
                 return@postDelayed
             }
             AdLog.slot("«$key» إعادة محاولة (بعد ${slot.failures} إخفاق)")

@@ -358,11 +358,8 @@ private fun ProfileContent(
                     .padding(top = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                BasicInfoCard(user)
-                LocationCard(user)
-                BioCard(user)
-                InterestsCard(user)
-                PhotosCard(user, onOpenPhoto = onOpenPhoto)
+                IntroCard(user)
+                PhotosSection(user, onOpenPhoto = onOpenPhoto)
 
                 if (!suspended) {
                     messageBlockedReason?.let { reason ->
@@ -373,24 +370,24 @@ private fun ProfileContent(
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
-
-                    Spacer(Modifier.height(8.dp))
-                    SafetyActions(
-                        blocked = blocked,
-                        reported = reported,
-                        onBlock = onBlock,
-                        onUnblock = onUnblock,
-                        onReport = onReport
-                    )
                 }
             }
         }
 
-        TopBar(onBack = onBack)
+        // الإبلاغ/الحظر في قائمة ⋯ أعلى الشاشة (مثل iOS) بدل بطاقة أسفل الملف
+        UserTopBar(
+            onBack = onBack,
+            showMenu = !suspended,
+            reported = reported,
+            blocked = blocked,
+            onReport = onReport,
+            onBlock = onBlock,
+            onUnblock = onUnblock
+        )
 
         // الحساب الموقوف لا يملك أزرار تفاعل (رسالة/إعجاب/مميز/تخطي)
         if (!suspended) {
-            FloatingActionBar(
+            UserActionBar(
                 onSkip = onSkip,
                 onSuperLike = onSuperLike,
                 onLike = onLike,
@@ -408,37 +405,13 @@ private fun ProfileContent(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(horizontal = 20.dp, vertical = 24.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             )
         }
     }
 }
 
-/** بطاقة المعلومات الأساسية + حالة الاتصال. */
-@Composable
-private fun BasicInfoCard(user: UserProfile) {
-    val age = ProfileFormatter.computeAge(user.birthDate)
-    val genderText = when (user.gender) {
-        "male" -> S.get(R.string.gender_male_short)
-        "female" -> S.get(R.string.gender_female_short)
-        else -> null
-    }
-    val (statusText, active) = connectionStatus(user.isOnline, user.lastLogin)
-    val statusColor = if (active) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
-    val memberSince = ProfileFormatter.formatJoinDate(user.joinDate)
 
-    InfoCard(
-        icon = { Text("👤", fontSize = 18.sp) },
-        title = S.get(R.string.profile_basic_info)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            InfoLine(S.get(R.string.label_status), statusText, valueColor = statusColor)
-            genderText?.let { InfoLine(S.get(R.string.filter_gender), it) }
-            age?.let { InfoLine(S.get(R.string.label_age), S.get(R.string.profile_age_years_value, it)) }
-            memberSince?.let { InfoLine(S.get(R.string.label_member_since), it) }
-        }
-    }
-}
 
 // ── حالة الاتصال الذكية: متصل خلال ساعتين = «متصل»، وإلا «غير متصل» ──
 private val profileIsoParser by lazy {
@@ -456,118 +429,20 @@ private fun minutesSince(iso: String?): Long? {
 }
 
 /** @return (نص الحالة, نشِط؟) — نشِط = أخضر. */
-private fun connectionStatus(isOnline: Boolean?, lastLogin: String?): Pair<String, Boolean> {
+internal fun connectionStatus(isOnline: Boolean?, lastLogin: String?): Pair<String, Boolean> {
     if (isOnline == true) return S.get(R.string.status_online_now) to true
     val mins = minutesSince(lastLogin)
     return if (mins != null && mins <= 120) S.get(R.string.status_online) to true else S.get(R.string.status_offline) to false
 }
 
-@Composable
-private fun InfoLine(label: String, value: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = label,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp,
-            modifier = Modifier.width(64.dp)
-        )
-        Text(text = value, color = valueColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-    }
-}
 
 
-/** نصوص الأمان (حظر/إلغاء حظر/إبلاغ) أسفل الملف. */
-@Composable
-private fun SafetyActions(
-    blocked: Boolean,
-    reported: Boolean,
-    onBlock: () -> Unit,
-    onUnblock: () -> Unit,
-    onReport: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        SafetyRow(
-            icon = Icons.Filled.Flag,
-            text = if (reported) S.get(R.string.discover_reported) else S.get(R.string.chat_report_user),
-            enabled = !reported,
-            onClick = onReport
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
-        )
-        // محظور → «إلغاء الحظر»؛ غير محظور → «حظر المستخدم» (بتأكيد)
-        SafetyRow(
-            icon = Icons.Filled.Block,
-            text = if (blocked) S.get(R.string.profile_unblock_user) else S.get(R.string.chat_block_user),
-            enabled = true,
-            onClick = if (blocked) onUnblock else onBlock
-        )
-    }
-}
 
-@Composable
-private fun SafetyRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String,
-    enabled: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.error.copy(alpha = if (enabled) 1f else 0.5f),
-            modifier = Modifier.size(20.dp)
-        )
-        Text(
-            text = text,
-            color = MaterialTheme.colorScheme.error.copy(alpha = if (enabled) 1f else 0.5f),
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
 
-// ──────────────────────────────────────────────────
-// Top bar
-// ──────────────────────────────────────────────────
-@Composable
-private fun TopBar(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.25f))
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = S.get(R.string.action_back),
-                tint = Color.White
-            )
-        }
-    }
-}
+
+
+
+
 
 // ──────────────────────────────────────────────────
 // Skeleton أثناء التحميل
@@ -592,7 +467,7 @@ private fun ProfileSkeleton(onBack: () -> Unit) {
                 }
             }
         }
-        TopBar(onBack = onBack)
+        UserTopBar(onBack = onBack)
     }
 }
 
@@ -643,7 +518,7 @@ private fun HeroSection(user: UserProfile, onOpenPhoto: () -> Unit) {
         ) {
             if (user.likedYou == true) LikedYouBadge()
             NameRow(user)
-            PillsRow(user)
+            HeroPillsRow(user)
         }
     }
 }
@@ -699,381 +574,25 @@ private fun NameRow(user: UserProfile) {
     }
 }
 
-@Composable
-private fun PillsRow(user: UserProfile) {
-    val scroll = rememberScrollState()
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(scroll),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (user.verification?.isVerified == true) {
-            Pill(icon = "✓", text = S.get(R.string.verify_verified), tint = Color(0xFF2EA9FF))
-        }
-        if (user.isOnline == true) {
-            OnlinePill()
-        }
-        Zodiac.fromBirthDate(user.birthDate)?.let { z ->
-            Pill(icon = z.emoji, text = z.name, tint = Color(0xFFB388FF))
-        }
-        Zodiac.birthdayLabel(user.birthDate)?.let { bd ->
-            Pill(icon = "🎈", text = bd, tint = Color(0xFFFF5A5F))
-        }
-        if (user.isPremium == true) {
-            Pill(icon = "👑", text = S.get(R.string.profile_premium_user), tint = Color(0xFFFFC107))
-        }
-    }
-}
 
-@Composable
-private fun Pill(icon: String, text: String, tint: Color) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.35f))
-            .border(1.dp, tint.copy(alpha = 0.3f), CircleShape)
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    ) {
-        Text(text = icon, fontSize = 13.sp)
-        Text(text = text, color = tint, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
 
-@Composable
-private fun OnlinePill() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.35f))
-            .border(1.dp, Color(0xFF4CAF50).copy(alpha = 0.4f), CircleShape)
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF4CAF50))
-        )
-        Text(S.get(R.string.status_online), color = Color(0xFF4CAF50), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
 
-// ──────────────────────────────────────────────────
-// Cards: location / bio / photos
-// ──────────────────────────────────────────────────
-@Composable
-private fun InfoCard(
-    icon: @Composable () -> Unit,
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp),
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
-        ) { icon() }
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.height(6.dp))
-            content()
-        }
-    }
-}
 
-@Composable
-private fun LocationCard(user: UserProfile) {
-    val country = Countries.byCode(user.country)
-    if (country == null && user.distance == null) return
-    InfoCard(
-        icon = {
-            Icon(
-                Icons.Filled.LocationOn,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp)
-            )
-        },
-        title = S.get(R.string.label_location)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            country?.let {
-                Text(text = it.flag, fontSize = 16.sp)
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = it.name,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 14.sp
-                )
-            }
-            user.distance?.let {
-                if (country != null) Spacer(Modifier.width(10.dp))
-                Text(
-                    text = S.get(R.string.distance_km_bullet, it.toInt()),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 13.sp
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun BioCard(user: UserProfile) {
-    val bio = user.bio?.takeIf { it.isNotBlank() } ?: return
-    InfoCard(
-        icon = {
-            Text("📝", fontSize = 18.sp)
-        },
-        // ليست "نبذة عني" — هذه شاشة ملف شخص آخر
-        title = S.get(R.string.profile_bio)
-    ) {
-        Text(
-            text = bio,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 14.sp
-        )
-    }
-}
 
-@Composable
-private fun InterestsCard(user: UserProfile) {
-    if (user.interests.isEmpty()) return
-    InfoCard(
-        icon = { Text("🎯", fontSize = 18.sp) },
-        // ليست "اهتماماتي" — هذه شاشة ملف شخص آخر
-        title = S.get(R.string.profile_interests)
-    ) {
-        com.chathala.hala.feature.profile.ui.components.ReadOnlyInterestsChips(
-            interestKeys = user.interests
-        )
-    }
-}
 
-@Composable
-private fun PhotosCard(user: UserProfile, onOpenPhoto: (Int) -> Unit) {
-    val urls = user.galleryUrls.drop(1) // first one is profile already shown above
-    if (urls.isEmpty()) return
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("📸", fontSize = 18.sp)
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = S.get(R.string.profile_photos),
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = "${urls.size}",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp
-            )
-        }
 
-        // صفوف عادية لا LazyVerticalGrid: الشاشة كلّها داخل verticalScroll، وقائمة
-        // Lazy داخل حاوية تمرير عمودية تحتاج ارتفاعاً مثبّتاً يدوياً — وكان مقدَّراً
-        // بـ 180dp للصف بينما الخلية مربّعة بعرض نصف الشاشة، فتُقصّ الصور على
-        // الشاشات العريضة. الصور قليلة (≤ بضع صور) فلا يفيد الكسل أصلاً.
-        urls.chunked(2).forEachIndexed { rowIndex, row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEachIndexed { colIndex, url ->
-                    AsyncImage(
-                        model = url,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            // موضع الصورة في galleryUrls (الأولى صورة الهيرو المعروضة أعلاه)
-                            .clickable { onOpenPhoto(rowIndex * 2 + colIndex + 1) }
-                    )
-                }
-                // خانة فارغة تحفظ عرض الخلية عندما يكون عدد الصور فردياً
-                if (row.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-    }
-}
 
-// ──────────────────────────────────────────────────
-// Floating action bar
-// ──────────────────────────────────────────────────
-@Composable
-private fun FloatingActionBar(
-    onSkip: () -> Unit,
-    onSuperLike: () -> Unit,
-    onLike: () -> Unit,
-    onMessage: () -> Unit,
-    liked: Boolean,
-    messageEnabled: Boolean,
-    friendStatus: FriendStatus,
-    friendWorking: Boolean,
-    onFriendClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val haptic = LocalHapticFeedback.current
-    // نبضة القلب عند الإعجاب
-    val likeScale by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (liked) 1.18f else 1f,
-        animationSpec = androidx.compose.animation.core.spring(
-            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
-            stiffness = androidx.compose.animation.core.Spring.StiffnessLow
-        ),
-        label = "likeScale"
-    )
-    // مظهر زر الصداقة حسب الحالة
-    val (friendLabel, friendIcon) = when (friendStatus) {
-        FriendStatus.FRIENDS -> S.get(R.string.label_friend) to Icons.Filled.HowToReg
-        FriendStatus.PENDING_SENT -> S.get(R.string.label_request_sent) to Icons.Filled.HourglassTop
-        FriendStatus.PENDING_RECEIVED -> S.get(R.string.action_accept) to Icons.Filled.PersonAdd
-        FriendStatus.NONE -> S.get(R.string.action_add) to Icons.Filled.PersonAdd
-    }
-    val friendColor = Color(0xFFAB47BC)   // بنفسجي — يميّزه عن بقية الأزرار
-    // مملوء عند وجود علاقة قائمة (صديق) أو طلب ينتظر ردّي (لفت الانتباه)
-    val friendFilled = friendStatus == FriendStatus.FRIENDS ||
-        friendStatus == FriendStatus.PENDING_RECEIVED
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(32.dp))
-            .background(Color.Black.copy(alpha = 0.55f))
-            .padding(horizontal = 6.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        ProfileActionButton(
-            label = S.get(R.string.action_skip),
-            icon = Icons.Filled.Close,
-            color = Color(0xFFFF5A5F),
-            modifier = Modifier.weight(1f)
-        ) { HapticHelper.medium(haptic); onSkip() }
 
-        ProfileActionButton(
-            label = S.get(R.string.label_premium),
-            icon = Icons.Filled.Star,
-            color = Color(0xFF2EA9FF),
-            modifier = Modifier.weight(1f)
-        ) { HapticHelper.medium(haptic); onSuperLike() }
 
-        ProfileActionButton(
-            label = S.get(R.string.action_like),
-            icon = Icons.Filled.Favorite,
-            color = if (liked) Color(0xFFE91E63) else Color(0xFF4CAF50),
-            filled = liked,
-            scale = likeScale,
-            modifier = Modifier.weight(1f)
-        ) { HapticHelper.medium(haptic); onLike() }
 
-        ProfileActionButton(
-            label = S.get(R.string.action_message),
-            icon = Icons.AutoMirrored.Filled.Chat,
-            color = Color(0xFFE91E8C),
-            enabled = messageEnabled,
-            modifier = Modifier.weight(1f)
-        ) { HapticHelper.light(haptic); onMessage() }
 
-        ProfileActionButton(
-            label = friendLabel,
-            icon = friendIcon,
-            color = friendColor,
-            filled = friendFilled,
-            loading = friendWorking,
-            modifier = Modifier.weight(1f)
-        ) { HapticHelper.medium(haptic); onFriendClick() }
-    }
-}
 
-@Composable
-private fun ProfileActionButton(
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    color: Color,
-    filled: Boolean = false,
-    scale: Float = 1f,
-    enabled: Boolean = true,
-    loading: Boolean = false,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale; alpha = if (enabled) 1f else 0.45f }
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(enabled = enabled && !loading, onClick = onClick)
-            .padding(horizontal = 2.dp, vertical = 4.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(
-                    brush = if (filled) Brush.linearGradient(listOf(color, color.copy(alpha = 0.7f)))
-                            else Brush.linearGradient(listOf(color.copy(alpha = 0.2f), color.copy(alpha = 0.1f)))
-                )
-                .border(1.5.dp, color.copy(alpha = if (filled) 0f else 0.6f), CircleShape)
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    color = if (filled) Color.White else color,
-                    modifier = Modifier.size(18.dp)
-                )
-            } else {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    tint = if (filled) Color.White else color,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-        Text(
-            text = label,
-            color = Color.White.copy(alpha = 0.9f),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
-            softWrap = false
-        )
-    }
-}
+
+
+
 
 // ──────────────────────────────────────────────────
 // Message bottom sheet (reuses quick messages row)

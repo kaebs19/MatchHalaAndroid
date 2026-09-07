@@ -232,9 +232,17 @@ fun HalaNavGraph() {
                 onOpenPremium = { nav.navigate(Routes.SUBSCRIPTION) },
                 onOpenFriends = { nav.navigate(Routes.FRIENDS) },
                 onOpenVisitors = { nav.navigate(Routes.VISITORS) },
+                onOpenMyInfo = { nav.navigate(Routes.MY_INFO) },
                 onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
                 onOpenUserSearch = { nav.navigate(Routes.USER_SEARCH) },
                 onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) }
+            )
+        }
+
+        composable(Routes.MY_INFO) {
+            com.chathala.hala.feature.profile.ui.MyInfoScreen(
+                onBack = { nav.popBackStack() },
+                onEdit = { nav.navigate(Routes.EDIT_PROFILE) }
             )
         }
 

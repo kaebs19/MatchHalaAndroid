@@ -157,6 +157,25 @@ class EditProfileViewModel(
         }
     }
 
+    /**
+     * اختيار صورة جاهزة (avatar_1..avatar_29) — تُطبَّق فوراً كصورة رفع، لا مع «حفظ»:
+     * الخادم يقبل `defaultAvatar` في تحديث الملف بلا فترة انتظار (cooldown).
+     */
+    fun selectPresetAvatar(name: String) {
+        if (_state.value.uploading) return
+        _state.update { it.copy(uploading = true) }
+        viewModelScope.launch {
+            when (val r = profileRepo.updateProfile(UpdateProfileRequest(defaultAvatar = name))) {
+                is NetworkResult.Success -> {
+                    userRepo.refresh()
+                    _message.tryEmit(S.get(R.string.profile_photo_updated))
+                }
+                is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
+            }
+            _state.update { it.copy(uploading = false) }
+        }
+    }
+
     fun deletePhoto() {
         if (_state.value.uploading) return
         _state.update { it.copy(uploading = true) }

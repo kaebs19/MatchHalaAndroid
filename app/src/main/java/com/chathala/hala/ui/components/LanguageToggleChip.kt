@@ -50,8 +50,8 @@ fun LanguageToggleChip(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(Color.White.copy(alpha = 0.18f))
-            .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), RoundedCornerShape(50))
             .clickable {
                 LanguageController.apply(next, app.appPreferences, app.deviceTokenRepository)
             }
@@ -61,14 +61,14 @@ fun LanguageToggleChip(modifier: Modifier = Modifier) {
         Icon(
             imageVector = Icons.Filled.Language,
             contentDescription = null,
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(16.dp)
         )
         Spacer(Modifier.size(6.dp))
         Text(
             text = nextLabel,
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = Color.White
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }

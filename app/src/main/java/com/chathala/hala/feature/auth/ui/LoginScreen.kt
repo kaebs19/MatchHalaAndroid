@@ -97,7 +97,13 @@ fun LoginScreen(
     AuthScaffold(
         title = S.get(R.string.login_welcome),
         subtitle = S.get(R.string.login_subtitle),
-        showLanguageToggle = true
+        showLanguageToggle = true,
+        footer = {
+            TermsFooterLinks(
+                onOpenTerms = onOpenTerms,
+                onOpenPrivacy = onOpenPrivacy
+            )
+        }
     ) {
         HalaTextField(
             value = email,
@@ -183,13 +189,6 @@ fun LoginScreen(
             prompt = S.get(R.string.no_account),
             actionText = S.get(R.string.create_account),
             onAction = onRegister
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        TermsFooterLinks(
-            onOpenTerms = onOpenTerms,
-            onOpenPrivacy = onOpenPrivacy
         )
     }
 }

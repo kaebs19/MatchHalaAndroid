@@ -14,7 +14,7 @@ import androidx.core.view.WindowCompat
 private val LightColors = lightColorScheme(
     primary = HalaPrimaryLight,
     onPrimary = HalaTextInvertedLight,
-    primaryContainer = HalaInputLight,
+    primaryContainer = HalaPrimaryContainerLight,
     onPrimaryContainer = HalaPrimaryLight,
 
     secondary = HalaSecondaryLight,
@@ -42,14 +42,14 @@ private val LightColors = lightColorScheme(
 
     error = HalaErrorLight,
     onError = HalaTextInvertedLight,
-    errorContainer = HalaInputLight,
+    errorContainer = HalaErrorContainerLight,
     onErrorContainer = HalaErrorLight
 )
 
 private val DarkColors = darkColorScheme(
     primary = HalaPrimaryDark,
     onPrimary = HalaTextInvertedDark,
-    primaryContainer = HalaInputDark,
+    primaryContainer = HalaPrimaryContainerDark,
     onPrimaryContainer = HalaPrimaryDark,
 
     secondary = HalaSecondaryDark,
@@ -77,7 +77,7 @@ private val DarkColors = darkColorScheme(
 
     error = HalaErrorDark,
     onError = HalaTextInvertedDark,
-    errorContainer = HalaInputDark,
+    errorContainer = HalaErrorContainerDark,
     onErrorContainer = HalaErrorDark
 )
 

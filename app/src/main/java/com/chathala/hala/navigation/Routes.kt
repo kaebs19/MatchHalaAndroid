@@ -14,6 +14,7 @@ object Routes {
     const val PROFILE_COMPLETE = "profile_complete"
     const val CONTENT_POLICY = "content_policy"
     const val EDIT_PROFILE = "edit_profile"
+    const val MY_INFO = "profile/info"
     const val SETTINGS = "settings"
     const val SETTINGS_PRIVACY = "settings/privacy"
     const val SETTINGS_NOTIFICATIONS = "settings/notifications"

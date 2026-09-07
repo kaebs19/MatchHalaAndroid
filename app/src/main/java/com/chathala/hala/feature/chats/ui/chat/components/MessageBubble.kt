@@ -108,10 +108,12 @@ fun MessageBubble(
         SystemMessageBubble(message = message, modifier = modifier)
         return
     }
+    // فقاعة الطرف الآخر بلون السطح مع حدّ شعري — كانت تذوب في خلفية المحادثة المنقوشة
     val bgColor = if (isMine)
         MaterialTheme.colorScheme.primary
     else
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.surface
+    val incomingBorder = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
     val textColor = if (isMine)
         MaterialTheme.colorScheme.onPrimary
     else
@@ -147,11 +149,15 @@ fun MessageBubble(
                     .clip(shape)
                     .background(bgColor)
                     .then(
-                        if (isRevealed) Modifier.border(
-                            width = 1.5.dp,
-                            color = pinkColor.copy(alpha = 0.5f),
-                            shape = shape
-                        ) else Modifier
+                        when {
+                            isRevealed -> Modifier.border(
+                                width = 1.5.dp,
+                                color = pinkColor.copy(alpha = 0.5f),
+                                shape = shape
+                            )
+                            !isMine -> Modifier.border(1.dp, incomingBorder, shape)
+                            else -> Modifier
+                        }
                     )
                     .combinedClickable(
                         onClick = {},

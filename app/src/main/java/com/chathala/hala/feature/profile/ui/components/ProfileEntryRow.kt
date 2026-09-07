@@ -1,14 +1,12 @@
 package com.chathala.hala.feature.profile.ui.components
 
-import com.chathala.hala.core.i18n.S
-import com.chathala.hala.R
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,38 +14,40 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * صفّ الاشتراك المميّز على نمط iOS: تدرّج وردي → بنفسجي بظلّ وردي، تاج أصفر في
- * دائرة زجاجية، ونص أبيض. يُعرض لغير المشتركين فقط؛ النقر يفتح شاشة الاشتراك.
+ * صفّ مدخل على نمط iOS: دائرة أيقونة ملوّنة 42dp، عنوان وعنوان فرعي، ثم سهم.
+ * [titleTrailing] لشارة عدّ بجوار العنوان، و[trailing] لشارة قبل السهم.
  */
 @Composable
-fun PremiumBanner(
+fun ProfileEntryRow(
+    icon: ImageVector,
+    iconColor: Color,
+    title: String,
+    subtitle: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    titleTrailing: (@Composable () -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null
 ) {
-    val shape = RoundedCornerShape(16.dp)
-    val gradient = Brush.horizontalGradient(listOf(Color(0xFFE91E63), Color(0xFF9C27B0)))
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(8.dp, shape, ambientColor = Color(0xFFE91E63).copy(alpha = 0.35f), spotColor = Color(0xFFE91E63).copy(alpha = 0.35f))
-            .clip(shape)
-            .background(gradient)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -57,39 +57,70 @@ fun PremiumBanner(
             modifier = Modifier
                 .size(42.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.2f)),
+                .background(iconColor.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Filled.WorkspacePremium,
-                contentDescription = null,
-                tint = Color(0xFFFFEB3B),
-                modifier = Modifier.size(22.dp)
-            )
+            Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = S.get(R.string.premium_title),
+                    text = title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(text = "👑", fontSize = 14.sp)
+                titleTrailing?.invoke()
             }
             Text(
-                text = S.get(R.string.premium_subtitle),
+                text = subtitle,
                 fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.85f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
+        trailing?.invoke()
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = Color.White.copy(alpha = 0.7f),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
         )
     }
+}
+
+/** شارة عدّ دائرية صغيرة بلون أساسي — بجوار عنوان «أصدقائي». */
+@Composable
+fun CountPill(count: Int) {
+    Box(
+        modifier = Modifier
+            .defaultMinSize(minWidth = 20.dp, minHeight = 20.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(horizontal = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = formatCount(count),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+/** شارة برتقالية «N طلب» لطلبات الصداقة المعلّقة. */
+@Composable
+fun PendingBadge(text: String) {
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.White,
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(Color(0xFFFF9800))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+    )
 }

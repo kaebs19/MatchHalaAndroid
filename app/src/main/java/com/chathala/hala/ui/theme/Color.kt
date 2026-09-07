@@ -19,31 +19,43 @@ val HalaAccentLight = Color(0xFFD32F2F)
 val HalaAccentDark = Color(0xFFFF5252)
 
 // ─── Backgrounds ───
-val HalaBgLight = Color(0xFFFFF0F5)          // وردي فاتح جداً
-val HalaBgDark = Color(0xFF0D0010)            // بنفسجي غامق
+// أبيض نقي في الفاتح وأسود نقي في الداكن؛ الهوية الوردية تبقى في الأزرار والتمييز
+// لا في الخلفيات، فتبدو الواجهة أنظف ويستفيد الداكن من شاشات OLED.
+val HalaBgLight = Color(0xFFFFFFFF)
+val HalaBgDark = Color(0xFF000000)
 
+// البطاقات: أبيض على أبيض يتمايز بحدّ خفيف (outline)، وفي الداكن طبقة رمادية دافئة
 val HalaCardLight = Color(0xFFFFFFFF)
-val HalaCardDark = Color(0xFF1A0020)
+val HalaCardDark = Color(0xFF141216)
 
-val HalaInputLight = Color(0xFFFCE4EC)
-val HalaInputDark = Color(0xFF2D0035)
+// الحقول والفقاعات الواردة: رمادي وردي باهت جداً / رمادي دافئ داكن
+val HalaInputLight = Color(0xFFF6F1F4)
+val HalaInputDark = Color(0xFF1F1C23)
+
+// ─── Containers (خلفيات مُلوّنة للشارات والرقائق) ───
+val HalaPrimaryContainerLight = Color(0xFFFDE4F0)
+val HalaPrimaryContainerDark = Color(0xFF3A1230)
+
+val HalaErrorContainerLight = Color(0xFFFDECEA)
+val HalaErrorContainerDark = Color(0xFF3B1A1A)
 
 // ─── Text ───
-val HalaTextPrimaryLight = Color(0xFF1A0020)
-val HalaTextPrimaryDark = Color(0xFFFFFFFF)
+val HalaTextPrimaryLight = Color(0xFF1A171D)
+val HalaTextPrimaryDark = Color(0xFFF5F2F7)
 
-val HalaTextSecondaryLight = Color(0xFF7B1FA2)
-val HalaTextSecondaryDark = Color(0xFFCE93D8)
+// نص ثانوي محايد بلمسة بنفسجية بدل البنفسجي الصريح — أهدأ وأوضح تراتبياً
+val HalaTextSecondaryLight = Color(0xFF6E6479)
+val HalaTextSecondaryDark = Color(0xFFA9A2B3)
 
 val HalaTextInvertedLight = Color(0xFFFFFFFF)
 val HalaTextInvertedDark = Color(0xFF1A0020)
 
 // ─── Borders & Dividers ───
-val HalaBorderLight = Color(0xFFF48FB1)
-val HalaBorderDark = Color(0xFF4A0050)
+val HalaBorderLight = Color(0xFFE6DAE2)
+val HalaBorderDark = Color(0xFF3A3441)
 
-val HalaDividerLight = Color(0xFFFCE4EC)
-val HalaDividerDark = Color(0xFF2D0035)
+val HalaDividerLight = Color(0xFFEFE9ED)
+val HalaDividerDark = Color(0xFF26222B)
 
 // ─── Semantic ───
 val HalaSuccessLight = Color(0xFF4CAF50)

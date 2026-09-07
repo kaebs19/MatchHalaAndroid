@@ -12,6 +12,7 @@ import com.chathala.hala.core.i18n.LocaleManager
 import com.chathala.hala.core.storage.AppLanguage
 import com.chathala.hala.core.storage.AppPreferences
 import com.chathala.hala.core.storage.AppTheme
+import com.chathala.hala.core.storage.ChatWallpaper
 import com.chathala.hala.feature.auth.data.AuthRepository
 import com.chathala.hala.feature.user.data.User
 import com.chathala.hala.feature.user.data.UserRepository
@@ -38,6 +39,8 @@ class SettingsViewModel(
 
     val language: Flow<AppLanguage> = prefs.language
 
+    val chatWallpaper: Flow<ChatWallpaper> = prefs.chatWallpaper
+
     val currentUser: StateFlow<User?> = userRepo.currentUser.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -52,6 +55,10 @@ class SettingsViewModel(
 
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch { prefs.setTheme(theme) }
+    }
+
+    fun setChatWallpaper(wallpaper: ChatWallpaper) {
+        viewModelScope.launch { prefs.setChatWallpaper(wallpaper) }
     }
 
     /** التبديل والحفظ وإبلاغ الخادم — التفاصيل في [LanguageController]. */

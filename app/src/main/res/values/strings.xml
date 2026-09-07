@@ -99,6 +99,24 @@
     <string name="profile_label_id">معرّف هلا</string>
     <string name="profile_label_joined">عضو منذ</string>
     <string name="profile_section_basic">المعلومات الأساسية</string>
+    <string name="profile_stat_friends">الأصدقاء</string>
+    <string name="profile_stat_chats">المحادثات</string>
+    <string name="profile_stat_likes">الإعجابات</string>
+    <string name="profile_stat_visitors">الزوّار</string>
+    <string name="profile_verified_chip">موثّق</string>
+    <string name="profile_completion_title">أكمل ملفك</string>
+    <string name="profile_completion_subtitle">الملف المكتمل يظهر أكثر ويجذب اهتماماً أكبر</string>
+    <string name="profile_missing_name">الاسم</string>
+    <string name="profile_missing_photo">الصورة</string>
+    <string name="profile_missing_bio">النبذة</string>
+    <string name="profile_missing_gender">الجنس</string>
+    <string name="profile_missing_birth">تاريخ الميلاد</string>
+    <string name="profile_missing_country">الدولة</string>
+    <string name="profile_missing_interests">الاهتمامات</string>
+    <string name="profile_my_info_title">ملفي التعريفي</string>
+    <string name="profile_my_info_subtitle">المعلومات، النبذة، الاهتمامات والصور</string>
+    <string name="profile_friends_subtitle">أصدقاؤك وطلبات الصداقة</string>
+    <string name="profile_friend_requests_badge">%d طلب</string>
     <string name="profile_label_gender">الجنس</string>
     <string name="profile_label_age">العمر</string>
     <string name="profile_label_country">الدولة</string>
@@ -135,6 +153,15 @@
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
     <string name="settings_theme_title">اختر المظهر</string>
+    <string name="settings_chat_wallpaper">خلفية المحادثة</string>
+    <string name="settings_chat_wallpaper_title">اختر خلفية المحادثة</string>
+    <string name="settings_chat_wallpaper_hint">تُطبَّق على جميع المحادثات وتتلوّن مع المظهر</string>
+    <string name="chat_wallpaper_hearts">قلوب</string>
+    <string name="chat_wallpaper_none">سادة</string>
+    <string name="chat_wallpaper_stars">نجوم</string>
+    <string name="chat_wallpaper_bubbles">فقاعات</string>
+    <string name="chat_wallpaper_dots">نقاط</string>
+    <string name="chat_wallpaper_waves">أمواج</string>
     <string name="settings_language">اللغة</string>
     <string name="settings_language_title">اختر اللغة</string>
     <string name="settings_section_docs">المستندات</string>
@@ -336,6 +363,8 @@
     <string name="avatar_section_title">صورة الملف الشخصي</string>
     <string name="avatar_section_hint">اختر صورة جاهزة أو ارفع صورتك</string>
     <string name="avatar_upload">من جهازي</string>
+    <string name="edit_profile_preset_avatars">صور جاهزة</string>
+    <string name="edit_profile_preset_hint">اختر واحدة لتصبح صورة ملفك فوراً</string>
 
     <!-- Content policy acknowledgment -->
     <string name="policy_title">سياسة المحتوى والسلوك</string>
@@ -1161,6 +1190,8 @@
     <string name="label_location">الموقع</string>
     <string name="profile_interests">الاهتمامات</string>
     <string name="profile_bio">النبذة</string>
+    <string name="profile_no_details_title">لم يضف تفاصيل بعد</string>
+    <string name="profile_no_details_subtitle">جرّب أن تبدأ محادثة وتتعرّف عليه</string>
     <string name="profile_photos">الصور</string>
     <string name="label_friend">صديق</string>
     <string name="label_request_sent">مُرسل</string>

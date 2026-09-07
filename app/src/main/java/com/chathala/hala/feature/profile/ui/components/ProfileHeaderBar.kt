@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.QrCode
@@ -21,14 +20,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /**
- * شريط أعلى صفحة الملف الشخصي:
- *  - يسار: عنوان الصفحة
- *  - يمين: مجموعتان من الإجراءات السريعة في حاويات دائرية.
+ * شريط أعلى صفحة الملف الشخصي — يُرسم فوق تدرّج الهيدر، لذا نصّه وأيقوناته بيضاء
+ * داخل حاويات شفّافة. المجموعتان كما في iOS: (تعديل، مظهر) و(QR، إعدادات).
+ * لا زر خروج هنا — موضعه الإعدادات فقط.
  */
 @Composable
 fun ProfileHeaderBar(
@@ -37,7 +37,6 @@ fun ProfileHeaderBar(
     onShowQr: () -> Unit,
     onTheme: () -> Unit,
     onEdit: () -> Unit,
-    onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -49,22 +48,21 @@ fun ProfileHeaderBar(
     ) {
         ActionPill(
             actions = listOf(
-                Icons.Filled.Settings to onSettings,
-                Icons.Filled.QrCode to onShowQr
+                Icons.Filled.Edit to onEdit,
+                Icons.Filled.Palette to onTheme
             )
         )
 
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground
+            color = Color.White
         )
 
         ActionPill(
             actions = listOf(
-                Icons.Filled.Palette to onTheme,
-                Icons.Filled.Edit to onEdit,
-                Icons.AutoMirrored.Filled.ExitToApp to onLogout
+                Icons.Filled.QrCode to onShowQr,
+                Icons.Filled.Settings to onSettings
             )
         )
     }
@@ -77,7 +75,7 @@ private fun ActionPill(
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(22.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
+            .background(Color.White.copy(alpha = 0.22f))
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -89,7 +87,7 @@ private fun ActionPill(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
             }

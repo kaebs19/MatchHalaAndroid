@@ -523,6 +523,13 @@ interface ApiService {
         @Header("Authorization") bearer: String
     ): com.chathala.hala.feature.premium.data.SubscriptionStatusResponse
 
+    // ── My stats / إحصاءات ملفي ───────────────────────────────────
+
+    @GET("api/mobile/stats")
+    suspend fun getMyStats(
+        @Header("Authorization") bearer: String
+    ): com.chathala.hala.feature.profile.data.MyStatsResponse
+
     // ── Profile views / الزوّار ──────────────────────────────────
 
     @POST("api/mobile/profile-views")
