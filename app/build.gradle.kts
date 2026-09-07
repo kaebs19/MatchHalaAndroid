@@ -27,8 +27,8 @@ android {
         //
         // تنبيه تاريخي: 2.2.3 (20) بُنيت من فرع لم يكن مدموجاً مع main، فشُحنت
         // ناقصةً UMP وترقية SDK الإعلانات واستعادة المشتريات. 2.2.4 حملتها.
-        versionCode = 22
-        versionName = "2.2.5"
+        versionCode = 23
+        versionName = "2.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
