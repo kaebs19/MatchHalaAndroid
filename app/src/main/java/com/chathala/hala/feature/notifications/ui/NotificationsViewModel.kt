@@ -105,7 +105,10 @@ class NotificationsViewModel(
             is NetworkResult.Success -> {
                 repo.updateUnreadCount(r.data.unreadCount)
                 _state.update { cur ->
-                    val combined = if (append) cur.items + r.data.notifications else r.data.notifications
+                    // distinctBy: تداخل الصفحات (إشعار جديد يزيح الترتيب بين طلبين) يُعيد
+                    // العنصر نفسه، ومفتاح مكرّر في LazyColumn يرمي استثناءً ويُسقط الشاشة.
+                    val combined = (if (append) cur.items + r.data.notifications else r.data.notifications)
+                        .distinctBy { it.id }
                     cur.copy(
                         initialLoading = false,
                         refreshing = false,

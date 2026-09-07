@@ -102,7 +102,10 @@ fun ViolationsHistoryScreen(
         else state.violations.filter { it.type == filter }
     }
 
-    SettingsScaffold(title = S.get(R.string.violations_history_title), onBack = onBack) {
+    // scrollable=false إلزامي: القائمة أدناه LazyColumn، ووضعها داخل verticalScroll يقيسها
+    // بارتفاع لا نهائي فيرمي Compose «checkScrollableContainerConstraints» — انهيار
+    // رُصد في Play Console على 2.2.5 (22).
+    SettingsScaffold(title = S.get(R.string.violations_history_title), onBack = onBack, scrollable = false) {
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 state.loading -> CircularProgressIndicator(

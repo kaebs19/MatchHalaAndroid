@@ -247,7 +247,7 @@ class UserSearchViewModel(
             val fresh = batch.filterNot { it.id in existing }
             val freshIds = fresh.map { it.id }.toSet()
             _state.update {
-                val merged = it.online + fresh
+                val merged = (it.online + fresh).distinctBy { u -> u.id }
                 it.copy(
                     onlineLoadingMore = false,
                     online = merged,
