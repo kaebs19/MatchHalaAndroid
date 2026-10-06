@@ -157,6 +157,9 @@ fun UserProfileScreen(
     if (showMessageSheet && state.user != null) {
         MessageBottomSheet(
             targetName = state.user?.name,
+            country = state.user?.country,
+            interest = state.user?.interests?.firstOrNull(),
+            isOnline = state.user?.isOnline,
             sending = state.requesting,
             alreadySent = state.requestSent,
             onSend = { msg ->
@@ -601,6 +604,9 @@ private fun NameRow(user: UserProfile) {
 @Composable
 private fun MessageBottomSheet(
     targetName: String?,
+    country: String?,
+    interest: String?,
+    isOnline: Boolean?,
     sending: Boolean,
     alreadySent: Boolean,
     onSend: (String?) -> Unit,
@@ -627,6 +633,10 @@ private fun MessageBottomSheet(
             Spacer(Modifier.height(16.dp))
 
             QuickMessagesRow(
+                country = country,
+                isOnline = isOnline,
+                interest = interest,
+                selected = text,
                 onPick = { text = it },
                 enabled = !sending && !alreadySent
             )
@@ -650,8 +660,9 @@ private fun MessageBottomSheet(
                 ) { Text(S.get(R.string.action_cancel)) }
 
                 androidx.compose.material3.Button(
-                    onClick = { onSend(text.trim().ifBlank { null }) },
-                    enabled = !sending && !alreadySent,
+                    // الرسالة إلزامية — مثل نافذة الاكتشاف وiOS
+                    onClick = { onSend(text.trim()) },
+                    enabled = !sending && !alreadySent && text.isNotBlank(),
                     modifier = Modifier.weight(1f)
                 ) {
                     if (sending) {

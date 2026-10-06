@@ -804,6 +804,9 @@
     <string name="quick_msg_hi">مرحبا</string>
     <string name="quick_msg_how_are_you">كيف حالك؟</string>
     <string name="quick_msg_get_to_know">نتعرف؟</string>
+    <string name="quick_msg_country">من %1$s؟ حياك</string>
+    <string name="quick_msg_interest">شفت اهتمامك بـ%1$s</string>
+    <string name="quick_msg_online">شفتك متصل، كيف يومك؟</string>
     <string name="quick_messages_label">رسائل سريعة (اضغط للإدراج)</string>
 
     <!-- com/chathala/hala/feature/discover/ui/components/SwipeActionButtons.kt -->

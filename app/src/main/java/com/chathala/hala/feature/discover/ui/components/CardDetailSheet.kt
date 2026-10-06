@@ -149,7 +149,8 @@ fun CardDetailSheet(
                 card.distanceLabel?.takeIf { it.isNotBlank() }?.let { append(it) }
                 if (!card.country.isNullOrBlank()) {
                     if (isNotEmpty()) append(" • ")
-                    append(card.country)
+                    // country رمز ISO — الاسم المعروض من Countries كبطاقة الاكتشاف
+                    append(com.chathala.hala.core.data.Countries.byCode(card.country)?.name ?: card.country)
                 }
                 card.distance?.let {
                     if (isNotEmpty()) append(" • ")
@@ -179,6 +180,9 @@ fun CardDetailSheet(
 
             if (!alreadyRequested) {
                 QuickMessagesRow(
+                    country = card.country,
+                    isOnline = card.isOnline,
+                    selected = greeting,
                     onPick = { greeting = it },
                     enabled = !sending
                 )
@@ -207,8 +211,10 @@ fun CardDetailSheet(
                         Text(S.get(R.string.action_cancel))
                     }
                     Button(
-                        onClick = { onSendRequest(greeting.trim().ifBlank { null }) },
-                        enabled = !sending,
+                        // ⚠️ الرسالة إلزامية (مثل iOS): الطلب بلا رسالة يُقبل 6% مقابل ~27%
+                        //    للطلب برسالة (قياس أكتوبر ٢٠٢٦ على طلبات أندرويد)
+                        onClick = { onSendRequest(greeting.trim()) },
+                        enabled = !sending && greeting.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary

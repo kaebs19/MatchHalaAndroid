@@ -27,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chathala.hala.core.util.HapticHelper
+import com.chathala.hala.core.data.Countries
+import androidx.compose.runtime.remember
 
 /**
  * صف رسائل سريعة قابل للتمرير أفقياً.
@@ -34,21 +36,41 @@ import com.chathala.hala.core.util.HapticHelper
  * النقر **يُدرج** النصّ في حقل الرسالة عبر [onPick] ولا يُرسل: طلب المحادثة
  * إجراء يراه الطرف الآخر ولا يمكن سحبه، فإرساله بلمسة واحدة عابرة كان يُنتج
  * طلبات بالخطأ. المستخدم يعدّل النصّ إن شاء ثم يضغط زرّ الإرسال.
+ *
+ * ⚠️ مطابق لـ iOS (`MessageInputView.quickMessages`): الشرائح الثابتة عبارات
+ *    نمطية يُرسلها الجميع للجميع فيُدفن الطلب بين مئات مثله؛ المشتقّة من بروفايل
+ *    المستلم تتصدّر لأنها تُثبت أن المُرسِل قرأ شيئاً عنه. الإيموجي جزء من الرسالة.
  */
 
-private data class QuickMessage(val emoji: String, val text: String)
+private data class QuickMessage(val emoji: String, val text: String) {
+    val message: String get() = "$text $emoji"
+}
 
-private val QuickMessages = listOf(
-    QuickMessage("👋", S.get(R.string.quick_msg_hi)),
-    QuickMessage("😊", "Hello"),
-    QuickMessage("🌹", S.get(R.string.quick_msg_how_are_you)),
-    QuickMessage("✨", "How are you?"),
-    QuickMessage("☕️", S.get(R.string.quick_msg_get_to_know)),
-    QuickMessage("💬", "Let's chat!")
-)
+private fun quickMessagesFor(country: String?, interest: String?, isOnline: Boolean?): List<QuickMessage> {
+    val items = mutableListOf<QuickMessage>()
+    // ١) إشارة شخصية من البروفايل — country رمز ISO، والاسم من Countries
+    Countries.byCode(country)?.let {
+        items += QuickMessage("📍", S.get(R.string.quick_msg_country, it.name))
+    }
+    interest?.takeIf { it.isNotBlank() }?.let {
+        items += QuickMessage("✨", S.get(R.string.quick_msg_interest, it))
+    }
+    if (isOnline == true) {
+        items += QuickMessage("👋", S.get(R.string.quick_msg_online))
+    }
+    // ٢) العامة في الذيل لمن لا يجد ما يقوله — بلغة التطبيق وحدها
+    items += QuickMessage("💬", S.get(R.string.quick_msg_get_to_know))
+    items += QuickMessage("🌹", S.get(R.string.quick_msg_how_are_you))
+    items += QuickMessage("👋", S.get(R.string.quick_msg_hi))
+    return items
+}
 
 @Composable
 fun QuickMessagesRow(
+    country: String?,
+    isOnline: Boolean?,
+    selected: String,
+    interest: String? = null,
     onPick: (String) -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
@@ -72,15 +94,15 @@ fun QuickMessagesRow(
                 .padding(vertical = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            QuickMessages.forEach { msg ->
+            remember(country, interest, isOnline) { quickMessagesFor(country, interest, isOnline) }.forEach { msg ->
                 QuickMessageChip(
                     emoji = msg.emoji,
                     text = msg.text,
-                    selected = false,
+                    selected = selected == msg.message,
                     onClick = {
                         if (!enabled) return@QuickMessageChip
                         HapticHelper.light(haptic)
-                        onPick(msg.text)
+                        onPick(msg.message)
                     }
                 )
             }
