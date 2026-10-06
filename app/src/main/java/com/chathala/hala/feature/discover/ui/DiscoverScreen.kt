@@ -77,6 +77,8 @@ fun DiscoverScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+    val matched by viewModel.match.collectAsStateWithLifecycle()
+    val myAvatar by viewModel.myAvatar.collectAsStateWithLifecycle()
     val snackbarHost = rememberHalaSnackbarHost()
     var detailCard by remember { mutableStateOf<DiscoverCard?>(null) }
     var showFilters by remember { mutableStateOf(false) }
@@ -200,10 +202,26 @@ fun DiscoverScreen(
             }
         }
 
+        // قلوب متطايرة مع كل إعجاب (سحب/زر/نقر مزدوج) — مثل iOS
+        com.chathala.hala.feature.discover.ui.components.FloatingHearts(trigger = viewModel.likeBurst)
+
         HalaSnackbarHost(
             hostState = snackbarHost,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+
+        matched?.let { card ->
+            com.chathala.hala.feature.discover.ui.components.MatchPopup(
+                matched = card,
+                myAvatar = myAvatar,
+                // «أرسل رسالة» تفتح نافذة الطلب نفسها بافتتاحياتها الشخصية
+                onSendMessage = {
+                    viewModel.dismissMatch()
+                    detailCard = card
+                },
+                onKeepSwiping = viewModel::dismissMatch
+            )
+        }
 
         if (showNativeOverlay) {
             NativeAdOverlay(onDismiss = {

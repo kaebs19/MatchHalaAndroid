@@ -1325,4 +1325,9 @@
     <string name="pending_sort_newest">Newest</string>
     <string name="pending_sort_best">Best match</string>
     <string name="pending_suggested">⭐ Suggested</string>
+    <string name="match_title">It\'s a Match! 🎉</string>
+    <string name="match_subtitle">You and %1$s liked each other</string>
+    <string name="match_hint">Start the conversation now, don\'t miss the chance!</string>
+    <string name="match_send_message">Send a message</string>
+    <string name="match_keep_swiping">Keep exploring</string>
 </resources>

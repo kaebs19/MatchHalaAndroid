@@ -1371,4 +1371,9 @@
     <string name="pending_sort_newest">الأحدث</string>
     <string name="pending_sort_best">الأنسب</string>
     <string name="pending_suggested">⭐ مقترح</string>
+    <string name="match_title">تطابق! 🎉</string>
+    <string name="match_subtitle">أنت و%1$s أعجبتم ببعض</string>
+    <string name="match_hint">ابدأ المحادثة الحين ولا تضيّع الفرصة!</string>
+    <string name="match_send_message">أرسل رسالة</string>
+    <string name="match_keep_swiping">تابع الاستكشاف</string>
 </resources>

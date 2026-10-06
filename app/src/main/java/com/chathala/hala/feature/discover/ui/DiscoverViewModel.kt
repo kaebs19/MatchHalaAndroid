@@ -78,6 +78,23 @@ class DiscoverViewModel(
     private val _message = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val message: SharedFlow<String> = _message.asSharedFlow()
 
+    /** صورتي — لنافذة التطابق */
+    val myAvatar: StateFlow<String?> = userRepository.currentUser
+        .map { it?.profileImage }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /**
+     * تطابق متبادل يُعرض نافذةً كاملة (مثل iOS `MatchPopupView`) لا رسالة عابرة:
+     * الطرف الآخر أبدى اهتماماً فعلاً، فهي أعلى لحظة احتمالاً للردّ.
+     */
+    private val _match = MutableStateFlow<DiscoverCard?>(null)
+    val match: StateFlow<DiscoverCard?> = _match.asStateFlow()
+    fun dismissMatch() { _match.value = null }
+
+    /** نبضة قلوب متطايرة مع كل إعجاب */
+    private val _likeBurst = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val likeBurst: SharedFlow<Unit> = _likeBurst.asSharedFlow()
+
     private val _openConversation = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val openConversation: SharedFlow<String> = _openConversation.asSharedFlow()
 
@@ -276,12 +293,13 @@ class DiscoverViewModel(
         val alreadyLiked = card.id in _state.value.likedIds
         if (!alreadyLiked) {
             _state.update { it.copy(likedIds = it.likedIds + card.id) }  // تغيّر اللون فوراً
+            _likeBurst.tryEmit(Unit)
             val name = card.name?.takeIf { it.isNotBlank() }
             _message.tryEmit(if (name != null) S.get(R.string.discover_liked_named, name) else S.get(R.string.discover_liked))
             viewModelScope.launch {
                 when (val r = repo.recordSwipe(card.id, "like")) {
                     is NetworkResult.Success ->
-                        if (r.data.matched) _message.tryEmit(S.serverOr(r.data.message, R.string.discover_new_match))
+                        if (r.data.matched) _match.value = card
                     is NetworkResult.Error -> { /* «سبق السوايب» وغيره → تجاهل بهدوء، نُبقي اللون */ }
                 }
             }
@@ -297,7 +315,7 @@ class DiscoverViewModel(
         viewModelScope.launch {
             when (val r = repo.recordSwipe(card.id, "superlike")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _message.tryEmit(S.serverOr(r.data.message, R.string.discover_new_match))
+                    if (r.data.matched) _match.value = card
                 is NetworkResult.Error -> {
                     // مثل تجاوز الحد اليومي → أظهر الرسالة وأعِد لون الزر
                     _state.update { it.copy(likedIds = it.likedIds - card.id) }
