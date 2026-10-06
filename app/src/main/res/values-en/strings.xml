@@ -1322,4 +1322,7 @@
     <string name="pending_withdraw_confirm">Withdraw</string>
     <string name="pending_withdrawn">Request withdrawn</string>
     <string name="pending_sent_tip">We remind the recipient after a day, and a request expires on its own after 7 days without a reply. Messages that mention something from their profile get accepted more than a plain hello.</string>
+    <string name="pending_sort_newest">Newest</string>
+    <string name="pending_sort_best">Best match</string>
+    <string name="pending_suggested">⭐ Suggested</string>
 </resources>

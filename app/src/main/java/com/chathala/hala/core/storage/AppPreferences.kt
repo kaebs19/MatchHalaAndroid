@@ -148,6 +148,19 @@ class AppPreferences(private val context: Context) {
         context.appPrefs.edit { it[searchGridKey] = grid }
     }
 
+    // ── ترتيب الطلبات الواردة ──
+
+    private val requestsBestMatchKey = booleanPreferencesKey("requests_sort_best_match")
+
+    /** false = الأحدث (الافتراضي)، true = الأنسب. يُحفظ — مثل iOS `requests_sort_mode`. */
+    val requestsSortBestMatch: Flow<Boolean> = context.appPrefs.data.map {
+        it[requestsBestMatchKey] ?: false
+    }
+
+    suspend fun setRequestsSortBestMatch(bestMatch: Boolean) {
+        context.appPrefs.edit { it[requestsBestMatchKey] = bestMatch }
+    }
+
     // ── طلب إذن الإشعارات ──
 
     private val notifPromptDismissedAtKey = longPreferencesKey("notif_prompt_dismissed_at")

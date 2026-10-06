@@ -89,6 +89,9 @@ fun PendingRequestsScreen(
                 sentCount = state.sentCount,
                 onSelect = viewModel::selectTab
             )
+            if (state.tab == PendingTab.RECEIVED && state.received.size >= 2) {
+                SortBar(bestMatch = state.sortBestMatch, onSelect = viewModel::setSortBestMatch)
+            }
 
             PullToRefreshBox(
                 isRefreshing = state.refreshing,
@@ -124,6 +127,7 @@ fun PendingRequestsScreen(
                             RequestListItem(
                                 request = req,
                                 isSent = state.tab == PendingTab.SENT,
+                                isPriority = req.id in state.receivedBucket.second,
                                 isProcessing = req.id in state.processingIds,
                                 onOpen = { onOpenRequestPreview(req.id) },
                                 onCancelSent = { withdrawTarget = req }
@@ -277,6 +281,7 @@ private fun RequestListItem(
     isSent: Boolean,
     isProcessing: Boolean,
     onOpen: () -> Unit,
+    isPriority: Boolean = false,
     onCancelSent: () -> Unit
 ) {
     val creator = request.creator
@@ -362,10 +367,7 @@ private fun RequestListItem(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    if (!isSent) {
-                        Spacer(Modifier.size(6.dp))
-                        NewBadge()
-                    }
+                    if (!isSent) ReceivedBadge(request, isPriority)
                 }
             }
 
@@ -449,6 +451,85 @@ private fun SentTipCard() {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+/** شريط الترتيب: الأحدث (افتراضي) أو الأنسب — مثل iOS `sortBar`. */
+@Composable
+private fun SortBar(bestMatch: Boolean, onSelect: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        listOf(false to S.get(R.string.pending_sort_newest), true to S.get(R.string.pending_sort_best)).forEach { (mode, label) ->
+            val selected = bestMatch == mode
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                        else Color.Transparent
+                    )
+                    .clickable { onSelect(mode) }
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+/**
+ * شارة الطلب الوارد — واحدة فقط بالأولوية:
+ * ينتهي قريباً (آخر يومين) ← مقترح (أعلى ثلاثة في «الأنسب») ← جديد (آخر 24س).
+ * ⚠️ «جديد» كانت على كل طلب مهما قدُم فلا تعني شيئاً.
+ */
+@Composable
+private fun ReceivedBadge(request: PendingRequest, isPriority: Boolean) {
+    val age = NotificationFormat.ageMillis(request.createdAt)
+    val dayMs = 24 * 3_600_000L
+    val leftMs = age?.let { 7 * dayMs - it }
+    when {
+        leftMs != null && leftMs in 1..(2 * dayMs) -> {
+            val hours = (leftMs / 3_600_000).toInt()
+            val label = if (hours < 24) S.plural(R.plurals.pending_expires_hours, hours)
+                        else S.plural(R.plurals.pending_expires_days, hours / 24)
+            Spacer(Modifier.size(6.dp))
+            Text(
+                text = label,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF9500),
+                maxLines = 1,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFFF9500).copy(alpha = 0.14f))
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
+        isPriority -> {
+            Spacer(Modifier.size(6.dp))
+            Text(
+                text = S.get(R.string.pending_suggested),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
+        age != null && age < dayMs -> {
+            Spacer(Modifier.size(6.dp))
+            NewBadge()
+        }
     }
 }
 

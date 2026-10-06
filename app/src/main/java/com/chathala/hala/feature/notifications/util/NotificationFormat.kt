@@ -46,6 +46,14 @@ object NotificationFormat {
         }
     }
 
+    /** عمر الموعد بالمللي ثانية حتى الآن — null لنصّ غير مقروء. */
+    fun ageMillis(iso: String?): Long? {
+        if (iso.isNullOrBlank()) return null
+        val trimmed = iso.substringBefore('.').trimEnd('Z')
+        val date = runCatching { isoParser.parse(trimmed) }.getOrNull() ?: return null
+        return System.currentTimeMillis() - date.time
+    }
+
     /**
      * «ينتهي خلال 3 أيام» لموعد مستقبلي، مع علم الإلحاح (أقل من يوم).
      * null لموعد فائت أو غير مقروء.

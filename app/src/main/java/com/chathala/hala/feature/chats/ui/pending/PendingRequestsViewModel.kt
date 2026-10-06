@@ -12,6 +12,8 @@ import com.chathala.hala.core.network.NetworkResult
 import com.chathala.hala.feature.chats.data.ConversationsRepository
 import com.chathala.hala.feature.chats.data.PendingRequest
 import com.chathala.hala.feature.chats.socket.HalaSocket
+import com.chathala.hala.core.storage.AppPreferences
+import com.chathala.hala.feature.notifications.util.NotificationFormat
 import com.chathala.hala.feature.chats.socket.SocketEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +28,21 @@ import kotlinx.coroutines.launch
 
 enum class PendingTab { RECEIVED, SENT }
 
+/** نقاط «الأنسب» بالإشارات المتاحة — نفس أوزان iOS (`relevanceScore`). */
+internal fun relevanceScore(r: PendingRequest): Int {
+    var score = 0
+    val text = r.initialMessage?.content?.trim().orEmpty()
+    if (text.isNotEmpty()) score += 40          // كتب رسالة فعلية — أقوى إشارة على الجدّية
+    if (text.length >= 15) score += 15
+    if (r.creator?.isVerified == true) score += 25
+    if (r.creator?.isPremium == true) score += 30
+    if (!r.creator?.profileImage.isNullOrBlank()) score += 10
+    if (r.isSuperLike == true) score += 20
+    val age = NotificationFormat.ageMillis(r.createdAt)
+    if (age != null && age < 24 * 3_600_000L) score += 12
+    return score
+}
+
 data class PendingUiState(
     val tab: PendingTab = PendingTab.RECEIVED,
     val loading: Boolean = true,
@@ -33,16 +50,35 @@ data class PendingUiState(
     val error: String? = null,
     val received: List<PendingRequest> = emptyList(),
     val sent: List<PendingRequest> = emptyList(),
-    val processingIds: Set<String> = emptySet()
+    val processingIds: Set<String> = emptySet(),
+    val sortBestMatch: Boolean = false
 ) {
+    /**
+     * الواردة مرتّبة + أعلى ثلاثة «مقترحة» حين تكون خمسة فأكثر.
+     * ⚠️ مطابق لـ iOS (`ChatRequestsView.incomingBucket`): الترتيب الزمني وحده يدفن
+     *    الطلب الجادّ تحت عشرات الطلبات الفارغة عند من يتلقّى المئات.
+     */
+    val receivedBucket: Pair<List<PendingRequest>, Set<String>> by lazy {
+        if (!sortBestMatch) {
+            // الأحدث وصولاً أولاً (أصغر عمر)
+            received.sortedBy { NotificationFormat.ageMillis(it.createdAt) ?: Long.MAX_VALUE } to emptySet()
+        } else {
+            val sorted = received.withIndex()
+                .sortedWith(compareByDescending<IndexedValue<PendingRequest>> { relevanceScore(it.value) }.thenBy { it.index })
+                .map { it.value }
+            sorted to (if (sorted.size >= 5) sorted.take(3).map { it.id }.toSet() else emptySet())
+        }
+    }
+
     val items: List<PendingRequest>
-        get() = if (tab == PendingTab.RECEIVED) received else sent
+        get() = if (tab == PendingTab.RECEIVED) receivedBucket.first else sent
     val receivedCount: Int get() = received.size
     val sentCount: Int get() = sent.size
 }
 
 class PendingRequestsViewModel(
     private val repo: ConversationsRepository,
+    private val prefs: AppPreferences,
     private val socket: HalaSocket
 ) : ViewModel() {
 
@@ -56,6 +92,9 @@ class PendingRequestsViewModel(
     val acceptedEvent: SharedFlow<AcceptedEvent> = _acceptedEvent.asSharedFlow()
 
     init {
+        prefs.requestsSortBestMatch
+            .onEach { best -> _state.update { it.copy(sortBestMatch = best) } }
+            .launchIn(viewModelScope)
         load()
         socket.incoming
             .onEach { evt ->
@@ -65,6 +104,10 @@ class PendingRequestsViewModel(
                 ) refresh(silent = true)
             }
             .launchIn(viewModelScope)
+    }
+
+    fun setSortBestMatch(best: Boolean) {
+        viewModelScope.launch { prefs.setRequestsSortBestMatch(best) }
     }
 
     fun selectTab(tab: PendingTab) {
@@ -213,6 +256,7 @@ class PendingRequestsViewModel(
                 val app = extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HalaApp
                 return PendingRequestsViewModel(
                     repo = app.conversationsRepository,
+                    prefs = app.appPreferences,
                     socket = app.socket
                 ) as T
             }

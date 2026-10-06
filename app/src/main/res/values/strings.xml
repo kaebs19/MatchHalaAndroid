@@ -1368,4 +1368,7 @@
     <string name="pending_withdraw_confirm">اسحبه</string>
     <string name="pending_withdrawn">تم سحب الطلب</string>
     <string name="pending_sent_tip">نذكّر المستلم بطلبك بعد يوم، وينتهي الطلب وحده بعد ٧ أيام إن لم يُردّ عليه. الرسالة التي تذكر شيئاً من بروفايله تُقبل أكثر من التحية العامة.</string>
+    <string name="pending_sort_newest">الأحدث</string>
+    <string name="pending_sort_best">الأنسب</string>
+    <string name="pending_suggested">⭐ مقترح</string>
 </resources>
