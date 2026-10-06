@@ -1376,4 +1376,5 @@
     <string name="match_hint">ابدأ المحادثة الحين ولا تضيّع الفرصة!</string>
     <string name="match_send_message">أرسل رسالة</string>
     <string name="match_keep_swiping">تابع الاستكشاف</string>
+    <string name="discover_active_ago">نشط %1$s</string>
 </resources>

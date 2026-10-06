@@ -1330,4 +1330,5 @@
     <string name="match_hint">Start the conversation now, don\'t miss the chance!</string>
     <string name="match_send_message">Send a message</string>
     <string name="match_keep_swiping">Keep exploring</string>
+    <string name="discover_active_ago">Active %1$s</string>
 </resources>

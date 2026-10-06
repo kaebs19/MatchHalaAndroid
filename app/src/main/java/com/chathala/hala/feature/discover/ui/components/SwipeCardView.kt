@@ -46,6 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -123,6 +127,19 @@ fun SwipeCardView(
     }
 
     val rotation = (animatedX / 20f).coerceIn(-20f, 20f)
+    // مغادرة البطاقة: تصغر وتتلاشى مع انزلاقها (iOS: scale 0.5 + opacity 0)
+    val goneProgress by animateFloatAsState(
+        targetValue = if (isGone) 1f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(300),
+        label = "gone"
+    )
+    // ظلّ بلون الاتجاه أثناء السحب — أخضر/أحمر/أزرق
+    val shadowColor = when {
+        offset.y < -with(density) { 50.dp.toPx() } -> Color(0xFF2EA9FF)
+        offset.x > with(density) { 50.dp.toPx() } -> Color(0xFF4CAF50)
+        offset.x < -with(density) { 50.dp.toPx() } -> Color(0xFFFF5252)
+        else -> Color.Black
+    }
     val age = ProfileFormatter.computeAge(card.birthDate)
 
     Box(
@@ -131,8 +148,20 @@ fun SwipeCardView(
             .onGloballyPositioned { containerWidthPx = it.size.width.toFloat().coerceAtLeast(1f) }
             .offset { IntOffset(animatedX.roundToInt(), animatedY.coerceAtMost(0f).roundToInt()) }
             .rotate(rotation)
+            .graphicsLayer {
+                val sc = 1f - 0.5f * goneProgress
+                scaleX = sc; scaleY = sc
+                alpha = 1f - goneProgress
+            }
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(24.dp),
+                ambientColor = shadowColor,
+                spotColor = shadowColor
+            )
             .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            // خلفية صلبة خلف الصورة (iOS #1F1233) — لا بطاقة شفّافة أثناء التحميل
+            .background(Brush.linearGradient(listOf(Color(0xFF3A2B5F), Color(0xFF1F1233))))
             .border(
                 width = if (card.isPremium == true) 2.dp else 1.dp,
                 brush = if (card.isPremium == true) Brush.linearGradient(
@@ -208,23 +237,26 @@ fun SwipeCardView(
 
         // Photo indicator dashes (top)
         if (photos.size > 1 && showOverlay) {
+            // كبسولات iOS: الحالية أعرض (20) والبقية 8، مع حركة عند التنقّل
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .align(Alignment.TopStart)
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
                 photos.forEachIndexed { idx, _ ->
+                    val active = idx == photoIndex
+                    val w by androidx.compose.animation.core.animateDpAsState(
+                        targetValue = if (active) 20.dp else 8.dp,
+                        animationSpec = androidx.compose.animation.core.tween(200),
+                        label = "dash"
+                    )
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .height(3.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(
-                                if (idx == photoIndex) Color.White
-                                else Color.White.copy(alpha = 0.35f)
-                            )
+                            .width(w)
+                            .height(4.dp)
+                            .clip(CircleShape)
+                            .background(if (active) Color.White else Color.White.copy(alpha = 0.4f))
                     )
                 }
             }
@@ -232,17 +264,19 @@ fun SwipeCardView(
 
         if (showOverlay) {
             // Readability gradient
+            // شريط القراءة في الـ 42% السفلية فقط (iOS readabilityLayer) — الصورة تبقى نقيّة أعلاه
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.42f)
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
                                 Color.Black.copy(alpha = 0.35f),
-                                Color.Black.copy(alpha = 0.75f)
-                            ),
-                            startY = 200f
+                                Color.Black.copy(alpha = 0.78f)
+                            )
                         )
                     )
             )
@@ -329,14 +363,18 @@ private fun InfoOverlay(
             }
         }
 
-        // مؤشّرات: متصل + بالقرب منك (≤30 كم)
+        // مؤشّرات: الحضور + بالقرب منك (≤30 كم).
+        // ⚠️ الحضور من lastLogin مثل iOS (`smartPresence`): متصل < ساعتين (نبض)،
+        //    «نشط قبل…» حتى 24س. isOnline وحده كان يُسقط من دخل قبل ساعة — وهو
+        //    أرجح من يردّ على طلبك اليوم.
+        val presence = presenceOf(card)
         val nearby = card.distance != null && card.distance <= 30.0
-        if (card.isOnline == true || nearby) {
+        if (presence != null || nearby) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                if (card.isOnline == true) OnlinePill()
+                if (presence != null) PresencePill(presence)
                 if (nearby) NearbyPill()
             }
         }
@@ -403,8 +441,34 @@ private fun NearbyPill() {
     }
 }
 
+/** null = لا حضور ظاهر (أقدم من 24س أو مخفي) · first = النص · second = متصل الآن */
+private fun presenceOf(card: DiscoverCard): Pair<String, Boolean>? {
+    val age = com.chathala.hala.feature.notifications.util.NotificationFormat.ageMillis(card.lastLogin)
+    val hour = 3_600_000L
+    return when {
+        card.isOnline == true || (age != null && age < 2 * hour) -> S.get(R.string.status_online) to true
+        age != null && age < 24 * hour -> S.get(
+            R.string.discover_active_ago,
+            com.chathala.hala.feature.notifications.util.NotificationFormat.timeAgo(card.lastLogin)
+        ) to false
+        else -> null
+    }
+}
+
 @Composable
-private fun OnlinePill() {
+private fun PresencePill(presence: Pair<String, Boolean>) {
+    val (label, online) = presence
+    val pulse = androidx.compose.animation.core.rememberInfiniteTransition(label = "pulse")
+    val ring by pulse.animateFloat(
+        initialValue = 1f,
+        targetValue = 2.2f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            androidx.compose.animation.core.tween(1200),
+            androidx.compose.animation.core.RepeatMode.Restart
+        ),
+        label = "ring"
+    )
+    val dotColor = if (online) Color(0xFF4CAF50) else Color(0xFFFFB300)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -412,18 +476,29 @@ private fun OnlinePill() {
             .background(Color(0xCC000000))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF4CAF50))
-        )
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(8.dp)) {
+            if (online) {
+                // نبض حول النقطة — «متصل الآن» حيّ لا ثابت
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .graphicsLayer {
+                            scaleX = ring; scaleY = ring
+                            alpha = (2.2f - ring) / 1.2f * 0.6f
+                        }
+                        .clip(CircleShape)
+                        .background(dotColor)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(dotColor)
+            )
+        }
         Spacer(Modifier.width(6.dp))
-        Text(
-            text = S.get(R.string.status_online),
-            color = Color.White,
-            fontSize = 11.sp
-        )
+        Text(text = label, color = Color.White, fontSize = 11.sp)
     }
 }
 
