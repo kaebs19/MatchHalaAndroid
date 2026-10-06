@@ -56,6 +56,7 @@ import com.chathala.hala.feature.chats.data.PendingRequest
 import com.chathala.hala.feature.chats.ui.pending.components.GreetingDialog
 import com.chathala.hala.feature.notifications.util.NotificationFormat
 import com.chathala.hala.ui.components.ErrorState
+import com.chathala.hala.ui.components.enterAnimation
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
 import com.chathala.hala.ui.components.HalaAsyncImage
@@ -125,6 +126,8 @@ fun PendingRequestsScreen(
                         }
                         items(state.items, key = { it.id }) { req ->
                             RequestListItem(
+                                // قبول/رفض/سحب: الصفّ يتلاشى والبقية تنزلق لمكانه بدل القفز
+                                modifier = Modifier.animateItem(),
                                 request = req,
                                 isSent = state.tab == PendingTab.SENT,
                                 isPriority = req.id in state.receivedBucket.second,
@@ -282,6 +285,7 @@ private fun RequestListItem(
     isProcessing: Boolean,
     onOpen: () -> Unit,
     isPriority: Boolean = false,
+    modifier: Modifier = Modifier,
     onCancelSent: () -> Unit
 ) {
     val creator = request.creator
@@ -289,7 +293,7 @@ private fun RequestListItem(
     val ringColor = if (isPremium) Color(0xFFFFB300) else MaterialTheme.colorScheme.primary
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onOpen),
@@ -600,7 +604,7 @@ private fun RingAvatar(url: String?, ringColor: Color, name: String?) {
 @Composable
 private fun EmptyPending(tab: PendingTab) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier.fillMaxSize().padding(32.dp).enterAnimation(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

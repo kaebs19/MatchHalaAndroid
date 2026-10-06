@@ -97,29 +97,36 @@ fun HalaNavGraph() {
     NavHost(
         navController = nav,
         startDestination = Routes.SPLASH,
-        // انتقالات احترافية: انزلاق أفقي خفيف + تلاشٍ بين الشاشات
+        // انتقالات احترافية: انزلاق أفقي خفيف + تلاشٍ بين الشاشات.
+        // ⚠️ slideIntoContainer(Start/End) يتبع اتجاه التخطيط: في العربية تدخل الشاشة
+        //    الجديدة من اليسار كما في iOS. slideInHorizontally بإزاحة موجبة ثابتة
+        //    كان يُدخلها من اليمين في الاتجاهين — معكوساً للعربية.
         enterTransition = {
-            androidx.compose.animation.slideInHorizontally(
-                initialOffsetX = { it / 5 },
-                animationSpec = androidx.compose.animation.core.tween(300)
+            slideIntoContainer(
+                towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = androidx.compose.animation.core.tween(300),
+                initialOffset = { it / 5 }
             ) + androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300))
         },
         exitTransition = {
-            androidx.compose.animation.slideOutHorizontally(
-                targetOffsetX = { -it / 8 },
-                animationSpec = androidx.compose.animation.core.tween(300)
+            slideOutOfContainer(
+                towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = androidx.compose.animation.core.tween(300),
+                targetOffset = { it / 8 }
             ) + androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
         },
         popEnterTransition = {
-            androidx.compose.animation.slideInHorizontally(
-                initialOffsetX = { -it / 5 },
-                animationSpec = androidx.compose.animation.core.tween(300)
+            slideIntoContainer(
+                towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = androidx.compose.animation.core.tween(300),
+                initialOffset = { it / 5 }
             ) + androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300))
         },
         popExitTransition = {
-            androidx.compose.animation.slideOutHorizontally(
-                targetOffsetX = { it / 5 },
-                animationSpec = androidx.compose.animation.core.tween(300)
+            slideOutOfContainer(
+                towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = androidx.compose.animation.core.tween(300),
+                targetOffset = { it / 5 }
             ) + androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
         }
     ) {

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -90,7 +91,9 @@ fun SwipeCardView(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onDoubleTap: () -> Unit = {},
-    showOverlay: Boolean = true
+    showOverlay: Boolean = true,
+    // طلب إزاحة من الأزرار (تخطٍّ/سوبر لايك) — نفس حركة السحب بدل الاختفاء الفوري
+    flingRequest: SwipeDirection? = null
 ) {
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
@@ -113,6 +116,27 @@ fun SwipeCardView(
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = 500f),
         label = "swipeY"
     )
+
+    LaunchedEffect(flingRequest) {
+        if (flingRequest == null || isGone) return@LaunchedEffect
+        HapticHelper.medium(haptic)
+        offset = when (flingRequest) {
+            SwipeDirection.LEFT -> Offset(-containerWidthPx * 1.5f, 0f)
+            SwipeDirection.RIGHT -> Offset(containerWidthPx * 1.5f, 0f)
+            SwipeDirection.UP -> Offset(0f, -1500f)
+        }
+        isGone = true
+    }
+
+    // البطاقة التالية تكبر من حجم «الإطلالة» (0.94) إلى مكانها بنابض —
+    // كانت تقفز إليه في إطار واحد
+    val enterScale = remember(card.id) { androidx.compose.animation.core.Animatable(if (enabled) 0.94f else 1f) }
+    LaunchedEffect(card.id) {
+        if (enabled) enterScale.animateTo(
+            1f,
+            spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMediumLow)
+        )
+    }
 
     LaunchedEffect(isGone) {
         if (isGone) {
@@ -146,10 +170,12 @@ fun SwipeCardView(
         modifier = modifier
             .fillMaxSize()
             .onGloballyPositioned { containerWidthPx = it.size.width.toFloat().coerceAtLeast(1f) }
-            .offset { IntOffset(animatedX.roundToInt(), animatedY.coerceAtMost(0f).roundToInt()) }
+            // ⚠️ absoluteOffset لا offset: الأخير يعكس x في الاتجاه العربي (RTL) بينما
+            //    إحداثيات اللمس مطلقة — فكانت البطاقة تتحرك عكس الإصبع في العربية
+            .absoluteOffset { IntOffset(animatedX.roundToInt(), animatedY.coerceAtMost(0f).roundToInt()) }
             .rotate(rotation)
             .graphicsLayer {
-                val sc = 1f - 0.5f * goneProgress
+                val sc = (1f - 0.5f * goneProgress) * enterScale.value
                 scaleX = sc; scaleY = sc
                 alpha = 1f - goneProgress
             }

@@ -61,6 +61,7 @@ import com.chathala.hala.feature.discover.ui.components.SwipeCardView
 import com.chathala.hala.feature.discover.ui.components.SwipeDirection
 import com.chathala.hala.feature.reporting.ui.ReportUserSheet
 import com.chathala.hala.ui.components.ErrorState
+import com.chathala.hala.ui.components.enterAnimation
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
 
@@ -413,6 +414,9 @@ private fun CardStack(
 ) {
     val current = state.currentCard ?: return
     val next = state.nextCard
+    // زرّا التخطي والسوبر لايك يطلبان من البطاقة أن تنزلق بنفسها ثم يُنفَّذ الإجراء
+    // عند انتهاء الحركة (onSwipe) — كما يحدث بالسحب
+    var flingRequest by remember(current.id) { mutableStateOf<SwipeDirection?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -444,12 +448,18 @@ private fun CardStack(
                 }
             }
 
-            SwipeCardView(
-                card = current,
-                onSwiped = onSwipe,
-                onTap = { onTapCard(current) },
-                onDoubleTap = onLike
-            )
+            // ⚠️ key: بدونه تُعاد نسخة البطاقة نفسها للمستخدم التالي فترث حالة الحركة
+            //    (animateFloatAsState) من البطاقة المُزاحة — فتعود من خارج الشاشة مائلةً
+            //    إلى مكانها. لكل مستخدم حالته من الصفر.
+            androidx.compose.runtime.key(current.id) {
+                SwipeCardView(
+                    card = current,
+                    onSwiped = onSwipe,
+                    onTap = { onTapCard(current) },
+                    onDoubleTap = onLike,
+                    flingRequest = flingRequest
+                )
+            }
         }
 
         // بانر بين بطاقة المستخدم والأزرار السريعة.
@@ -462,9 +472,10 @@ private fun CardStack(
         )
 
         SwipeActionButtons(
-            onSkip = onSkip,
+            onSkip = { if (flingRequest == null) flingRequest = SwipeDirection.LEFT },
             onMessage = onMessage,
-            onSuperLike = onSuperLike,
+            // المشترك: البطاقة تطير للأعلى ثم onSwipe(UP) يسجّل السوبر لايك؛ غيره: بوابة الاشتراك
+            onSuperLike = { if (isPremium) { if (flingRequest == null) flingRequest = SwipeDirection.UP } else onSuperLike() },
             onLike = onLike,
             onUndo = onUndo,
             isPremium = isPremium,
@@ -525,7 +536,7 @@ private fun NativeAdOverlay(onDismiss: () -> Unit) {
 @Composable
 private fun EmptyDiscover(onRefresh: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier.fillMaxSize().padding(32.dp).enterAnimation(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

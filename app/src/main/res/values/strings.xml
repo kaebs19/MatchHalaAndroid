@@ -1377,4 +1377,6 @@
     <string name="match_send_message">أرسل رسالة</string>
     <string name="match_keep_swiping">تابع الاستكشاف</string>
     <string name="discover_active_ago">نشط %1$s</string>
+    <string name="request_sent_title">وصل طلبك ✨</string>
+    <string name="request_sent_hint">نذكّر %1$s بطلبك بعد يوم إن لم يردّ — تابعه من «طلباتي المُرسَلة».</string>
 </resources>

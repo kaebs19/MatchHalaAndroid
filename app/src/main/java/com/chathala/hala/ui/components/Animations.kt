@@ -37,6 +37,23 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 /**
+ * دخول ناعم للحالات الفارغة والبطاقات: تلاشٍ + صعود خفيف + تكبير من 0.96.
+ * يُشغَّل مرة عند أول ظهور.
+ */
+fun Modifier.enterAnimation(delayMs: Int = 0): Modifier = composed {
+    val p = remember { androidx.compose.animation.core.Animatable(0f) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        p.animateTo(1f, tween(420, delayMillis = delayMs, easing = FastOutSlowInEasing))
+    }
+    this.graphicsLayer {
+        alpha = p.value
+        translationY = (1f - p.value) * 36f
+        val sc = 0.96f + 0.04f * p.value
+        scaleX = sc; scaleY = sc
+    }
+}
+
+/**
  * تكبير/تصغير خفيف عند الضغط — يمنح الأزرار والبطاقات إحساساً حيّاً.
  */
 fun Modifier.bounceClick(

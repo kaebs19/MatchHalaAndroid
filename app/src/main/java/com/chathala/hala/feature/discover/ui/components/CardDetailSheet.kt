@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
@@ -62,6 +64,15 @@ fun CardDetailSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var greeting by remember { mutableStateOf("") }
+    // أُرسل من هذه النافذة الآن (لا طلب سابق فُتحت عليه) → تأكيد متحرّك ثم إغلاق ذاتي
+    val openedAlreadyRequested = remember { alreadyRequested }
+    val justSent = alreadyRequested && !openedAlreadyRequested
+    androidx.compose.runtime.LaunchedEffect(justSent) {
+        if (justSent) {
+            kotlinx.coroutines.delay(1_800)
+            onDismiss()
+        }
+    }
     val age = ProfileFormatter.computeAge(card.birthDate)
 
     ModalBottomSheet(
@@ -178,7 +189,10 @@ fun CardDetailSheet(
 
             Spacer(Modifier.height(20.dp))
 
-            if (!alreadyRequested) {
+            // لحظة الإرسال: الحقل والأزرار تتحوّل إلى علامة تأكيد بنابض + ما سيحدث بعدها
+            if (alreadyRequested && justSent) {
+                SentConfirmation(name = card.name)
+            } else if (!alreadyRequested) {
                 QuickMessagesRow(
                     country = card.country,
                     isOnline = card.isOnline,
@@ -304,5 +318,53 @@ fun CardDetailSheet(
 
             Spacer(Modifier.height(16.dp))
         }
+    }
+}
+
+@Composable
+private fun SentConfirmation(name: String?) {
+    val pop = remember { androidx.compose.animation.core.Animatable(0f) }
+    val text = remember { androidx.compose.animation.core.Animatable(0f) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        pop.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.45f, stiffness = 300f))
+    }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(150)
+        text.animateTo(1f, androidx.compose.animation.core.tween(350))
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(64.dp)
+                .graphicsLayer { scaleX = pop.value; scaleY = pop.value }
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(34.dp)
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = S.get(R.string.request_sent_title),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.graphicsLayer { alpha = text.value; translationY = (1 - text.value) * 24f }
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = S.get(R.string.request_sent_hint, name ?: S.get(R.string.label_user)),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.graphicsLayer { alpha = text.value; translationY = (1 - text.value) * 24f }
+        )
     }
 }

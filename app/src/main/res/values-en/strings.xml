@@ -1331,4 +1331,6 @@
     <string name="match_send_message">Send a message</string>
     <string name="match_keep_swiping">Keep exploring</string>
     <string name="discover_active_ago">Active %1$s</string>
+    <string name="request_sent_title">Request sent ✨</string>
+    <string name="request_sent_hint">We\'ll remind %1$s after a day if they haven\'t replied — track it in your sent requests.</string>
 </resources>
