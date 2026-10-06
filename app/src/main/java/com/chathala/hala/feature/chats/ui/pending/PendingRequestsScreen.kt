@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -70,6 +71,7 @@ fun PendingRequestsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHost = rememberHalaSnackbarHost()
     var greetingTarget by remember { mutableStateOf<PendingRequest?>(null) }
+    var withdrawTarget by remember { mutableStateOf<PendingRequest?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.message.collect { snackbarHost.showSnackbar(it) }
@@ -114,13 +116,17 @@ fun PendingRequestsScreen(
                         ),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // توقّعات واضحة للمُرسِل: الصمت بلا تفسير يُقرأ رفضاً فيغادر
+                        if (state.tab == PendingTab.SENT) {
+                            item(key = "sent_tip") { SentTipCard() }
+                        }
                         items(state.items, key = { it.id }) { req ->
                             RequestListItem(
                                 request = req,
                                 isSent = state.tab == PendingTab.SENT,
                                 isProcessing = req.id in state.processingIds,
                                 onOpen = { onOpenRequestPreview(req.id) },
-                                onCancelSent = { viewModel.cancelSent(req.id) }
+                                onCancelSent = { withdrawTarget = req }
                             )
                         }
                         item { Spacer(Modifier.height(12.dp)) }
@@ -132,6 +138,27 @@ fun PendingRequestsScreen(
         HalaSnackbarHost(
             hostState = snackbarHost,
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
+    withdrawTarget?.let { target ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { withdrawTarget = null },
+            title = { Text(S.get(R.string.pending_withdraw_title)) },
+            text = {
+                Text(S.get(R.string.pending_withdraw_body, target.creator?.name ?: S.get(R.string.label_user)))
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    viewModel.cancelSent(target.id)
+                    withdrawTarget = null
+                }) { Text(S.get(R.string.pending_withdraw_confirm), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { withdrawTarget = null }) {
+                    Text(S.get(R.string.action_cancel))
+                }
+            }
         )
     }
 
@@ -269,7 +296,22 @@ private fun RequestListItem(
                 .padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RingAvatar(url = creator?.profileImage, ringColor = ringColor, name = creator?.name)
+            Box {
+                RingAvatar(url = creator?.profileImage, ringColor = ringColor, name = creator?.name)
+                if (isSent && creator?.isOnline == true) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(3.dp)
+                            .size(14.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF34C759))
+                    )
+                }
+            }
 
             Spacer(Modifier.size(12.dp))
 
@@ -306,7 +348,9 @@ private fun RequestListItem(
 
                 // السطر الثاني: معاينة الرسالة إن وُجدت، وإلا نص الحالة — مع شارة "جديد" على الطرف
                 val initial = request.initialMessage?.content?.takeIf { it.isNotBlank() }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isSent) {
+                    SentStatusLine(request)
+                } else Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = initial ?: if (isSent) S.get(R.string.pending_awaiting_reply) else S.get(R.string.pending_wants_to_talk),
                         style = MaterialTheme.typography.bodyMedium,
@@ -337,6 +381,74 @@ private fun RequestListItem(
                 )
             }
         }
+    }
+}
+
+/** «بانتظار الرد • ينتهي خلال 3 أيام» + «ذكّرناه بطلبك» إن أُرسل التذكير. */
+@Composable
+private fun SentStatusLine(request: PendingRequest) {
+    val left = NotificationFormat.timeLeft(request.expiresAt)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = S.get(R.string.pending_awaiting_reply),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1
+            )
+            if (left != null) {
+                Text(
+                    text = "  •  ",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+                Text(
+                    text = left.first,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = if (left.second) Color(0xFFFF9500) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+        }
+        if (request.reminderSent == true) {
+            Text(
+                text = S.get(R.string.pending_reminded),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SentTipCard() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Schedule,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.size(10.dp))
+        Text(
+            text = S.get(R.string.pending_sent_tip),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

@@ -46,6 +46,21 @@ object NotificationFormat {
         }
     }
 
+    /**
+     * «ينتهي خلال 3 أيام» لموعد مستقبلي، مع علم الإلحاح (أقل من يوم).
+     * null لموعد فائت أو غير مقروء.
+     */
+    fun timeLeft(iso: String?): Pair<String, Boolean>? {
+        if (iso.isNullOrBlank()) return null
+        val trimmed = iso.substringBefore('.').trimEnd('Z')
+        val date = runCatching { isoParser.parse(trimmed) }.getOrNull() ?: return null
+        val leftMs = date.time - System.currentTimeMillis()
+        if (leftMs <= 0) return null
+        val hours = (leftMs / 3_600_000).toInt()
+        return if (hours < 24) S.plural(R.plurals.pending_expires_hours, hours) to true
+        else S.plural(R.plurals.pending_expires_days, hours / 24) to false
+    }
+
     /** هل قرأ المستخدم الحالي هذا الإشعار؟ */
     fun isReadByCurrentUser(item: NotificationItem, userId: String?): Boolean {
         if (userId.isNullOrBlank()) return false

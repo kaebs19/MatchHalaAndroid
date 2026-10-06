@@ -24,7 +24,10 @@ data class PendingRequest(
     val isSuperLike: Boolean? = null,
     val creator: PendingRequestCreator? = null,
     val initialMessage: InitialMessage? = null,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    // ── المُرسَلة فقط (من sent-requests) ──
+    val expiresAt: String? = null,
+    val reminderSent: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -33,7 +36,33 @@ data class PendingRequestCreator(
     val name: String? = null,
     val profileImage: String? = null,
     val isPremium: Boolean? = null,
-    val isVerified: Boolean? = null
+    val isVerified: Boolean? = null,
+    val isOnline: Boolean? = null
+)
+
+// ── sent-requests (طلباتي المُرسَلة) ──────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class SentRequestsResponse(
+    val success: Boolean,
+    val data: SentRequestsData? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SentRequestsData(
+    val requests: List<SentRequest> = emptyList(),
+    val total: Int = 0
+)
+
+@JsonClass(generateAdapter = true)
+data class SentRequest(
+    @Json(name = "_id") val id: String,
+    val requestedAt: String? = null,
+    val expiresAt: String? = null,
+    val reminderSent: Boolean? = null,
+    // مستلم موقوف/محذوف — الخادم يُخفي بياناته
+    val hidden: Boolean? = null,
+    val user: PendingRequestCreator? = null
 )
 
 // ── accept-with-message ───────────────────────────────────────────

@@ -61,6 +61,12 @@ class ConversationsRepository(
         data
     }
 
+    /** طلباتي المُرسَلة المعلّقة — مع موعد الانتهاء وهل ذُكِّر المستلم. */
+    suspend fun fetchSentRequests(): NetworkResult<List<SentRequest>> = safeApiCall {
+        val resp = api.getSentRequests(bearer())
+        resp.data?.requests ?: throw IllegalStateException(S.get(R.string.err_data_unavailable))
+    }
+
     suspend fun acceptRequest(conversationId: String): NetworkResult<String> = safeApiCall {
         val resp = api.acceptConversation(bearer(), conversationId)
         S.serverOr(resp.message, R.string.conv_accepted)

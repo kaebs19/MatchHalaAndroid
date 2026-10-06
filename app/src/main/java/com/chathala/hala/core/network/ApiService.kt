@@ -310,6 +310,11 @@ interface ApiService {
         @Header("Authorization") bearer: String
     ): PendingRequestsResponse
 
+    @GET("api/mobile/conversations/sent-requests")
+    suspend fun getSentRequests(
+        @Header("Authorization") bearer: String
+    ): com.chathala.hala.feature.chats.data.SentRequestsResponse
+
     @PUT("api/mobile/conversations/{id}/accept")
     suspend fun acceptConversation(
         @Header("Authorization") bearer: String,

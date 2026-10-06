@@ -10,19 +10,15 @@ import com.chathala.hala.HalaApp
 import com.chathala.hala.core.network.ErrorMessages
 import com.chathala.hala.core.network.NetworkResult
 import com.chathala.hala.feature.chats.data.ConversationsRepository
-import com.chathala.hala.feature.chats.data.InitialMessage
 import com.chathala.hala.feature.chats.data.PendingRequest
-import com.chathala.hala.feature.chats.data.PendingRequestCreator
 import com.chathala.hala.feature.chats.socket.HalaSocket
 import com.chathala.hala.feature.chats.socket.SocketEvent
-import com.chathala.hala.feature.user.data.UserRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -47,7 +43,6 @@ data class PendingUiState(
 
 class PendingRequestsViewModel(
     private val repo: ConversationsRepository,
-    private val userRepo: UserRepository,
     private val socket: HalaSocket
 ) : ViewModel() {
 
@@ -89,11 +84,12 @@ class PendingRequestsViewModel(
     }
 
     private suspend fun fetchBoth(silent: Boolean) {
-        val selfId = userRepo.currentUser.first()?.id
         // 1) المستلَمة من endpoint pending
         val receivedResult = repo.fetchPendingRequests()
-        // 2) المرسَلة — نشتق من قائمة المحادثات (status=pending && creator=self)
-        val sentResult = repo.fetchConversations()
+        // 2) المرسَلة من sent-requests — مثل iOS.
+        // ⚠️ كانت مشتقّة من قائمة المحادثات (صفحة واحدة) فتسقط منها الطلبات الأقدم،
+        //    وبلا موعد انتهاء ولا علم التذكير.
+        val sentResult = repo.fetchSentRequests()
 
         when (receivedResult) {
             is NetworkResult.Success -> {
@@ -110,29 +106,18 @@ class PendingRequestsViewModel(
             }
         }
 
-        if (sentResult is NetworkResult.Success && selfId != null) {
-            val sentPending = sentResult.data.conversations
-                .filter { it.status == "pending" && it.creator == selfId }
-                .map { conv ->
-                    val other = conv.participants.firstOrNull { it.id != selfId }
+        if (sentResult is NetworkResult.Success) {
+            val sentPending = sentResult.data
+                // مستلم موقوف/محذوف: لا اسم ولا صورة — لا شيء يُعرض
+                .filter { it.hidden != true && it.user != null }
+                .map { req ->
                     PendingRequest(
-                        id = conv.id,
-                        status = conv.status,
-                        chatMode = conv.chatMode,
-                        isSuperLike = false,
-                        creator = other?.let {
-                            PendingRequestCreator(
-                                id = it.id,
-                                name = it.name,
-                                profileImage = it.profileImage,
-                                isPremium = it.isPremium,
-                                isVerified = it.verification?.isVerified
-                            )
-                        },
-                        initialMessage = conv.initialMessage?.let {
-                            InitialMessage(content = it.content, createdAt = it.createdAt)
-                        },
-                        createdAt = conv.createdAt
+                        id = req.id,
+                        status = "pending",
+                        creator = req.user,
+                        createdAt = req.requestedAt,
+                        expiresAt = req.expiresAt,
+                        reminderSent = req.reminderSent
                     )
                 }
             _state.update { it.copy(sent = sentPending) }
@@ -193,19 +178,23 @@ class PendingRequestsViewModel(
         }
     }
 
-    /** للمرسَلة: إلغاء طلب أنشأته أنت (نستخدم نفس endpoint رفض). */
+    /**
+     * للمرسَلة: سحب طلب أنشأته أنت — `PUT /:id/cancel` كما في iOS.
+     * ⚠️ كان `DELETE /:id` وهو إخفاء عن المُرسِل وحده: يختفي الطلب من قائمته
+     *    ويبقى معلّقاً عند المستلم. السحب يُزيله من الطرفين بلا إشعار.
+     */
     fun cancelSent(id: String) {
         if (id in _state.value.processingIds) return
         _state.update { it.copy(processingIds = it.processingIds + id) }
         viewModelScope.launch {
-            val r = repo.deleteConversation(id)
+            val r = repo.cancelConversation(id)
             _state.update { it.copy(processingIds = it.processingIds - id) }
             when (r) {
                 is NetworkResult.Success -> {
                     _state.update { s ->
                         s.copy(sent = s.sent.filterNot { it.id == id })
                     }
-                    _message.tryEmit(S.get(R.string.pending_cancelled))
+                    _message.tryEmit(S.get(R.string.pending_withdrawn))
                 }
                 is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
             }
@@ -224,7 +213,6 @@ class PendingRequestsViewModel(
                 val app = extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HalaApp
                 return PendingRequestsViewModel(
                     repo = app.conversationsRepository,
-                    userRepo = app.userRepository,
                     socket = app.socket
                 ) as T
             }

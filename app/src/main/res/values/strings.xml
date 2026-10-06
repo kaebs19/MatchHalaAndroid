@@ -1346,4 +1346,26 @@
     <string name="notif_prompt_settings_title">الإشعارات معطّلة</string>
     <string name="notif_prompt_settings_subtitle">فعّلها من إعدادات النظام لتصلك الرسائل والتنبيهات</string>
     <string name="notif_prompt_open_settings">فتح الإعدادات</string>
+    <plurals name="pending_expires_days">
+        <item quantity="zero">ينتهي اليوم</item>
+        <item quantity="one">ينتهي خلال يوم</item>
+        <item quantity="two">ينتهي خلال يومين</item>
+        <item quantity="few">ينتهي خلال %1$d أيام</item>
+        <item quantity="many">ينتهي خلال %1$d يوماً</item>
+        <item quantity="other">ينتهي خلال %1$d يوم</item>
+    </plurals>
+    <plurals name="pending_expires_hours">
+        <item quantity="zero">ينتهي خلال أقل من ساعة</item>
+        <item quantity="one">ينتهي خلال ساعة</item>
+        <item quantity="two">ينتهي خلال ساعتين</item>
+        <item quantity="few">ينتهي خلال %1$d ساعات</item>
+        <item quantity="many">ينتهي خلال %1$d ساعة</item>
+        <item quantity="other">ينتهي خلال %1$d ساعة</item>
+    </plurals>
+    <string name="pending_reminded">ذكّرناه بطلبك</string>
+    <string name="pending_withdraw_title">سحب الطلب؟</string>
+    <string name="pending_withdraw_body">سيختفي طلبك من عند %1$s، ولن يُشعَر بذلك.</string>
+    <string name="pending_withdraw_confirm">اسحبه</string>
+    <string name="pending_withdrawn">تم سحب الطلب</string>
+    <string name="pending_sent_tip">نذكّر المستلم بطلبك بعد يوم، وينتهي الطلب وحده بعد ٧ أيام إن لم يُردّ عليه. الرسالة التي تذكر شيئاً من بروفايله تُقبل أكثر من التحية العامة.</string>
 </resources>

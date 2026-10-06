@@ -1308,4 +1308,18 @@
     <string name="notif_prompt_settings_title">Notifications are off</string>
     <string name="notif_prompt_settings_subtitle">Enable them in system settings to receive messages and alerts</string>
     <string name="notif_prompt_open_settings">Open settings</string>
+    <plurals name="pending_expires_days">
+        <item quantity="one">Expires in 1 day</item>
+        <item quantity="other">Expires in %1$d days</item>
+    </plurals>
+    <plurals name="pending_expires_hours">
+        <item quantity="one">Expires in 1 hour</item>
+        <item quantity="other">Expires in %1$d hours</item>
+    </plurals>
+    <string name="pending_reminded">We reminded them</string>
+    <string name="pending_withdraw_title">Withdraw request?</string>
+    <string name="pending_withdraw_body">Your request will disappear for %1$s. They won\'t be notified.</string>
+    <string name="pending_withdraw_confirm">Withdraw</string>
+    <string name="pending_withdrawn">Request withdrawn</string>
+    <string name="pending_sent_tip">We remind the recipient after a day, and a request expires on its own after 7 days without a reply. Messages that mention something from their profile get accepted more than a plain hello.</string>
 </resources>
