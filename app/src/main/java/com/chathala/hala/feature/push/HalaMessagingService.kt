@@ -144,7 +144,17 @@ class HalaMessagingService : FirebaseMessagingService() {
                 .apply { largeIcon?.let { setLargeIcon(it) } }
                 .setContentTitle(title)
                 .setContentText(body)
-                .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+                .setStyle(
+                    // صورة مرفقة (إشعار من اللوحة) → صورة كبيرة؛ وإلا النص كاملاً
+                    extras["image"]?.takeIf { it.isNotBlank() }
+                        ?.let { loadBitmap(context, it) }
+                        ?.let { picture ->
+                            NotificationCompat.BigPictureStyle()
+                                .bigPicture(picture)
+                                .setSummaryText(body)
+                        }
+                        ?: NotificationCompat.BigTextStyle().bigText(body)
+                )
                 .setAutoCancel(true)
                 .setContentIntent(pending)
                 .setPriority(
@@ -179,6 +189,18 @@ class HalaMessagingService : FirebaseMessagingService() {
                     .build()
                 val result = kotlinx.coroutines.runBlocking { context.imageLoader.execute(request) }
                 result.drawable?.toBitmap(sizePx, sizePx)
+            }.getOrNull()
+
+        /** صورة الإشعار الكبيرة — بعرض مناسب لشريط الإشعارات، متزامن من خيط FCM. */
+        private fun loadBitmap(context: Context, url: String): android.graphics.Bitmap? =
+            runCatching {
+                val request = ImageRequest.Builder(context)
+                    .data(url)
+                    .size(1024)
+                    .allowHardware(false)
+                    .build()
+                val result = kotlinx.coroutines.runBlocking { context.imageLoader.execute(request) }
+                result.drawable?.toBitmap()
             }.getOrNull()
 
         const val EXTRA_FROM_PUSH = "hala_from_push"

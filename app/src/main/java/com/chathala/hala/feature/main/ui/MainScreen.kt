@@ -72,7 +72,25 @@ fun MainScreen(
         PushIntentCoordinator.consumeTab()
     }
 
+    // إشعار رسمي برابط → يُفتح الرابط بعد الوصول لتبويب الإشعارات
+    val pendingLink by PushIntentCoordinator.pendingLink.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingLink) {
+        val link = pendingLink ?: return@LaunchedEffect
+        PushIntentCoordinator.consumeLink()
+        com.chathala.hala.feature.notifications.ui.components.openLink(context, link)
+    }
+
+    // إشعار من اللوحة والتطبيق مفتوح → حدّث شارة الإشعارات فوراً
+    LaunchedEffect(Unit) {
+        app.socket.incoming.collect { ev ->
+            if (ev is com.chathala.hala.feature.chats.socket.SocketEvent.OfficialNotification) {
+                app.notificationsRepository.refreshUnreadCount()
+            }
+        }
+    }
+
     NotificationPermissionPrompt()
+    RateAppPrompt()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,

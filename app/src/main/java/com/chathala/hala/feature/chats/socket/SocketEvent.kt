@@ -46,4 +46,7 @@ sealed class SocketEvent {
 
     /** ردّ جديد من المشرف على استئناف/مراجعة */
     data class AppealReply(val json: JSONObject) : SocketEvent()
+
+    /** إشعار جديد من لوحة الإدارة (حدث `notification`). */
+    data class OfficialNotification(val json: JSONObject) : SocketEvent()
 }

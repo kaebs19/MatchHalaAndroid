@@ -190,6 +190,9 @@ class HalaSocket(
         s.on("appeal-message") { args ->
             args.firstJson()?.let { emit(SocketEvent.AppealReply(it)) }
         }
+        s.on("notification") { args ->
+            emit(SocketEvent.OfficialNotification(args.firstJson() ?: JSONObject()))
+        }
     }
 
     private fun emit(event: SocketEvent) {

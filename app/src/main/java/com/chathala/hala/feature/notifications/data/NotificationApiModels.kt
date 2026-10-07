@@ -35,7 +35,9 @@ data class NotificationItem(
     val grouped: Boolean? = null,
     val groupCount: Int? = null,
     val recipients: String? = null,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    /** إشعار من الإدارة/النظام — الخادم يستبدل بيانات المرسِل بهوية الحساب الرسمي. */
+    val isOfficial: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -43,7 +45,8 @@ data class NotificationSender(
     @Json(name = "_id") val id: String? = null,
     val name: String? = null,
     val profileImage: String? = null,
-    val isPremium: Boolean? = null
+    val isPremium: Boolean? = null,
+    val isOfficial: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)

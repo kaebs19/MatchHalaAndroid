@@ -93,7 +93,7 @@ fun NotificationRow(
             Spacer(Modifier.size(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                    if (isOfficial(item.type)) {
+                    if (isOfficial(item)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Filled.Verified,
@@ -126,6 +126,19 @@ fun NotificationRow(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 3
+                        )
+                    }
+                    val image = item.image?.takeIf { it.isNotBlank() }
+                    if (image != null && isOfficial(item)) {
+                        Spacer(Modifier.height(8.dp))
+                        HalaAsyncImage(
+                            model = image,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .clip(RoundedCornerShape(12.dp))
                         )
                     }
                     Spacer(Modifier.height(8.dp))
@@ -175,7 +188,7 @@ private fun UnreadDot() {
 @Composable
 private fun NotificationLeading(item: NotificationItem) {
     // إشعارات النظام/الإدارة → هوية رسمية بدل صورة المُرسِل (الأدمن)
-    if (isOfficial(item.type)) {
+    if (isOfficial(item)) {
         OfficialAvatar()
         return
     }
@@ -248,16 +261,24 @@ private fun NotificationLeading(item: NotificationItem) {
     }
 }
 
-/** أنواع الإشعارات الرسمية (من النظام/الإدارة) — تُعرض بهوية هلا الرسمية. */
+/**
+ * أنواع الإشعارات الرسمية (من النظام/الإدارة) — تُعرض بهوية هلا الرسمية.
+ * احتياط لخادم قديم لا يُرسل `isOfficial`؛ `general` هو النوع الافتراضي لإشعار اللوحة.
+ */
 private val OFFICIAL_TYPES = setOf(
     "account_warning", "account_hidden", "account_restricted", "account_suspended",
     "account_unhidden", "account_unsuspended", "account_banned",
-    "banned_word", "report_warning", "restriction", "security_alert",
-    "system", "warning", "official_warning", "announcement", "broadcast", "verification"
+    "banned_word", "report_warning", "restriction", "restriction_lifted", "security_alert",
+    "system", "general", "warning", "official_warning", "announcement", "broadcast",
+    "verification", "promo_warning", "appeal_update", "maintenance_start", "maintenance_end"
 )
 
-private fun isOfficial(type: String?): Boolean =
-    type != null && (type in OFFICIAL_TYPES || type.startsWith("account_"))
+/** إشعار رسمي؟ لا تُستعمل بيانات مرسِله (هو مشرف) في العرض ولا في التنقّل. */
+fun isOfficial(item: NotificationItem): Boolean {
+    if (item.isOfficial == true || item.sender?.isOfficial == true) return true
+    val type = item.type ?: return false
+    return type in OFFICIAL_TYPES || type.startsWith("account_")
+}
 
 /** أفاتار رسمي: شعار هلا على دائرة بيضاء + شارة توثيق. */
 @Composable

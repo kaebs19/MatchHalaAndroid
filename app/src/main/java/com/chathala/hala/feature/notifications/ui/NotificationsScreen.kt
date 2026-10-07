@@ -85,6 +85,7 @@ fun NotificationsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHost = rememberHalaSnackbarHost()
     var showDeleteAllDialog by remember { mutableStateOf(false) }
+    var officialItem by remember { mutableStateOf<NotificationItem?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.message.collect { snackbarHost.showSnackbar(it) }
@@ -127,6 +128,12 @@ fun NotificationsScreen(
                         onItemClick = { item ->
                             // علّم كمقروء، ثم انتقل حسب نوع الإشعار
                             viewModel.markRead(item.id)
+                            // إشعار رسمي → تفاصيله في نافذة. لا ننتقل بمعرّف المرسِل: هو
+                            // المشرف، والاحتياط أدناه كان يفتح ملفه.
+                            if (com.chathala.hala.feature.notifications.ui.components.isOfficial(item)) {
+                                officialItem = item
+                                return@NotificationsList
+                            }
                             val convId = (item.data?.get("conversationId") as? String)
                                 ?: (item.data?.get("conversation") as? String)
                             val senderId = (item.data?.get("senderId") as? String)
@@ -191,6 +198,13 @@ fun NotificationsScreen(
         HalaSnackbarHost(
             hostState = snackbarHost,
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
+    officialItem?.let { item ->
+        com.chathala.hala.feature.notifications.ui.components.OfficialNotificationDialog(
+            item = item,
+            onDismiss = { officialItem = null }
         )
     }
 
