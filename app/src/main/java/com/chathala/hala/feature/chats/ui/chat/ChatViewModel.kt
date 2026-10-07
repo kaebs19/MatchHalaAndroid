@@ -771,6 +771,7 @@ class ChatViewModel(
                             )
                         }
                     } else {
+                        com.chathala.hala.core.review.AppRating.notePositiveEvent()
                         _state.update { s ->
                             s.copy(
                                 messages = s.messages.map { m ->

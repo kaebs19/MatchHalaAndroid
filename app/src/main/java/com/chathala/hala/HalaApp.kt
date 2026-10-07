@@ -180,6 +180,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         trackForeground()
         // يجب أن تُهيّأ معرّفات الجهاز قبل أي طلب شبكة (interceptor + repositories يقرؤونها)
         com.chathala.hala.core.device.DeviceIdentity.init(applicationContext)
+        com.chathala.hala.core.review.AppRating.init(applicationContext)
         // تهيئة AdMob تُؤجَّل عمداً إلى ما بعد جمع الموافقة (UMP) وتجري على خيط
         // خلفي — انظر core/ads/MobileAdsInitializer.
         tokenStorage = TokenStorage(applicationContext)

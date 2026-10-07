@@ -299,7 +299,10 @@ class DiscoverViewModel(
             viewModelScope.launch {
                 when (val r = repo.recordSwipe(card.id, "like")) {
                     is NetworkResult.Success ->
-                        if (r.data.matched) _match.value = card
+                        if (r.data.matched) {
+                            _match.value = card
+                            com.chathala.hala.core.review.AppRating.notePositiveEvent()
+                        }
                     is NetworkResult.Error -> { /* «سبق السوايب» وغيره → تجاهل بهدوء، نُبقي اللون */ }
                 }
             }
@@ -315,7 +318,10 @@ class DiscoverViewModel(
         viewModelScope.launch {
             when (val r = repo.recordSwipe(card.id, "superlike")) {
                 is NetworkResult.Success ->
-                    if (r.data.matched) _match.value = card
+                    if (r.data.matched) {
+                        _match.value = card
+                        com.chathala.hala.core.review.AppRating.notePositiveEvent()
+                    }
                 is NetworkResult.Error -> {
                     // مثل تجاوز الحد اليومي → أظهر الرسالة وأعِد لون الزر
                     _state.update { it.copy(likedIds = it.likedIds - card.id) }
