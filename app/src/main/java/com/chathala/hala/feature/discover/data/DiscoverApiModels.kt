@@ -33,7 +33,9 @@ data class DiscoverCard(
     val isVerified: Boolean? = null,
     val lastLogin: String? = null,
     val distance: Double? = null,
-    val distanceLabel: String? = null
+    val distanceLabel: String? = null,
+    /** يصل للمشرفين وحدهم — منه شارة الحساب الرسمي. */
+    val role: String? = null
 ) {
     /** الصور المعروضة في المعرض — تبدأ بـ profileImage ثم الباقي بدون تكرار. */
     val galleryPhotos: List<String>

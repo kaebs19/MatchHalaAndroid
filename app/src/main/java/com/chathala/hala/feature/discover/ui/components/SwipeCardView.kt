@@ -378,7 +378,10 @@ private fun InfoOverlay(
                     modifier = Modifier.size(18.dp)
                 )
             }
-            if (card.isVerified == true) {
+            if (com.chathala.hala.ui.components.isOfficialRole(card.role)) {
+                Spacer(Modifier.width(6.dp))
+                com.chathala.hala.ui.components.OfficialBadge(size = 20.dp)
+            } else if (card.isVerified == true) {
                 Spacer(Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.Filled.Verified,

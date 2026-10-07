@@ -38,7 +38,9 @@ data class UserProfile(
     val joinDate: String? = null,
     val acceptingRequests: Boolean? = null,
     val premiumOnlyRequests: Boolean? = null,
-    val likedYou: Boolean? = null
+    val likedYou: Boolean? = null,
+    /** يصل للمشرفين وحدهم — منه شارة الحساب الرسمي. */
+    val role: String? = null
 ) {
     /** كل الصور بترتيب الـ order + يبدأ بـ profileImage إذا وُجد. */
     val galleryUrls: List<String>

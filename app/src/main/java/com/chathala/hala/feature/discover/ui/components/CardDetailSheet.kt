@@ -137,7 +137,10 @@ fun CardDetailSheet(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                if (card.isVerified == true) {
+                if (com.chathala.hala.ui.components.isOfficialRole(card.role)) {
+                    com.chathala.hala.ui.components.OfficialBadge(size = 22.dp)
+                    Spacer(Modifier.size(4.dp))
+                } else if (card.isVerified == true) {
                     Icon(
                         imageVector = Icons.Filled.Verified,
                         contentDescription = null,

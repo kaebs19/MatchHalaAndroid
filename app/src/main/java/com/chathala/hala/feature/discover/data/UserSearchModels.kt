@@ -37,5 +37,7 @@ data class SearchUser(
      * آخر ظهور (ISO) — نفس الحقل الذي تُعيده بطاقات الاكتشاف ([DiscoverCard.lastLogin]).
      * منه يُبنى قسم «نشطون مؤخراً» ووسم «نشط قبل …» على البطاقة.
      */
-    val lastLogin: String? = null
+    val lastLogin: String? = null,
+    /** يصل للمشرفين وحدهم — منه شارة الحساب الرسمي. */
+    val role: String? = null
 )

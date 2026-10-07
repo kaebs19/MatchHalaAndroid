@@ -207,5 +207,6 @@ private fun DiscoverCard.asSearchUser(): SearchUser = SearchUser(
     isVerified = isVerified,
     isPremium = isPremium,
     distanceLabel = distanceLabel,
-    lastLogin = lastLogin
+    lastLogin = lastLogin,
+    role = role
 )

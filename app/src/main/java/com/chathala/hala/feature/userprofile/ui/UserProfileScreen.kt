@@ -557,7 +557,9 @@ private fun NameRow(user: UserProfile) {
                 fontWeight = FontWeight.Medium
             )
         }
-        if (user.verification?.isVerified == true) {
+        if (com.chathala.hala.ui.components.isOfficialRole(user.role)) {
+            com.chathala.hala.ui.components.OfficialBadge(size = 22.dp)
+        } else if (user.verification?.isVerified == true) {
             Icon(
                 imageVector = Icons.Filled.Verified,
                 contentDescription = null,

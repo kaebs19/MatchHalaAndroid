@@ -582,7 +582,10 @@ private fun SearchResultCard(
                         color = Color.White.copy(alpha = 0.85f)
                     )
                 }
-                if (user.isVerified == true) {
+                if (com.chathala.hala.ui.components.isOfficialRole(user.role)) {
+                    Spacer(Modifier.width(4.dp))
+                    com.chathala.hala.ui.components.OfficialBadge(size = 15.dp)
+                } else if (user.isVerified == true) {
                     Spacer(Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.Filled.Verified,
@@ -1092,7 +1095,10 @@ private fun SearchResultRow(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
                 )
-                if (user.isVerified == true) {
+                if (com.chathala.hala.ui.components.isOfficialRole(user.role)) {
+                    Spacer(Modifier.width(4.dp))
+                    com.chathala.hala.ui.components.OfficialBadge(size = 17.dp)
+                } else if (user.isVerified == true) {
                     Spacer(Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.Filled.Verified,
