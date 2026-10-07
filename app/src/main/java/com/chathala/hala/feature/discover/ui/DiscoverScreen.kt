@@ -492,6 +492,20 @@ private const val DISCOVER_NATIVE_SLOT = "discover_overlay"
 @Composable
 private fun NativeAdOverlay(onDismiss: () -> Unit) {
     val ad = com.chathala.hala.core.ads.rememberNativeAd(DISCOVER_NATIVE_SLOT)
+    // «متابعة» مقفل لثوانٍ معدودة. العدّ يبدأ من جديد لحظة وصول الإعلان، ليبقى
+    // الإعلان المعروض على الشاشة المدة كاملة. وإن لم يصل إعلان أصلاً، يُفتح الزر
+    // بعد المدة نفسها فلا يعلق المستخدم.
+    var secondsLeft by remember { mutableStateOf(com.chathala.hala.core.ads.AdConfig.DISCOVER_NATIVE_MIN_SECONDS) }
+    LaunchedEffect(ad) {
+        secondsLeft = com.chathala.hala.core.ads.AdConfig.DISCOVER_NATIVE_MIN_SECONDS
+        while (secondsLeft > 0) {
+            kotlinx.coroutines.delay(1_000)
+            secondsLeft--
+        }
+    }
+    val canContinue = secondsLeft == 0
+    // زر الرجوع يتبع الزر نفسه: يُغلق بعد انتهاء العدّ فقط
+    androidx.activity.compose.BackHandler { if (canContinue) onDismiss() }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -521,10 +535,12 @@ private fun NativeAdOverlay(onDismiss: () -> Unit) {
                 }
                 androidx.compose.material3.TextButton(
                     onClick = onDismiss,
+                    enabled = canContinue,
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text(
-                        text = S.get(R.string.action_continue),
+                        text = if (canContinue) S.get(R.string.action_continue)
+                        else S.get(R.string.ad_continue_in, secondsLeft),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
                     )
                 }

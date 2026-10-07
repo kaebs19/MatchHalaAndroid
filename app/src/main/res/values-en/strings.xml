@@ -1333,4 +1333,16 @@
     <string name="discover_active_ago">Active %1$s</string>
     <string name="request_sent_title">Request sent ✨</string>
     <string name="request_sent_hint">We\'ll remind %1$s after a day if they haven\'t replied — track it in your sent requests.</string>
+
+    <!-- Countdown on the Discover ad's continue button -->
+    <string name="ad_continue_in">Continue in %1$d</string>
+
+    <!-- Rate-the-app prompt -->
+    <string name="rate_prompt_title">Your opinion makes a difference</string>
+    <string name="rate_prompt_subtitle">Rating Hala Chat on Google Play helps us improve and helps others discover us. It takes less than a minute.</string>
+    <string name="rate_prompt_rate">Rate the app</string>
+    <string name="rate_prompt_later">Not now</string>
+    <string name="rate_prompt_never">Don\'t ask again</string>
+    <string name="notif_open_link">Open link</string>
+    <string name="official_account_verified">Verified official account</string>
 </resources>
