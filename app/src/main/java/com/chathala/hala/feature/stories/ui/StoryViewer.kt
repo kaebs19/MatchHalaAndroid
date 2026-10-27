@@ -1,5 +1,16 @@
 package com.chathala.hala.feature.stories.ui
 
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.FrontHand
+import androidx.compose.material.icons.filled.NoAdultContent
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.AddReaction
 import com.chathala.hala.ui.components.dialogSafeBottom
 import com.chathala.hala.ui.components.dialogSafeTop
 import com.chathala.hala.ui.components.dialogSafeDrawing
@@ -192,6 +203,9 @@ private fun StoryViewerContent(
     var viewersOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var reportOpen by remember { mutableStateOf(false) }
+    // صفّ التفاعلات مفتوح (يوقف العدّ) + إيموجي يطفو عند التفاعل
+    var reactionsOpen by remember { mutableStateOf(false) }
+    var burst by remember { mutableStateOf<Pair<String, Long>?>(null) }
     var imageReady by remember(currentId) { mutableStateOf(current?.isText == true) }
 
     // ── الإعلان بين القصص (لا لقصصي ولا لهلا+) ──
@@ -200,7 +214,7 @@ private fun StoryViewerContent(
     var adDue by remember { mutableStateOf(false) }
     var adThen by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-    val paused = holding || menuOpen || viewersOpen || confirmDelete || reportOpen || !imageReady || adThen != null
+    val paused = holding || menuOpen || viewersOpen || confirmDelete || reportOpen || reactionsOpen || !imageReady || adThen != null
 
     fun proceed(action: () -> Unit) {
         if (adDue && nativeAd != null) {
@@ -217,6 +231,25 @@ private fun StoryViewerContent(
     }
 
     fun close() = proceed(onDismiss)
+
+    /** تفاعل متفائل: يُحدَّث محلياً فوراً ويُعاد عند الفشل. نفس الإيموجي مرة ثانية يزيله. */
+    fun react(emoji: String) {
+        val s = current ?: return
+        val previous = s.myReaction
+        val next = if (previous == emoji) null else emoji
+        val i = othersStories.indexOfFirst { it.id == s.id }
+        if (i >= 0) othersStories[i] = s.copy(myReaction = next, viewed = true)
+        if (next != null) burst = next to System.nanoTime()
+        reactionsOpen = false
+        scope.launch {
+            val r = manager.react(s.id, next)
+            if (r is NetworkResult.Error) {
+                val j = othersStories.indexOfFirst { it.id == s.id }
+                if (j >= 0) othersStories[j] = othersStories[j].copy(myReaction = previous)
+                context.showToast(r.message)
+            }
+        }
+    }
 
     fun goPrev() {
         val i = stories.indexOfFirst { it.id == currentId }
@@ -357,6 +390,13 @@ private fun StoryViewerContent(
                             Icon(Icons.Filled.Visibility, null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
                             Text("${current.viewCount ?: 0}", color = Color.White, fontWeight = FontWeight.SemiBold)
+                            val likes = current.reactionCount ?: 0
+                            if (likes > 0) {
+                                Spacer(Modifier.width(12.dp))
+                                Text("❤️", fontSize = 14.sp)
+                                Spacer(Modifier.width(4.dp))
+                                Text("$likes", color = Color.White, fontWeight = FontWeight.SemiBold)
+                            }
                             val shots = current.screenshotCount ?: 0
                             if (shots > 0) {
                                 Spacer(Modifier.width(12.dp))
@@ -382,9 +422,27 @@ private fun StoryViewerContent(
                                 Text(S.get(R.string.story_message_user, owner.name), maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         } else Spacer(Modifier.weight(1f))
+                        // ❤️ سريع (ضغطة ثانية تزيله) + 😊 يفتح صفّ التفاعلات
+                        val mine = current.myReaction
+                        ReactionAction(
+                            label = if (mine != null) mine else null,
+                            onClick = { react(mine ?: "❤️") }
+                        )
+                        RoundAction(Icons.Filled.AddReaction) { reactionsOpen = !reactionsOpen }
                         RoundAction(Icons.Filled.MoreHoriz) { menuOpen = true }
                     }
                 }
+                if (!isMine && reactionsOpen) {
+                    ReactionsRow(
+                        selected = current.myReaction,
+                        onPick = ::react,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .dialogSafeBottom()
+                            .padding(bottom = 76.dp)
+                    )
+                }
+                burst?.let { (emoji, key) -> ReactionBurst(emoji, key) { burst = null } }
             }
         }
     }
@@ -393,16 +451,17 @@ private fun StoryViewerContent(
     val story = current
     if (menuOpen && story != null) {
         val isMuted = owner.id in muted
-        StoryActionsDialog(
+        StoryActionsSheet(
             actions = if (isMine) buildList {
-                if (!story.isText) add(S.get(R.string.story_save_to_photos) to {
+                if (!story.isText) add(StoryAction(Icons.Filled.Download, S.get(R.string.story_save_to_photos)) {
                     scope.launch { StoryMediaSaver.save(context, story.imageUrl) }
-                    Unit
                 })
-                add(S.get(R.string.story_delete) to { confirmDelete = true })
+                add(StoryAction(Icons.Filled.Delete, S.get(R.string.story_delete), destructive = true) { confirmDelete = true })
             } else listOf(
-                S.get(R.string.story_report) to { reportOpen = true },
-                S.get(if (isMuted) R.string.story_unmute_user else R.string.story_mute_user, owner.name) to {
+                StoryAction(
+                    if (isMuted) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                    S.get(if (isMuted) R.string.story_unmute_user else R.string.story_mute_user, owner.name)
+                ) {
                     scope.launch {
                         when (val r = manager.setMuted(owner.id, !isMuted)) {
                             is NetworkResult.Success -> context.showToast(
@@ -411,8 +470,8 @@ private fun StoryViewerContent(
                             is NetworkResult.Error -> context.showToast(r.message)
                         }
                     }
-                    Unit
-                }
+                },
+                StoryAction(Icons.Filled.Flag, S.get(R.string.story_report), destructive = true) { reportOpen = true }
             ),
             onDismiss = { menuOpen = false }
         )
@@ -549,60 +608,131 @@ private fun RoundAction(icon: androidx.compose.ui.graphics.vector.ImageVector, o
     ) { Icon(icon, null, tint = Color.White) }
 }
 
+/** عنصر في قائمة ••• العارض. */
+private class StoryAction(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String, val destructive: Boolean = false, val run: () -> Unit)
+
+/** قائمة ••• ورقةً سفلية بأيقونات (بدل حوار نصّي). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun StoryActionsDialog(actions: List<Pair<String, () -> Unit>>, onDismiss: () -> Unit) {
-    AlertDialog(
+private fun StoryActionsSheet(actions: List<StoryAction>, onDismiss: () -> Unit) {
+    androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
-        confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) } },
-        text = {
-            Column {
-                actions.forEach { (label, action) ->
-                    Text(
-                        label,
-                        fontSize = 16.sp,
-                        modifier = Modifier
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 20.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            ) {
+                actions.forEachIndexed { i, action ->
+                    val tint = if (action.destructive) Color(0xFFE5484D) else MaterialTheme.colorScheme.onSurface
+                    Row(
+                        Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable { onDismiss(); action() }
-                            .padding(vertical = 14.dp, horizontal = 8.dp)
+                            .clickable { onDismiss(); action.run() }
+                            .padding(horizontal = 16.dp, vertical = 15.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(action.icon, null, tint = tint, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Text(action.label, color = tint, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    }
+                    if (i < actions.lastIndex) androidx.compose.material3.HorizontalDivider(
+                        Modifier.padding(start = 52.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
                 }
             }
+            Spacer(Modifier.height(10.dp))
+            TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text(S.get(R.string.action_cancel)) }
         }
-    )
+    }
 }
 
-/** أسباب البلاغ من داخل العارضين (قصة / صورة مؤقتة / فيديو). */
+/**
+ * ورقة البلاغ من داخل العارضين (قصة / صورة مؤقتة / فيديو): بطاقة لكل سبب بأيقونة
+ * ووصف قصير، وملاحظة الخصوصية في الأسفل. اختيار السبب يرسل مباشرة.
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun StoryReportDialog(onDismiss: () -> Unit, onReason: (ReportReason) -> Unit, title: String = S.get(R.string.story_report)) {
-    AlertDialog(
+    val reasons = listOf(
+        Triple(ReportReason.INAPPROPRIATE, Icons.Filled.NoAdultContent, R.string.report_desc_inappropriate),
+        Triple(ReportReason.HARASSMENT, Icons.Filled.FrontHand, R.string.report_desc_harassment),
+        Triple(ReportReason.SPAM, Icons.Filled.Campaign, R.string.report_desc_spam)
+    )
+    val red = Color(0xFFE5484D)
+    androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) } },
-        text = {
-            Column {
-                listOf(ReportReason.INAPPROPRIATE, ReportReason.HARASSMENT, ReportReason.SPAM).forEach { reason ->
-                    Text(
-                        reason.label,
-                        fontSize = 16.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable { onReason(reason) }
-                            .padding(vertical = 14.dp, horizontal = 8.dp)
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                Modifier.size(56.dp).clip(CircleShape).background(red.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) { Icon(Icons.Filled.Flag, null, tint = red, modifier = Modifier.size(28.dp)) }
+            Spacer(Modifier.height(12.dp))
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 19.sp)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                S.get(R.string.report_sheet_subtitle),
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(Modifier.height(18.dp))
+            reasons.forEach { (reason, icon, desc) ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .clickable { onReason(reason) }
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        Modifier.size(40.dp).clip(CircleShape).background(red.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center
+                    ) { Icon(icon, null, tint = red, modifier = Modifier.size(21.dp)) }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(reason.label, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Text(S.get(desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    S.get(R.string.media_report_note),
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
+            Spacer(Modifier.height(12.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.Lock, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(S.get(R.string.media_report_note), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(6.dp))
+            TextButton(onClick = onDismiss) { Text(S.get(R.string.action_cancel)) }
         }
-    )
+    }
 }
 
 /** بطاقة إعلان مدمج بملء العارض؛ «متابعة القصص» بعد مهلة قراءة قصيرة. */
@@ -680,3 +810,65 @@ private tailrec fun android.content.Context.findActivityOrNull(): Activity? = wh
 }
 
 private const val STORY_AD_SLOT = "story_viewer_card"
+
+/** زرّ القلب: فارغ بلا تفاعل، وبإيموجي تفاعلي إن وُجد. */
+@Composable
+private fun ReactionAction(label: String?, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.45f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (label != null) Text(label, fontSize = 22.sp)
+        else Icon(Icons.Filled.FavoriteBorder, S.get(R.string.story_react), tint = Color.White)
+    }
+}
+
+/** صفّ التفاعلات فوق الأزرار — المختار بخلفية فاتحة. */
+@Composable
+private fun ReactionsRow(selected: String?, onPick: (String) -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier
+            .clip(RoundedCornerShape(30.dp))
+            .background(Color.Black.copy(alpha = 0.75f))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        com.chathala.hala.feature.stories.data.StoryReactions.forEach { e ->
+            Box(
+                Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(if (e == selected) Color.White.copy(alpha = 0.25f) else Color.Transparent)
+                    .clickable { onPick(e) },
+                contentAlignment = Alignment.Center
+            ) { Text(e, fontSize = 26.sp) }
+        }
+    }
+}
+
+/** الإيموجي المختار يكبر ويطفو في وسط القصة ثم يختفي. */
+@Composable
+private fun ReactionBurst(emoji: String, key: Long, onDone: () -> Unit) {
+    val scale = remember(key) { Animatable(0.3f) }
+    val alpha = remember(key) { Animatable(1f) }
+    LaunchedEffect(key) {
+        scale.animateTo(1.6f, tween(320))
+        delay(250)
+        alpha.animateTo(0f, tween(300))
+        onDone()
+    }
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            emoji,
+            fontSize = 72.sp,
+            modifier = Modifier.graphicsLayer {
+                scaleX = scale.value; scaleY = scale.value
+                this.alpha = alpha.value
+            }
+        )
+    }
+}

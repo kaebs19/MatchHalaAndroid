@@ -54,6 +54,13 @@ interface StoryApiService {
         @Path("id") storyId: String
     ): StoryEnvelope<StoryRecordedData>
 
+    @POST("api/mobile/stories/{id}/react")
+    suspend fun react(
+        @Header("Authorization") bearer: String,
+        @Path("id") storyId: String,
+        @Body body: StoryReactRequest
+    ): StoryEnvelope<StoryReactData>
+
     @GET("api/mobile/stories/{id}/viewers")
     suspend fun viewers(
         @Header("Authorization") bearer: String,

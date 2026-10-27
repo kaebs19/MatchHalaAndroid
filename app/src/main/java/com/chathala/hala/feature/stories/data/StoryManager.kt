@@ -78,6 +78,11 @@ class StoryManager(
                     event.json.optString("storyId"),
                     viewCount = event.json.optInt("viewCount", -1).takeIf { it >= 0 }
                 )
+                is SocketEvent.StoryReaction -> updateCounter(
+                    event.json.optString("storyId"),
+                    // null = تبديل إيموجي لا يغيّر العدد
+                    reactionCount = event.json.optInt("reactionCount", -1).takeIf { it >= 0 && !event.json.isNull("reactionCount") }
+                )
                 is SocketEvent.StoryScreenshot -> updateCounter(
                     event.json.optString("storyId"),
                     screenshotCount = event.json.optInt("screenshotCount", -1).takeIf { it >= 0 }
@@ -145,7 +150,7 @@ class StoryManager(
         return r
     }
 
-    private fun updateCounter(storyId: String, viewCount: Int? = null, screenshotCount: Int? = null) {
+    private fun updateCounter(storyId: String, viewCount: Int? = null, screenshotCount: Int? = null, reactionCount: Int? = null) {
         if (storyId.isBlank()) return
         var updated: Story? = null
         _myStories.update { list ->
@@ -153,7 +158,8 @@ class StoryManager(
                 if (it.id == storyId) {
                     it.copy(
                         viewCount = viewCount ?: it.viewCount,
-                        screenshotCount = screenshotCount ?: it.screenshotCount
+                        screenshotCount = screenshotCount ?: it.screenshotCount,
+                        reactionCount = reactionCount ?: it.reactionCount
                     ).also { s -> updated = s }
                 } else it
             }
@@ -243,6 +249,8 @@ class StoryManager(
     }
 
     suspend fun viewers(storyId: String) = repo.viewers(storyId)
+
+    suspend fun react(storyId: String, emoji: String?) = repo.react(storyId, emoji)
 
     // ── الإعلان بين القصص ────────────────────────────────────────
 

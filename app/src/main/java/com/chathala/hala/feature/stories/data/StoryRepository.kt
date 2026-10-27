@@ -47,6 +47,10 @@ class StoryRepository(
     suspend fun screenshot(storyId: String): NetworkResult<Boolean> =
         call { api.screenshot(bearer(), storyId).data?.recorded == true }
 
+    /** [emoji] null يزيل التفاعل. */
+    suspend fun react(storyId: String, emoji: String?): NetworkResult<String?> =
+        call { api.react(bearer(), storyId, StoryReactRequest(emoji)).data?.reaction }
+
     suspend fun viewers(storyId: String): NetworkResult<StoryViewersData> =
         call { api.viewers(bearer(), storyId).data ?: StoryViewersData() }
 

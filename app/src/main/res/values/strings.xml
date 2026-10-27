@@ -1555,4 +1555,17 @@
     <string name="profile_menu_qr">رمز QR</string>
     <string name="profile_menu_preview">معاينة ملفي</string>
     <string name="profile_menu_theme">المظهر</string>
+    <string name="story_react">تفاعل</string>
+    <string name="report_sheet_subtitle">ما المشكلة في هذا المحتوى؟ اختر السبب الأقرب.</string>
+    <string name="report_desc_inappropriate">عري أو محتوى جنسي أو عنف</string>
+    <string name="report_desc_harassment">تهديد أو إساءة أو تنمّر</string>
+    <string name="report_desc_spam">إعلانات أو احتيال أو حسابات خارجية</string>
+    <plurals name="story_reactions_count">
+        <item quantity="zero">لا تفاعلات</item>
+        <item quantity="one">تفاعل واحد</item>
+        <item quantity="two">تفاعلان</item>
+        <item quantity="few">%1$d تفاعلات</item>
+        <item quantity="many">%1$d تفاعلاً</item>
+        <item quantity="other">%1$d تفاعل</item>
+    </plurals>
 </resources>

@@ -22,9 +22,12 @@ data class Story(
     // لصاحبها فقط
     val viewCount: Int? = null,
     val screenshotCount: Int? = null,
+    val reactionCount: Int? = null,
     val held: Boolean? = null,
     // للمشاهد فقط
-    val viewed: Boolean? = null
+    val viewed: Boolean? = null,
+    /** تفاعلي مع القصة (إيموجي) أو null. */
+    val myReaction: String? = null
 ) {
     val isText: Boolean get() = kind == KIND_TEXT
     val isHeld: Boolean get() = held == true
@@ -95,6 +98,15 @@ data class StoryRecordedData(val recorded: Boolean = false)
 data class StoryMuteData(val muted: Boolean = false)
 
 @JsonClass(generateAdapter = true)
+data class StoryReactRequest(val emoji: String?)
+
+@JsonClass(generateAdapter = true)
+data class StoryReactData(val reaction: String? = null)
+
+/** تفاعلات القصة — مطابقة لـ STORY_REACTIONS في الخادم (بالترتيب). */
+val StoryReactions = listOf("❤️", "😍", "😂", "😮", "😢", "🔥", "👏")
+
+@JsonClass(generateAdapter = true)
 data class StoryViewerUser(
     @Json(name = "_id") val id: String? = null,
     val name: String? = null,
@@ -107,13 +119,15 @@ data class StoryViewerUser(
 data class StoryViewerItem(
     val viewer: StoryViewerUser? = null,
     val viewedAt: String? = null,
-    val screenshotAt: String? = null
+    val screenshotAt: String? = null,
+    val reaction: String? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class StoryViewersData(
     val viewCount: Int = 0,
     val screenshotCount: Int = 0,
+    val reactionCount: Int = 0,
     val viewers: List<StoryViewerItem> = emptyList(),
     val isPremiumRequired: Boolean = false
 )

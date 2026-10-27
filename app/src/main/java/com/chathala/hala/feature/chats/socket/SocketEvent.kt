@@ -56,6 +56,9 @@ sealed class SocketEvent {
     /** التُقطت لقطة لإحدى قصصي — `{ storyId, screenshotCount }`. */
     data class StoryScreenshot(val json: JSONObject) : SocketEvent()
 
+    /** تفاعل مشاهد مع إحدى قصصي — `{ storyId, reactionCount, viewerId, emoji }`. */
+    data class StoryReaction(val json: JSONObject) : SocketEvent()
+
     /** تغيّرت حالة الحظر في محادثة — `{ conversationId, ... }`. */
     data class ConversationBlockState(val json: JSONObject) : SocketEvent()
 }

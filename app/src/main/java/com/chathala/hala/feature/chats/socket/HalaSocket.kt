@@ -212,6 +212,7 @@ class HalaSocket(
         }
         s.on("story:viewed") { args -> args.firstJson()?.let { emit(SocketEvent.StoryViewed(it)) } }
         s.on("story:screenshot") { args -> args.firstJson()?.let { emit(SocketEvent.StoryScreenshot(it)) } }
+        s.on("story:reaction") { args -> args.firstJson()?.let { emit(SocketEvent.StoryReaction(it)) } }
         s.on("conversation:block-state") { args ->
             args.firstJson()?.let { emit(SocketEvent.ConversationBlockState(it)) }
         }

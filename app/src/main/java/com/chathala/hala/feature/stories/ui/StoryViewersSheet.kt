@@ -74,7 +74,7 @@ fun StoryViewersSheet(
     val manager = (LocalContext.current.applicationContext as HalaApp).storyManager
     var data by remember { mutableStateOf<StoryViewersData?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(story.id, story.viewCount, story.screenshotCount) {
+    LaunchedEffect(story.id, story.viewCount, story.screenshotCount, story.reactionCount) {
         when (val r = manager.viewers(story.id)) {
             is NetworkResult.Success -> data = r.data
             is NetworkResult.Error -> error = r.message
@@ -85,10 +85,17 @@ fun StoryViewersSheet(
             val d = data
             val views = d?.viewCount ?: story.viewCount ?: 0
             val shots = d?.screenshotCount ?: story.screenshotCount ?: 0
+            val likes = d?.reactionCount ?: story.reactionCount ?: 0
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Visibility, null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(8.dp))
                 Text(S.plural(R.plurals.story_views_count, views), fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                if (likes > 0) {
+                    Spacer(Modifier.width(14.dp))
+                    Text("❤️", fontSize = 16.sp)
+                    Spacer(Modifier.width(4.dp))
+                    Text(S.plural(R.plurals.story_reactions_count, likes), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 if (shots > 0) {
                     Spacer(Modifier.width(14.dp))
                     Icon(Icons.Filled.PhotoCamera, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
@@ -149,7 +156,11 @@ fun StoryViewersSheet(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            if (item.screenshotAt != null) Text("📸", fontSize = 18.sp)
+                            item.reaction?.let { Text(it, fontSize = 20.sp) }
+                            if (item.screenshotAt != null) {
+                                Spacer(Modifier.width(6.dp))
+                                Text("📸", fontSize = 18.sp)
+                            }
                         }
                     }
                 }

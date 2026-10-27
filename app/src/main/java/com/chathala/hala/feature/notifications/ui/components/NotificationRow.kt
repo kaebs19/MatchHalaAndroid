@@ -276,7 +276,8 @@ private val OFFICIAL_TYPES = setOf(
 )
 
 /** إشعارات القصص الرسمية — الضغط يفتح «ملفي» لا بروفايل المرسل. */
-fun isStoryNotice(type: String?): Boolean = type == "story_removed" || type == "story_banned" || type == "story_held"
+fun isStoryNotice(type: String?): Boolean =
+    type == "story_removed" || type == "story_banned" || type == "story_held" || type == "story_reaction"
 
 /** إشعار رسمي؟ لا تُستعمل بيانات مرسِله (هو مشرف) في العرض ولا في التنقّل. */
 fun isOfficial(item: NotificationItem): Boolean {
@@ -336,6 +337,8 @@ private fun typeBadge(type: String?): Pair<ImageVector, Color>? = when (type) {
         Icons.Filled.Info to MaterialTheme.colorScheme.primary
     "story_removed", "story_banned", "story_held" ->
         Icons.Filled.AutoStories to Color(0xFFD62976)
+    // تفاعل مع قصتي — صورة المتفاعل مع شارة قلب
+    "story_reaction" -> Icons.Filled.Favorite to Color(0xFFD62976)
     else -> null
 }
 
