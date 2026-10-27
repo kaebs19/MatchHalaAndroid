@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import com.chathala.hala.ui.components.dialogSafeTop
+import com.chathala.hala.ui.components.dialogSafeDrawing
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
@@ -190,7 +192,7 @@ fun DisappearingVideoViewer(
                 modifier = Modifier.fillMaxSize()
             )
             Column(
-                Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing).padding(10.dp)
+                Modifier.fillMaxWidth().dialogSafeTop().padding(10.dp)
             ) {
                 LinearProgressIndicator(
                     progress = { position },

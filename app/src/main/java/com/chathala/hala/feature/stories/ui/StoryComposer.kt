@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.stories.ui
 
+import com.chathala.hala.ui.components.dialogSafeTop
+import androidx.compose.foundation.layout.isImeVisible
+import com.chathala.hala.ui.components.dialogSafeDrawing
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,7 +23,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -420,25 +422,23 @@ private fun TextStoryComposer(
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
         FullScreenDialogWindow()
+        // النافذة لا تنزاح مع لوحة المفاتيح (كانت تدفع ✕ والعدّاد خارج الشاشة) —
+        // safeDrawing يشمل لوحة المفاتيح فيتقلّص المحتوى بدلاً من ذلك
+        val dialogWindow = (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
+        androidx.compose.runtime.SideEffect {
+            @Suppress("DEPRECATION")
+            dialogWindow?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        }
         Box(Modifier.fillMaxSize().background(storyBackgroundBrush(background)), contentAlignment = Alignment.TopCenter) {
             Column(
                 Modifier
                     .fillMaxSize()
                     .widthIn(max = 560.dp)
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .windowInsetsPadding(WindowInsets.ime)
+                    .dialogSafeDrawing()
                     .padding(horizontal = 12.dp)
             ) {
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, S.get(R.string.action_close), tint = Color.White) }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        "${text.length}/$STORY_TEXT_MAX",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                }
+                // مساحة الشريط العلوي (مثبّت منفصلاً أدناه كي لا تدفعه لوحة المفاتيح خارج الشاشة)
+                Spacer(Modifier.height(56.dp))
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     BasicTextField(
                         value = text,
@@ -486,7 +486,10 @@ private fun TextStoryComposer(
                         )
                     }
                 }
-                StoryContentWarning(expandedInitially = !policyAcknowledged, onGuidelines = onGuidelines, dark = true)
+                // لوحة المفاتيح مفتوحة ← سطر واحد يتوسّع بالضغط (المساحة لا تتّسع للمفصّل)
+                @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                val imeOpen = WindowInsets.isImeVisible
+                StoryContentWarning(expandedInitially = !policyAcknowledged && !imeOpen, onGuidelines = onGuidelines, dark = true)
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = {
@@ -504,6 +507,25 @@ private fun TextStoryComposer(
                     else Text(S.get(R.string.story_publish), fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(8.dp))
+            }
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .widthIn(max = 560.dp)
+                    .dialogSafeTop()
+                    .padding(horizontal = 12.dp)
+            ) {
+                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, S.get(R.string.action_close), tint = Color.White) }
+                        Spacer(Modifier.weight(1f))
+                        Text(
+                            "${text.length}/$STORY_TEXT_MAX",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
             }
         }
     }

@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.editor
 
+import com.chathala.hala.ui.components.dialogSafeBottom
+import com.chathala.hala.ui.components.dialogSafeTop
+import com.chathala.hala.ui.components.dialogSafeDrawing
 import android.graphics.Bitmap
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
@@ -174,7 +177,7 @@ fun PhotoEditorDialog(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .dialogSafeDrawing()
                     .padding(top = 56.dp, bottom = if (uris.size > 1) 150.dp else 90.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -217,7 +220,7 @@ fun PhotoEditorDialog(
             }
             ToolRail(tools, tool, chrome, Modifier.align(Alignment.CenterEnd)) { t -> tool = if (tool == t) null else t }
 
-            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().dialogSafeBottom()) {
                 ToolPanel(visible = tool != null && chrome, onDismiss = { tool = null }) {
                     when (tool) {
                         Tool.CROP -> CropPanel(current, { a -> update { it.copy(aspect = a) } }, { update { it.copy(rotation = (it.rotation + 90) % 360) } })
@@ -389,7 +392,7 @@ fun VideoEditorDialog(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .dialogSafeDrawing()
                     .padding(top = 56.dp, bottom = 170.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -437,7 +440,7 @@ fun VideoEditorDialog(
                 ) { edits = edits.copy(mute = !edits.mute) }
             }
 
-            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().dialogSafeBottom()) {
                 ToolPanel(visible = tool != null && chrome, onDismiss = { tool = null }) {
                     when (tool) {
                         Tool.TRIM -> if (m != null) TrimPanel(m.durationMs, edits.startMs, edits.endMs) { s, e -> edits = edits.copy(startMs = s, endMs = e) }
@@ -510,7 +513,7 @@ fun VideoEditorDialog(
 private fun EditorTopBar(title: String, visible: Boolean, onClose: () -> Unit) {
     AnimatedVisibility(visible, enter = fadeIn(), exit = fadeOut()) {
         Row(
-            Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing).padding(8.dp),
+            Modifier.fillMaxWidth().dialogSafeTop().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onClose) { Icon(Icons.Filled.Close, S.get(R.string.action_close), tint = Color.White) }
@@ -540,6 +543,8 @@ private fun RailButton(icon: ImageVector, active: Boolean, onClick: () -> Unit) 
             .size(44.dp)
             .clip(CircleShape)
             .background(if (active) Color.White else Color.Black.copy(alpha = 0.45f))
+            // حدّ فاتح: الزرّ الداكن كان يختفي على الخلفية السوداء خارج الصورة
+            .border(1.dp, Color.White.copy(alpha = if (active) 0f else 0.3f), CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) { Icon(icon, null, tint = if (active) Color.Black else Color.White, modifier = Modifier.size(22.dp)) }

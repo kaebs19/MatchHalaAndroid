@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.stories.ui
 
+import com.chathala.hala.ui.components.dialogSafeBottom
+import com.chathala.hala.ui.components.dialogSafeTop
+import com.chathala.hala.ui.components.dialogSafeDrawing
 import android.app.Activity
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -307,7 +310,7 @@ private fun StoryViewerContent(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .dialogSafeTop()
                         .padding(horizontal = 10.dp, vertical = 8.dp)
                 ) {
                     SegmentedProgress(count = stories.size, index = index, progress = progress.value)
@@ -337,7 +340,7 @@ private fun StoryViewerContent(
                     Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .dialogSafeBottom()
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -615,7 +618,7 @@ private fun StoryAdPage(ad: com.google.android.gms.ads.nativead.NativeAd, onCont
         Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .dialogSafeDrawing()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
