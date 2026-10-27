@@ -147,6 +147,9 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var storyManager: com.chathala.hala.feature.stories.data.StoryManager
         private set
 
+    lateinit var appBootstrap: com.chathala.hala.core.session.data.AppBootstrap
+        private set
+
     private val appScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     lateinit var appPreferences: AppPreferences
@@ -166,7 +169,11 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
 
             override fun onActivityStarted(activity: android.app.Activity) {
                 started++
-                if (started == 1) com.chathala.hala.core.ads.InterstitialAdManager.onForegroundStarted()
+                if (started == 1) {
+                    com.chathala.hala.core.ads.InterstitialAdManager.onForegroundStarted()
+                    // العودة من الخلفية ← نداء الإقلاع الموحّد بدل الطلبات المنفردة
+                    if (::appBootstrap.isInitialized) appBootstrap.refresh()
+                }
                 com.chathala.hala.feature.push.InAppAlerts.appInForeground = true
             }
 
@@ -251,6 +258,13 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
             interruptedMessage = { com.chathala.hala.core.i18n.S.get(R.string.chat_send_interrupted) },
             attachmentError = { com.chathala.hala.core.i18n.S.get(R.string.chat_attachment_unavailable) },
             send = outgoingSender::send
+        )
+        appBootstrap = com.chathala.hala.core.session.data.AppBootstrap(
+            tokenStorage = tokenStorage,
+            notifications = notificationsRepository,
+            conversations = conversationsRepository,
+            users = userRepository,
+            scope = appScope
         )
         discoverRepository = DiscoverRepository(tokenStorage = tokenStorage)
         blockingRepository = BlockingRepository(tokenStorage = tokenStorage)

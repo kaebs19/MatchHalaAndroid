@@ -601,6 +601,22 @@ class ChatViewModel(
                 val mode = evt.json.optString("chatMode").takeIf { it.isNotBlank() } ?: return
                 _state.update { it.copy(chatMode = mode) }
             }
+            is SocketEvent.ConversationBlockState -> {
+                // الحظر/إلغاؤه والمحادثة مفتوحة: يُقفل الحقل ويظهر الشريط فوراً (لا ننتظر
+                // رفض الخادم أو إعادة الفتح)، ويختفي عند الإلغاء
+                val ids = evt.json.optJSONArray("conversationIds") ?: return
+                if ((0 until ids.length()).none { ids.optString(it) == conversationId }) return
+                val blockState = evt.json.opt("blockState").takeUnless { it == org.json.JSONObject.NULL } as? String
+                _state.update {
+                    when (blockState) {
+                        "iBlocked" -> it.copy(blocked = true)
+                        "blockedMe" -> it.copy(blockedByThem = true)
+                        else -> it.copy(blocked = false, blockedByThem = false)
+                    }
+                }
+                // الإلغاء قد يكون من طرف واحد فقط — نؤكّد الحالة بالاتجاهين من الخادم
+                if (blockState == null) _state.value.otherUserId?.let { viewModelScope.launch { refreshBlockStatus(it) } }
+            }
             is SocketEvent.ConversationCancelled -> {
                 // الطرف الآخر أنهى المحادثة → اقفل الإرسال فوراً
                 val convId = evt.json.optString("conversationId")

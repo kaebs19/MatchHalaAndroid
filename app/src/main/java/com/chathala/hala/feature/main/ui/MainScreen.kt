@@ -63,7 +63,7 @@ fun MainScreen(
     val unreadCount by unreadCountFlow.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        app.notificationsRepository.refreshUnreadCount()
+        app.appBootstrap.refresh()
     }
 
     val pendingPushTab by PushIntentCoordinator.pendingTab.collectAsStateWithLifecycle()

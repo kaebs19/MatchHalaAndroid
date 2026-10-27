@@ -47,6 +47,11 @@ class ConversationsRepository(
         resp.data?.conversation ?: throw IllegalStateException(S.get(R.string.err_conversation_unavailable))
     }
 
+    /** من نداء الإقلاع الموحّد (AppBootstrap). */
+    fun applyPendingCount(data: PendingCountData) {
+        _pendingRecentCount.value = data.recent
+    }
+
     suspend fun refreshPendingCount(): NetworkResult<PendingCountData> = safeApiCall {
         val resp = api.getPendingCount(bearer())
         val data = resp.data ?: PendingCountData()

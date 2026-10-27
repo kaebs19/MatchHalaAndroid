@@ -119,6 +119,10 @@ object ApiClient {
         retrofit.create(com.chathala.hala.feature.stories.data.StoryApiService::class.java)
     }
 
+    val bootstrapService: com.chathala.hala.core.session.data.BootstrapApi by lazy {
+        retrofit.create(com.chathala.hala.core.session.data.BootstrapApi::class.java)
+    }
+
     /** عميل HTTP المصادَق — لتنزيل ملفات (فيديو مؤقت) بنفس الترويسات. */
     val httpClient: OkHttpClient get() = okHttp
 }

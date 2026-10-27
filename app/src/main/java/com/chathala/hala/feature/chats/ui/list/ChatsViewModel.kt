@@ -109,6 +109,10 @@ class ChatsViewModel(
     private val joinedRooms = mutableSetOf<String>()
 
     init {
+        // شارة الطلبات تُحدَّث أيضاً من نداء الإقلاع الموحّد
+        repo.pendingRecentCount
+            .onEach { recent -> _state.update { it.copy(pendingBadge = recent) } }
+            .launchIn(viewModelScope)
         userRepo.currentUser
             .onEach { u: User? ->
                 _state.update {
