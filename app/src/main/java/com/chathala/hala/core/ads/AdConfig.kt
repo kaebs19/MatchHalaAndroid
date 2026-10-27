@@ -41,9 +41,12 @@ object AdConfig {
 
     /**
      * أقل فاصل بين أي إعلانَين بينيّين — مشترك بين فتح المحادثات والاكتشاف، ومحفوظ
-     * على القرص فلا يُصفّره إغلاق التطبيق وفتحه: 30 دقيقة.
+     * على القرص فلا يُصفّره إغلاق التطبيق وفتحه: 45 دقيقة (مطابق لـ iOS).
      */
-    const val INTERSTITIAL_MIN_INTERVAL_MS = 30 * 60 * 1000L
+    const val INTERSTITIAL_MIN_INTERVAL_MS = 45 * 60 * 1000L
+
+    /** سقف الإعلانات البينية في اليوم (بتوقيت الجهاز) — مطابق لـ iOS. */
+    const val INTERSTITIAL_DAILY_CAP = 5
 
     /** Discard cached fullscreen ads before their one-hour SDK expiry. */
     const val INTERSTITIAL_TTL_MS = 45 * 60 * 1000L

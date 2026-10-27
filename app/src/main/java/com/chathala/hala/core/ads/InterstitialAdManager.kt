@@ -20,6 +20,11 @@ object InterstitialAdManager {
     private var foregroundStartedAt = System.currentTimeMillis()
     private const val PREFS = "hala_ads"
     private const val LAST_SHOWN = "interstitial_last_shown_at"
+    private const val SHOWN_DAY = "interstitial_shown_day"
+    private const val SHOWN_COUNT = "interstitial_shown_count"
+
+    private fun today(): String =
+        java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).format(java.util.Date())
 
     fun onForegroundStarted() { foregroundStartedAt = System.currentTimeMillis() }
 
@@ -52,6 +57,7 @@ object InterstitialAdManager {
         val now = System.currentTimeMillis()
         val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (!canShowInterstitial(now, foregroundStartedAt, prefs.getLong(LAST_SHOWN, 0L))) return false
+        if (!underDailyCap(today(), prefs.getString(SHOWN_DAY, null), prefs.getInt(SHOWN_COUNT, 0))) return false
         val current = ad
         if (current == null || owner.get() !== activity || !isFreshAd(loadedAt, now, AdConfig.INTERSTITIAL_TTL_MS)) {
             preload(activity)
@@ -60,7 +66,13 @@ object InterstitialAdManager {
         ad = null; showing = true
         current.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
-                prefs.edit().putLong(LAST_SHOWN, System.currentTimeMillis()).apply()
+                val day = today()
+                val count = if (prefs.getString(SHOWN_DAY, null) == day) prefs.getInt(SHOWN_COUNT, 0) else 0
+                prefs.edit()
+                    .putLong(LAST_SHOWN, System.currentTimeMillis())
+                    .putString(SHOWN_DAY, day)
+                    .putInt(SHOWN_COUNT, count + 1)
+                    .apply()
             }
             override fun onAdDismissedFullScreenContent() { showing = false; preload(activity) }
             override fun onAdFailedToShowFullScreenContent(error: AdError) { showing = false; lastFailure = System.currentTimeMillis() }

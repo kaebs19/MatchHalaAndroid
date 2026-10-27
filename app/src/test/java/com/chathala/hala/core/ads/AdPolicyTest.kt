@@ -56,4 +56,12 @@ class AdPolicyTest {
         assertTrue(adEligibleUser(user))
     }
 
+
+    @Test
+    fun dailyCapResetsOnNewDay() {
+        assertTrue(underDailyCap("20261028", null, 0))
+        assertTrue(underDailyCap("20261028", "20261028", AdConfig.INTERSTITIAL_DAILY_CAP - 1))
+        assertFalse(underDailyCap("20261028", "20261028", AdConfig.INTERSTITIAL_DAILY_CAP))
+        assertTrue(underDailyCap("20261029", "20261028", AdConfig.INTERSTITIAL_DAILY_CAP))
+    }
 }

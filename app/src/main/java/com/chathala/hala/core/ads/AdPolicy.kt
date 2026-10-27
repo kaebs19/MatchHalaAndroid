@@ -21,3 +21,7 @@ internal fun isFreshAd(loadedAt: Long, now: Long, ttl: Long): Boolean = loadedAt
 internal fun canShowInterstitial(now: Long, foregroundStartedAt: Long, lastShownAt: Long): Boolean =
     now >= foregroundStartedAt && now - foregroundStartedAt >= AdConfig.INTERSTITIAL_WARMUP_MS &&
         (lastShownAt == 0L || now < lastShownAt || now - lastShownAt >= AdConfig.INTERSTITIAL_MIN_INTERVAL_MS)
+
+/** هل بقي من سقف اليوم؟ العدّ يُصفَّر حين يتغيّر [today] عن يوم آخر عرض. */
+internal fun underDailyCap(today: String, shownDay: String?, shownCount: Int): Boolean =
+    shownDay != today || shownCount < AdConfig.INTERSTITIAL_DAILY_CAP
