@@ -1,5 +1,7 @@
 package com.chathala.hala.ui.components
 
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -73,7 +75,10 @@ fun AuthScaffold(
         label = "form-offset"
     )
 
-    Column(modifier = modifier.fillMaxSize()) {
+    // الشاشات العريضة (لوحي/قابلة للطيّ): النموذج بعرض أقصى ~560dp في الوسط
+    Column(
+        modifier = modifier.fillMaxSize().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 560.dp)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

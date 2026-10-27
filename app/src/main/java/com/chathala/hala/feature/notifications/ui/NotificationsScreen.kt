@@ -168,6 +168,12 @@ fun NotificationsScreen(
                                     else if (action == "accepted") onOpenConversation(convId)
                                     else onOpenRequestPreview(convId)
                                 }
+                                // تذكير بطلب محادثة ← يُوجَّه كطلب: المعاينة تجلبه بمعرّفه وتعرض
+                                // حالته الفعلية (منتهٍ/مسحوب/غير متاح) بدل «لم نعثر على المحادثة»
+                                "conversation_reminder" -> {
+                                    if (!convId.isNullOrBlank()) onOpenRequestPreview(convId)
+                                    else openBestEffort()
+                                }
                                 "super_like" -> {
                                     if (!convId.isNullOrBlank()) onOpenRequestPreview(convId)
                                     else openBestEffort()
@@ -176,7 +182,6 @@ fun NotificationsScreen(
                                 "new_message",
                                 "message",
                                 "chat_mode_changed",
-                                "conversation_reminder",
                                 "flagged_message" -> {
                                     if (!convId.isNullOrBlank()) onOpenConversation(convId)
                                     else openBestEffort()

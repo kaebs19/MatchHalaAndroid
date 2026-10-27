@@ -139,7 +139,8 @@ fun MainScreen(
                     onOpenVisitors = onOpenVisitors,
                     onOpenMyInfo = onOpenMyInfo,
                     onOpenChats = { selected = MainTab.CHATS },
-                    onOpenGuidelines = onOpenTerms
+                    onOpenGuidelines = onOpenTerms,
+                    onPreviewProfile = onOpenUserProfile
                 )
             }
         }

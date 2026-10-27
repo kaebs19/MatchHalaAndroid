@@ -1,5 +1,6 @@
 package com.chathala.hala.core.ads
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,13 +15,22 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 
 /** Measured adaptive banner; failed/unfilled placements occupy no empty panel. */
 @Composable
-fun BannerAd(slot: String, modifier: Modifier = Modifier, adUnitId: String = AdConfig.bannerUnitId) {
+fun BannerAd(
+    slot: String,
+    modifier: Modifier = Modifier,
+    adUnitId: String = AdConfig.bannerUnitId,
+    /** هوامش تُطبَّق فقط حين يظهر إعلان — لا شريط فارغ قبل وصوله. */
+    loadedPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues()
+) {
     if (!AdGate.rememberEnabled()) return
     val activity = LocalContext.current.findActivity() ?: return
     val density = LocalDensity.current
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        if (!maxWidth.value.isFinite() || maxWidth.value < 320) return@BoxWithConstraints
-        val width = maxWidth.value.toInt()
+        // عرض الإعلان = المتاح ناقص الهوامش التي تُطبَّق عند ظهوره
+        val ld = androidx.compose.ui.platform.LocalLayoutDirection.current
+        val usable = maxWidth - loadedPadding.calculateLeftPadding(ld) - loadedPadding.calculateRightPadding(ld)
+        if (!usable.value.isFinite() || usable.value < 320) return@BoxWithConstraints
+        val width = usable.value.toInt()
         key(slot, width, activity, adUnitId) {
             val state = BannerAdPool.stateOf(slot)
             val height = if (state?.loaded == true) with(density) {
@@ -31,7 +41,10 @@ fun BannerAd(slot: String, modifier: Modifier = Modifier, adUnitId: String = AdC
                 onPauseOrDispose { BannerAdPool.pause(slot) }
             }
             AndroidView(
-                modifier = Modifier.fillMaxWidth().height(height),
+                modifier = Modifier
+                    .then(if (state?.loaded == true) Modifier.padding(loadedPadding) else Modifier)
+                    .fillMaxWidth()
+                    .height(height),
                 factory = { BannerAdPool.obtain(activity, slot, adUnitId, width) },
                 onRelease = { BannerAdPool.release(slot, it) }
             )

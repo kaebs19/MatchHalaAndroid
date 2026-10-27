@@ -1542,4 +1542,17 @@
     <string name="video_load_failed">تعذّر تنزيل الفيديو — حاول مجدداً</string>
     <string name="video_limit_title">تم تجاوز الحد اليومي</string>
     <string name="media_report">إبلاغ</string>
+    <string name="request_gone_expired">انتهت مهلة هذا الطلب دون ردّ.</string>
+    <string name="request_gone_withdrawn">سحب المرسل هذا الطلب.</string>
+    <string name="winback_title_1">وحشتنا 💜</string>
+    <string name="winback_body_1">فيه ناس جدد في هلا بانتظارك، تعال شوف مين.</string>
+    <string name="winback_title_2">صار لك أسبوع غايب 👀</string>
+    <string name="winback_body_2">محادثاتك وأصدقاؤك في هلا بانتظارك.</string>
+    <string name="winback_title_3">هلا ما هي هلا بدونك 🌙</string>
+    <string name="winback_body_3">رجعتك تفرق معنا — تعال قول هلا.</string>
+    <string name="premium_strip_text">اعرف من زارك · 10 قصص · بلا إعلانات</string>
+    <string name="premium_strip_cta">اشترك</string>
+    <string name="profile_menu_qr">رمز QR</string>
+    <string name="profile_menu_preview">معاينة ملفي</string>
+    <string name="profile_menu_theme">المظهر</string>
 </resources>

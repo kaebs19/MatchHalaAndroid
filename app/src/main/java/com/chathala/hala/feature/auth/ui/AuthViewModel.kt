@@ -113,6 +113,21 @@ class AuthViewModel(
                 )
                 _state.update { it.copy(loading = false, error = null, bannedMode = SuspensionMode.ACCOUNT) }
             }
+            // حظر نهائي (مثلاً دخول جوجل لحساب محظور) ← شاشة الحالة لا Toast
+            "ACCOUNT_BANNED" -> {
+                val body = error.payload as? ErrorBody
+                SuspensionGate.account = AccountSuspensionInfo(
+                    name = body?.user?.name,
+                    email = body?.user?.email,
+                    userId = body?.user?.id,
+                    reason = body?.data?.reason ?: body?.message,
+                    suspendedUntil = null,
+                    level = body?.data?.level ?: 0,
+                    isPermanent = true,
+                    token = body?.token
+                )
+                _state.update { it.copy(loading = false, error = null, bannedMode = SuspensionMode.ACCOUNT) }
+            }
             "DEVICE_BANNED" -> {
                 SuspensionGate.account = null
                 _state.update { it.copy(loading = false, error = null, bannedMode = SuspensionMode.DEVICE) }

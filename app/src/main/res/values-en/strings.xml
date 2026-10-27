@@ -1476,4 +1476,17 @@
     <string name="video_load_failed">Could not download the video — try again</string>
     <string name="video_limit_title">Daily limit reached</string>
     <string name="media_report">Report</string>
+    <string name="request_gone_expired">This request expired without a reply.</string>
+    <string name="request_gone_withdrawn">The sender withdrew this request.</string>
+    <string name="winback_title_1">We miss you 💜</string>
+    <string name="winback_body_1">New people joined Hala — come see who\'s around.</string>
+    <string name="winback_title_2">It\'s been a week 👀</string>
+    <string name="winback_body_2">Your chats and friends on Hala are waiting for you.</string>
+    <string name="winback_title_3">Hala isn\'t the same without you 🌙</string>
+    <string name="winback_body_3">Come back and say hi.</string>
+    <string name="premium_strip_text">See who visited · 10 stories · No ads</string>
+    <string name="premium_strip_cta">Subscribe</string>
+    <string name="profile_menu_qr">QR code</string>
+    <string name="profile_menu_preview">Preview my profile</string>
+    <string name="profile_menu_theme">Theme</string>
 </resources>

@@ -93,3 +93,43 @@ fun PremiumBanner(
         )
     }
 }
+
+/**
+ * شريط هلا+ الرفيع قبل الإحصائيات: تدرّج وردي-ذهبي، «اعرف من زارك · 10 قصص · بلا
+ * إعلانات» وزرّ «اشترك». يفتح الاشتراك **ورقةً** (لا تنقّلاً).
+ */
+@Composable
+fun PremiumStrip(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(14.dp)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(Brush.horizontalGradient(listOf(Color(0xFFE91E63), Color(0xFFFFA000))))
+            .clickable(onClick = onClick)
+            .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(text = "👑", fontSize = 15.sp)
+        Text(
+            text = S.get(R.string.premium_strip_text),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = S.get(R.string.premium_strip_cta),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFE91E63),
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(Color.White)
+                .padding(horizontal = 12.dp, vertical = 5.dp)
+        )
+    }
+}

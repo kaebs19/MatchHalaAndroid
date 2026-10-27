@@ -51,6 +51,7 @@ object PushIntentCoordinator {
         _pendingTab.value = when {
             isMessageType -> MainTab.CHATS
             isStoryNotice -> MainTab.PROFILE
+            type == WinBackReminders.TYPE -> MainTab.DISCOVER
             else -> MainTab.NOTIFICATIONS
         }
 

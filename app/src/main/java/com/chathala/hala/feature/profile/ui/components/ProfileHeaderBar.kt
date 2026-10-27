@@ -1,5 +1,16 @@
 package com.chathala.hala.feature.profile.ui.components
 
+import com.chathala.hala.core.i18n.S
+import com.chathala.hala.R
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -27,8 +38,8 @@ import androidx.compose.ui.unit.dp
 
 /**
  * شريط أعلى صفحة الملف الشخصي — يُرسم فوق تدرّج الهيدر، لذا نصّه وأيقوناته بيضاء
- * داخل حاويات شفّافة. المجموعتان كما في iOS: (تعديل، مظهر) و(QR، إعدادات).
- * لا زر خروج هنا — موضعه الإعدادات فقط.
+ * داخل حاويات شفّافة. **ثلاثة أزرار فقط** (كانت خمسة فقُطع العنوان): الإعدادات ·
+ * التعديل · ••• (رمز QR، معاينة ملفي، الثيم).
  */
 @Composable
 fun ProfileHeaderBar(
@@ -37,8 +48,10 @@ fun ProfileHeaderBar(
     onShowQr: () -> Unit,
     onTheme: () -> Unit,
     onEdit: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPreview: () -> Unit = {}
 ) {
+    var menuOpen by remember { mutableStateOf(false) }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -46,25 +59,40 @@ fun ProfileHeaderBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ActionPill(
-            actions = listOf(
-                Icons.Filled.Edit to onEdit,
-                Icons.Filled.Palette to onTheme
+        Box {
+            ActionPill(
+                actions = listOf(
+                    Icons.Filled.Edit to onEdit,
+                    Icons.Filled.MoreHoriz to { menuOpen = true }
+                )
             )
-        )
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DropdownMenuItem(
+                    text = { Text(S.get(R.string.profile_menu_qr)) },
+                    leadingIcon = { Icon(Icons.Filled.QrCode, null) },
+                    onClick = { menuOpen = false; onShowQr() }
+                )
+                DropdownMenuItem(
+                    text = { Text(S.get(R.string.profile_menu_preview)) },
+                    leadingIcon = { Icon(Icons.Filled.Visibility, null) },
+                    onClick = { menuOpen = false; onPreview() }
+                )
+                DropdownMenuItem(
+                    text = { Text(S.get(R.string.profile_menu_theme)) },
+                    leadingIcon = { Icon(Icons.Filled.Palette, null) },
+                    onClick = { menuOpen = false; onTheme() }
+                )
+            }
+        }
 
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = Color.White
+            color = Color.White,
+            maxLines = 1
         )
 
-        ActionPill(
-            actions = listOf(
-                Icons.Filled.QrCode to onShowQr,
-                Icons.Filled.Settings to onSettings
-            )
-        )
+        ActionPill(actions = listOf(Icons.Filled.Settings to onSettings))
     }
 }
 

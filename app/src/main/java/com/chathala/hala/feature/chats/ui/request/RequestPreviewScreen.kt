@@ -184,7 +184,7 @@ fun RequestPreviewScreen(
                     message = state.error ?: "",
                     onRetry = viewModel::load
                 )
-                state.notFound -> RequestUnavailable(onBack = onBack)
+                state.notFound -> RequestUnavailable(onBack = onBack, status = state.settledStatus)
             }
         }
 
@@ -220,7 +220,7 @@ fun RequestPreviewScreen(
 
 /** حالة: الطلب لم يعد متاحاً (تم قبوله/رفضه/إلغاؤه) — بدل الارتداد الصامت. */
 @Composable
-private fun RequestUnavailable(onBack: () -> Unit) {
+private fun RequestUnavailable(onBack: () -> Unit, status: String? = null) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -240,7 +240,13 @@ private fun RequestUnavailable(onBack: () -> Unit) {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = S.get(R.string.request_gone_desc),
+            text = S.get(
+                when (status) {
+                    "expired" -> R.string.request_gone_expired
+                    "cancelled" -> R.string.request_gone_withdrawn
+                    else -> R.string.request_gone_desc
+                }
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center

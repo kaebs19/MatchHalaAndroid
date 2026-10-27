@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.premium.ui
 
+import androidx.compose.ui.graphics.luminance
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -26,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +56,11 @@ import com.chathala.hala.ui.components.rememberHalaSnackbarHost
 private val Gold = Color(0xFFFFC107)
 private val GoldDark = Color(0xFFFFA726)
 
+/** الذهبي على الخلفية البيضاء أغمق ليُقرأ؛ على السوداء يبقى فاتحاً. */
+@Composable
+private fun goldInk(): Color =
+    if (MaterialTheme.colorScheme.background.luminance() > 0.5f) Color(0xFFB7791F) else Gold
+
 /** مزايا الاشتراك المميّز المعروضة في الشاشة. */
 private val premiumBenefits = listOf(
     S.get(R.string.premium_perk_superlikes),
@@ -70,6 +77,8 @@ fun SubscriptionScreen(
     onOpenTerms: () -> Unit = {},
     onOpenPrivacy: () -> Unit = {},
     onOpenContact: () -> Unit = {},
+    /** معروضة ورقةً (من شريط هلا+): زرّ إغلاق ✕ وحده بدل الرجوع. */
+    asSheet: Boolean = false,
     viewModel: SubscriptionViewModel = viewModel(factory = SubscriptionViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -97,7 +106,8 @@ fun SubscriptionScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = S.get(R.string.action_back))
+                    if (asSheet) Icon(Icons.Filled.Close, contentDescription = S.get(R.string.action_close))
+                    else Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = S.get(R.string.action_back))
                 }
             }
 
@@ -147,7 +157,7 @@ fun SubscriptionScreen(
                         Icon(
                             Icons.Filled.CheckCircle,
                             contentDescription = null,
-                            tint = Gold,
+                            tint = goldInk(),
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.size(10.dp))
@@ -273,7 +283,7 @@ private fun PlanCard(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val borderColor = if (selected) Gold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    val borderColor = if (selected) goldInk() else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
     Row(
         modifier = Modifier
             .fillMaxWidth()

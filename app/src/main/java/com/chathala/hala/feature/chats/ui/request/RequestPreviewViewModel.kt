@@ -33,6 +33,8 @@ import kotlinx.coroutines.launch
 data class RequestPreviewUiState(
     val loading: Boolean = true,
     val notFound: Boolean = false,
+    /** الحالة الفعلية لطلب حُسم: expired | rejected | cancelled — لعرض سبب واضح. */
+    val settledStatus: String? = null,
     /** فشل شبكة/خادم — قابل لإعادة المحاولة، ولا يعني أن الطلب اختفى. */
     val error: String? = null,
     /** الطلب حُسم وصار محادثة قائمة — الوجهة الصحيحة هي المحادثة لا شاشة اعتذار. */
@@ -104,8 +106,8 @@ class RequestPreviewViewModel(
                 // المرفوض والمنتهي وحدهما بلا وجهة؛ ما عداهما محادثة تُفتح —
                 // بما فيها `pending` التي أنت مُنشئها (كما تفعل قائمة المحادثات).
                 val status = c.data.status
-                if (status == "rejected" || status == "expired") {
-                    _state.update { it.copy(loading = false, notFound = true) }
+                if (status == "rejected" || status == "expired" || status == "cancelled") {
+                    _state.update { it.copy(loading = false, notFound = true, settledStatus = status) }
                 } else {
                     _state.update { it.copy(loading = false, redirectToChat = conversationId) }
                 }

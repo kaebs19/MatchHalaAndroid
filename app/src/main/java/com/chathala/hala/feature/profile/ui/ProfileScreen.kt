@@ -38,7 +38,6 @@ import com.chathala.hala.core.util.ProfileFormatter
 import com.chathala.hala.feature.profile.ui.components.CountPill
 import com.chathala.hala.feature.profile.ui.components.HERO_OVERLAP
 import com.chathala.hala.feature.profile.ui.components.PendingBadge
-import com.chathala.hala.feature.profile.ui.components.PremiumBanner
 import com.chathala.hala.feature.profile.ui.components.ProfileCompletionBanner
 import com.chathala.hala.feature.profile.ui.components.ProfileEntryRow
 import com.chathala.hala.feature.profile.ui.components.ProfileHeaderBar
@@ -76,6 +75,7 @@ fun ProfileScreen(
     onOpenMyInfo: () -> Unit = {},
     onOpenChats: () -> Unit = {},
     onOpenGuidelines: () -> Unit = {},
+    onPreviewProfile: (String) -> Unit = {},
     viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -95,6 +95,7 @@ fun ProfileScreen(
     val storyComposer = rememberStoryComposerState()
     var viewerStart by remember { mutableStateOf<String?>(null) }
     var viewerOpen by remember { mutableStateOf(false) }
+    var paywallOpen by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { storyManager.refreshMine() }
 
     LaunchedEffect(Unit) {
@@ -147,7 +148,8 @@ fun ProfileScreen(
                             onSettings = onOpenSettings,
                             onShowQr = { showQrSheet = true },
                             onTheme = { showThemeSheet = true },
-                            onEdit = onEditProfile
+                            onEdit = onEditProfile,
+                            onPreview = { onPreviewProfile(currentUser.id) }
                         )
                     }
                 )
@@ -160,6 +162,11 @@ fun ProfileScreen(
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // شريط هلا+ الرفيع قبل الإحصائيات — يفتح الاشتراك ورقةً
+                    if (!currentUser.isPremium) {
+                        com.chathala.hala.feature.profile.ui.components.PremiumStrip(onClick = { paywallOpen = true })
+                    }
+
                     ProfileStatsCard(
                         stats = stats,
                         onFriends = onOpenFriends,
@@ -200,9 +207,6 @@ fun ProfileScreen(
                         }) else null
                     )
 
-                    if (!currentUser.isPremium) {
-                        PremiumBanner(onClick = onOpenPremium)
-                    }
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -225,9 +229,17 @@ fun ProfileScreen(
         ThemePickerSheet(onDismiss = { showThemeSheet = false })
     }
 
+    if (paywallOpen) {
+        com.chathala.hala.feature.premium.ui.PaywallSheet(
+            onDismiss = { paywallOpen = false },
+            onOpenTerms = onOpenGuidelines
+        )
+    }
+
     StoryComposerHost(
         state = storyComposer,
-        onOpenPremium = onOpenPremium,
+        // القصص/المشاهدون يفتحون الاشتراك ورقةً أيضاً
+        onOpenPremium = { paywallOpen = true },
         onOpenGuidelines = onOpenGuidelines
     )
     if (viewerOpen && currentUserSnapshot != null) {
@@ -237,7 +249,7 @@ fun ProfileScreen(
             startStoryId = viewerStart,
             onDismiss = { viewerOpen = false },
             onAddStory = { storyComposer.open() },
-            onOpenPremium = onOpenPremium
+            onOpenPremium = { paywallOpen = true }
         )
     }
 }

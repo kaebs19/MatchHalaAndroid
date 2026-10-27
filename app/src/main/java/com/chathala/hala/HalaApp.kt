@@ -150,6 +150,8 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var appBootstrap: com.chathala.hala.core.session.data.AppBootstrap
         private set
 
+    private lateinit var winBack: com.chathala.hala.feature.push.WinBackReminders
+
     private val appScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     lateinit var appPreferences: AppPreferences
@@ -173,6 +175,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
                     com.chathala.hala.core.ads.InterstitialAdManager.onForegroundStarted()
                     // العودة من الخلفية ← نداء الإقلاع الموحّد بدل الطلبات المنفردة
                     if (::appBootstrap.isInitialized) appBootstrap.refresh()
+                    if (::winBack.isInitialized) winBack.cancel()
                 }
                 com.chathala.hala.feature.push.InAppAlerts.appInForeground = true
             }
@@ -183,6 +186,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
                     com.chathala.hala.feature.push.InAppAlerts.appInForeground = false
                     // شريطٌ معلّق لا معنى له عند العودة بعد دقائق.
                     com.chathala.hala.feature.push.InAppAlerts.dismiss()
+                    if (::winBack.isInitialized) winBack.scheduleOnBackground()
                 }
             }
 
@@ -226,7 +230,9 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
             repo = com.chathala.hala.feature.stories.data.StoryRepository(tokenStorage = tokenStorage),
             socketEvents = socket.incoming
         )
+        winBack = com.chathala.hala.feature.push.WinBackReminders(applicationContext, tokenStorage, appScope)
         tokenStorage.onSessionCleared = {
+            winBack.cancel()
             if (::chatSendCoordinator.isInitialized) chatSendCoordinator.cancelAll()
             storyManager.reset()
             chatComposerStorage.clear()

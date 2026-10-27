@@ -46,6 +46,11 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- «وحشتنا»: تذكيرات محلية بعد 3/7/15 يوماً من آخر استخدام -->
+        <receiver
+            android:name=".feature.push.WinBackReceiver"
+            android:exported="false" />
+
         <!-- Firebase Cloud Messaging -->
         <service
             android:name=".feature.push.HalaMessagingService"

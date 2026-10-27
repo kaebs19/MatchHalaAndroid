@@ -489,7 +489,7 @@ private fun CardStack(
         // تُبطل النقرات وقد تُوقف الوحدة.
         com.chathala.hala.core.ads.BannerAd(
             slot = "discover_stack",
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
+            loadedPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
         )
 
         SwipeActionButtons(
