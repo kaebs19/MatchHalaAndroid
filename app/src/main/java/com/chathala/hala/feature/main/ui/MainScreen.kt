@@ -115,7 +115,8 @@ fun MainScreen(
                     onOpenSearch = onOpenUserSearch,
                     onOpenRequests = onOpenRequests,
                     onOpenPremium = onOpenPremium,
-                    onOpenVisitors = onOpenVisitors
+                    onOpenVisitors = onOpenVisitors,
+                    onOpenTerms = onOpenTerms
                 )
                 MainTab.CHATS -> ChatsScreen(
                     onOpenFriends = onOpenFriends,

@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.editor
 
+import androidx.compose.ui.layout.onSizeChanged
 import com.chathala.hala.ui.components.dialogSafeBottom
 import com.chathala.hala.ui.components.dialogSafeTop
 import com.chathala.hala.ui.components.dialogSafeDrawing
@@ -149,6 +150,9 @@ fun PhotoEditorDialog(
     var chrome by remember { mutableStateOf(true) }
     var selectedSticker by remember { mutableStateOf<Long?>(null) }
     var busy by remember { mutableStateOf(false) }
+    // ارتفاع الأدوات السفلية الفعلي — الوسيط ينتهي فوقها فلا يغطّيه التنبيه/الأزرار
+    var bottomBarPx by remember { mutableIntStateOf(0) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
 
     // المعاينة: الأصل مصغّراً (≤1280) + الدوران/القصّ/الألوان/التمويه — بلا الملصقات (طبقة فوقها)
     val sources = remember { mutableStateListOf<Bitmap?>(*arrayOfNulls(uris.size)) }
@@ -178,7 +182,7 @@ fun PhotoEditorDialog(
                 Modifier
                     .fillMaxSize()
                     .dialogSafeDrawing()
-                    .padding(top = 56.dp, bottom = if (uris.size > 1) 150.dp else 90.dp),
+                    .padding(top = 56.dp, bottom = with(density) { bottomBarPx.toDp() }.coerceAtLeast(90.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 val bmp = preview
@@ -239,58 +243,60 @@ fun PhotoEditorDialog(
                         else -> Unit
                     }
                 }
-                if (uris.size > 1 && chrome) {
-                    LazyRow(
-                        Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                    ) {
-                        itemsIndexed(uris) { i, uri ->
-                            Box {
-                                coil.compose.AsyncImage(
-                                    model = uri,
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(54.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .border(BorderStroke(2.dp, if (i == index) Color.White else Color.Transparent), RoundedCornerShape(8.dp))
-                                        .clickable { index = i; selectedSticker = null; faceCount = null }
-                                )
-                                if (edits[i].isEdited) Box(
-                                    Modifier.align(Alignment.TopEnd).padding(3.dp).size(8.dp).clip(CircleShape).background(Color(0xFFFA7E1E))
-                                )
+                Column(Modifier.fillMaxWidth().onSizeChanged { bottomBarPx = it.height }) {
+                    if (uris.size > 1 && chrome) {
+                        LazyRow(
+                            Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                        ) {
+                            itemsIndexed(uris) { i, uri ->
+                                Box {
+                                    coil.compose.AsyncImage(
+                                        model = uri,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(54.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .border(BorderStroke(2.dp, if (i == index) Color.White else Color.Transparent), RoundedCornerShape(8.dp))
+                                            .clickable { index = i; selectedSticker = null; faceCount = null }
+                                    )
+                                    if (edits[i].isEdited) Box(
+                                        Modifier.align(Alignment.TopEnd).padding(3.dp).size(8.dp).clip(CircleShape).background(Color(0xFFFA7E1E))
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                footer?.let { Box(Modifier.padding(horizontal = 16.dp)) { it() } }
-                Button(
-                    onClick = {
-                        busy = true
-                        scope.launch {
-                            val out = uris.indices.mapNotNull { i ->
-                                // التعديلات تُرسم على الأصل (≤2048) لا على المعاينة
-                                val original = ImageCompressor.decode(context, uris[i]) ?: return@mapNotNull null
-                                val rendered = PhotoRenderer.render(original, edits[i])
-                                EditedPhoto(ImageCompressor.compress(rendered), edits[i].timerSec)
+                    footer?.let { Box(Modifier.padding(horizontal = 16.dp)) { it() } }
+                    Button(
+                        onClick = {
+                            busy = true
+                            scope.launch {
+                                val out = uris.indices.mapNotNull { i ->
+                                    // التعديلات تُرسم على الأصل (≤2048) لا على المعاينة
+                                    val original = ImageCompressor.decode(context, uris[i]) ?: return@mapNotNull null
+                                    val rendered = PhotoRenderer.render(original, edits[i])
+                                    EditedPhoto(ImageCompressor.compress(rendered), edits[i].timerSec)
+                                }
+                                busy = false
+                                if (out.isEmpty()) context.showToast(S.get(R.string.profile_photo_read_failed)) else onDone(out)
                             }
-                            busy = false
-                            if (out.isEmpty()) context.showToast(S.get(R.string.profile_photo_read_failed)) else onDone(out)
+                        },
+                        enabled = !busy && preview != null,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp).height(50.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD62976), contentColor = Color.White)
+                    ) {
+                        if (busy) CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        else if (mode == EditorMode.STORY) Text(S.get(R.string.story_publish), fontWeight = FontWeight.Bold)
+                        else {
+                            Text(
+                                if (uris.size > 1) S.get(R.string.editor_send_count, uris.size) else S.get(R.string.editor_send),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
                         }
-                    },
-                    enabled = !busy && preview != null,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp).height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD62976))
-                ) {
-                    if (busy) CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
-                    else if (mode == EditorMode.STORY) Text(S.get(R.string.story_publish), fontWeight = FontWeight.Bold)
-                    else {
-                        Text(
-                            if (uris.size > 1) S.get(R.string.editor_send_count, uris.size) else S.get(R.string.editor_send),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
                     }
                 }
             }
@@ -490,7 +496,7 @@ fun VideoEditorDialog(
                     onClick = { ready?.let { player.pause(); onDone(EditedVideo(it, mode)) } },
                     enabled = ready != null,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp).height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD62976))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD62976), contentColor = Color.White)
                 ) {
                     when {
                         ready != null -> {

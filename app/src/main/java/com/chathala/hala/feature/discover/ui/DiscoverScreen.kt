@@ -75,6 +75,7 @@ fun DiscoverScreen(
     onOpenRequests: () -> Unit = {},
     onOpenPremium: () -> Unit = {},
     onOpenVisitors: () -> Unit = {},
+    onOpenTerms: () -> Unit = {},
     viewModel: DiscoverViewModel = viewModel(factory = DiscoverViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -158,6 +159,15 @@ fun DiscoverScreen(
         }
     }
 
+    // «إضافة قصة» من الاكتشاف بجوار «الزوار»
+    val storyComposer = com.chathala.hala.feature.stories.ui.rememberStoryComposerState()
+    LaunchedEffect(Unit) { storyManagerForCards.refreshMine() }
+    com.chathala.hala.feature.stories.ui.StoryComposerHost(
+        state = storyComposer,
+        onOpenPremium = onOpenPremium,
+        onOpenGuidelines = onOpenTerms
+    )
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopBar(
@@ -171,7 +181,8 @@ fun DiscoverScreen(
                 },
                 // شاشة الزوّار تعرض التمويه وبانر الترقية للمجاني بنفسها،
                 // فنفتحها للجميع بدل حجبها خلف حوار (المجاني يرى العدد ويُغرى بالترقية).
-                onVisitorsClick = onOpenVisitors
+                onVisitorsClick = onOpenVisitors,
+                onAddStory = { storyComposer.open() }
             )
 
             // بانر التقييد العام (يظهر فقط عند تقييد/تعليق الحساب)
@@ -329,7 +340,8 @@ private fun TopBar(
     isPremium: Boolean,
     onSearchClick: () -> Unit,
     onFiltersClick: () -> Unit,
-    onVisitorsClick: () -> Unit
+    onVisitorsClick: () -> Unit,
+    onAddStory: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -338,6 +350,8 @@ private fun TopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         VisitorsPill(isPremium = isPremium, onClick = onVisitorsClick)
+        Spacer(Modifier.width(8.dp))
+        com.chathala.hala.feature.stories.ui.AddStoryButton(onClick = onAddStory)
         Column(
             modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally

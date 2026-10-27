@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -176,4 +177,53 @@ fun StoryBadge(userId: String?, modifier: Modifier = Modifier) {
             .then(if (unseen) Modifier.background(StoryRingBrush) else Modifier.background(Color.Black.copy(alpha = 0.45f)))
             .padding(horizontal = 10.dp, vertical = 4.dp)
     )
+}
+
+/**
+ * زرّ «إضافة قصة» صغير (رأس الاكتشاف بجوار «الزوار»): صورتي بحلقة إن كانت لي قصص،
+ * وشارة + وردية.
+ */
+@Composable
+fun AddStoryButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val app = LocalContext.current.applicationContext as HalaApp
+    val user by app.userRepository.currentUser.collectAsState(initial = null)
+    val mine by app.storyManager.myStories.collectAsState()
+    Box(
+        modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+    ) {
+        StoryRingBox(
+            state = if (mine.isEmpty()) StoryRingState.None else StoryRingState.Unseen,
+            modifier = Modifier.fillMaxSize(),
+            ringWidth = 2.dp,
+            gap = 1.5.dp
+        ) {
+            com.chathala.hala.ui.components.HalaAsyncImage(
+                model = user?.profileImage,
+                contentDescription = com.chathala.hala.core.i18n.S.get(com.chathala.hala.R.string.story_new),
+                fallbackName = user?.name,
+                modifier = Modifier.fillMaxSize().clip(CircleShape)
+            )
+        }
+        Box(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .size(16.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.background)
+                .padding(1.5.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFD62976)),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.material3.Icon(
+                androidx.compose.material.icons.Icons.Filled.Add,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(11.dp)
+            )
+        }
+    }
 }

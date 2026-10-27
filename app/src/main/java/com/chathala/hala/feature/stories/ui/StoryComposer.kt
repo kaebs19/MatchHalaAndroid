@@ -365,12 +365,14 @@ fun StoryContentWarning(
         modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(if (dark) Color.White.copy(alpha = 0.12f) else Color(0xFFFDECEE))
+            // الداكن معتم: الشفاف كان يذوب فوق الصور/الخلفيات البيضاء فلا يُقرأ
+            .background(if (dark) Color(0xF2231A1D) else Color(0xFFFDECEE))
+            .then(if (dark) Modifier.border(1.dp, Color(0x33FF8A80), RoundedCornerShape(14.dp)) else Modifier)
             .clickable(enabled = !expanded) { expanded = true }
             .padding(12.dp)
             .animateContentSize()
     ) {
-        val textColor = if (dark) Color(0xFFFFB4B4) else red
+        val textColor = if (dark) Color(0xFFFF9E9E) else red
         if (!expanded) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.WarningAmber, null, tint = textColor, modifier = Modifier.size(16.dp))
