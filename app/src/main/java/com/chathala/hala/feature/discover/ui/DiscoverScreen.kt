@@ -91,6 +91,15 @@ fun DiscoverScreen(
     val sponsoredAd = com.chathala.hala.core.ads.rememberNativeAd(DISCOVER_NATIVE_SLOT)
     val currentSponsoredAd by androidx.compose.runtime.rememberUpdatedState(sponsoredAd)
 
+    // شارات القصص لبطاقات الاكتشاف — دفعات 40، والمدير يمنع التكرار خلال 60ث
+    val discoverStoryIds = remember(state.cards) { state.cards.map { it.id } }
+    val storyManagerForCards = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.chathala.hala.HalaApp).storyManager
+    LaunchedEffect(discoverStoryIds) {
+        if (discoverStoryIds.isNotEmpty()) {
+            kotlinx.coroutines.delay(400)
+            storyManagerForCards.loadStatuses(discoverStoryIds, batchSize = com.chathala.hala.feature.stories.data.StoryManager.DISCOVER_BATCH)
+        }
+    }
     LaunchedEffect(adsEnabled, sponsoredAd) {
         if (!adsEnabled || sponsoredAd == null) showSponsoredCard = false
     }

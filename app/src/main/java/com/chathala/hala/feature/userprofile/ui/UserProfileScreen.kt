@@ -94,6 +94,12 @@ fun UserProfileScreen(
     var showFriendRemoveConfirm by remember { mutableStateOf(false) }
     var viewerIndex by remember { mutableStateOf<Int?>(null) }
 
+    // قصص هذا المستخدم: البروفايل يعرضها حتى للمكتوم (الكتم يخفي الحلقة من القوائم فقط)
+    val storyManager = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.chathala.hala.HalaApp).storyManager
+    val storyStatuses by storyManager.statuses.collectAsStateWithLifecycle()
+    var storiesOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(userId, state.blocked) { storyManager.userStories(userId) }
+
     LaunchedEffect(Unit) {
         viewModel.message.collect { snackbarHost.showSnackbar(it) }
     }
@@ -128,6 +134,8 @@ fun UserProfileScreen(
                 onBlock = { showBlockConfirm = true },
                 onUnblock = { viewModel.unblockUser() },
                 onOpenPhoto = { viewerIndex = it },
+                storyStatus = storyStatuses[userId].takeUnless { state.blocked },
+                onOpenStories = { storiesOpen = true },
                 liked = state.liked,
                 blocked = state.blocked,
                 reported = state.reported,
@@ -150,7 +158,25 @@ fun UserProfileScreen(
         FullscreenPhotoViewer(
             urls = state.user?.galleryUrls ?: emptyList(),
             initialIndex = idx,
-            onDismiss = { viewerIndex = null }
+            onDismiss = { viewerIndex = null },
+            headerStart = storyStatuses[userId]?.takeIf { !state.blocked && it.count > 0 }?.let { st ->
+                {
+                    com.chathala.hala.feature.stories.ui.StoriesPill(status = st, onClick = {
+                        viewerIndex = null
+                        storiesOpen = true
+                    })
+                }
+            }
+        )
+    }
+
+    if (storiesOpen && state.user != null) {
+        val u = state.user!!
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = com.chathala.hala.feature.stories.ui.StoryOwner(userId, u.name.orEmpty(), u.galleryUrls.firstOrNull()),
+            isMine = false,
+            onDismiss = { storiesOpen = false },
+            onMessage = { showMessageSheet = true }
         )
     }
 
@@ -326,6 +352,8 @@ private fun ProfileContent(
     onBlock: () -> Unit,
     onUnblock: () -> Unit,
     onOpenPhoto: (Int) -> Unit,
+    storyStatus: com.chathala.hala.feature.stories.data.StoryStatus?,
+    onOpenStories: () -> Unit,
     liked: Boolean,
     blocked: Boolean,
     reported: Boolean,
@@ -352,7 +380,7 @@ private fun ProfileContent(
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 120.dp)
         ) {
-            HeroSection(user = user, onOpenPhoto = { onOpenPhoto(0) })
+            HeroSection(user = user, onOpenPhoto = { onOpenPhoto(0) }, storyStatus = storyStatus, onOpenStories = onOpenStories)
 
             Column(
                 modifier = Modifier
@@ -478,7 +506,12 @@ private fun ProfileSkeleton(onBack: () -> Unit) {
 // Hero: immersive photo + name + pills
 // ──────────────────────────────────────────────────
 @Composable
-private fun HeroSection(user: UserProfile, onOpenPhoto: () -> Unit) {
+private fun HeroSection(
+    user: UserProfile,
+    onOpenPhoto: () -> Unit,
+    storyStatus: com.chathala.hala.feature.stories.data.StoryStatus? = null,
+    onOpenStories: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -519,6 +552,7 @@ private fun HeroSection(user: UserProfile, onOpenPhoto: () -> Unit) {
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            com.chathala.hala.feature.stories.ui.StoriesPill(status = storyStatus, onClick = onOpenStories)
             if (user.likedYou == true) LikedYouBadge()
             NameRow(user)
             HeroPillsRow(user)

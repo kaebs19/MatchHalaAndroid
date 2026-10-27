@@ -1,8 +1,5 @@
 package com.chathala.hala.feature.profile.ui
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,9 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chathala.hala.R
 import com.chathala.hala.core.data.Countries
 import com.chathala.hala.core.i18n.S
-import com.chathala.hala.core.util.MediaUploadHelper
 import com.chathala.hala.core.util.ProfileFormatter
-import com.chathala.hala.core.util.showToast
 import com.chathala.hala.feature.profile.ui.components.CountPill
 import com.chathala.hala.feature.profile.ui.components.HERO_OVERLAP
 import com.chathala.hala.feature.profile.ui.components.PendingBadge
@@ -53,6 +48,12 @@ import com.chathala.hala.feature.profile.ui.components.ProfileStatsCard
 import com.chathala.hala.feature.profile.ui.components.QrCodeSheet
 import com.chathala.hala.feature.profile.ui.components.computeProfileCompletion
 import com.chathala.hala.feature.settings.ui.ThemePickerSheet
+import com.chathala.hala.feature.stories.ui.MyStoriesCard
+import com.chathala.hala.feature.stories.ui.StoryComposerHost
+import com.chathala.hala.feature.stories.ui.StoryOwner
+import com.chathala.hala.feature.stories.ui.StoryRingState
+import com.chathala.hala.feature.stories.ui.StoryViewer
+import com.chathala.hala.feature.stories.ui.rememberStoryComposerState
 import com.chathala.hala.ui.components.HalaSnackbarHost
 import com.chathala.hala.ui.components.rememberHalaSnackbarHost
 import kotlinx.coroutines.launch
@@ -74,6 +75,7 @@ fun ProfileScreen(
     onOpenVisitors: () -> Unit = {},
     onOpenMyInfo: () -> Unit = {},
     onOpenChats: () -> Unit = {},
+    onOpenGuidelines: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -86,24 +88,14 @@ fun ProfileScreen(
     var showQrSheet by remember { mutableStateOf(false) }
     var showThemeSheet by remember { mutableStateOf(false) }
 
-    val photoPicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        if (uri != null) {
-            scope.launch {
-                val part = MediaUploadHelper.uriToImagePart(
-                    context = context,
-                    uri = uri,
-                    fieldName = "profileImage"
-                )
-                if (part != null) {
-                    viewModel.uploadPhoto(part)
-                } else {
-                    context.showToast(S.get(R.string.profile_photo_read_failed))
-                }
-            }
-        }
-    }
+    // القصص: تُحدَّث عند دخول التبويب
+    val app = context.applicationContext as com.chathala.hala.HalaApp
+    val storyManager = app.storyManager
+    val myStories by storyManager.myStories.collectAsStateWithLifecycle()
+    val storyComposer = rememberStoryComposerState()
+    var viewerStart by remember { mutableStateOf<String?>(null) }
+    var viewerOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { storyManager.refreshMine() }
 
     LaunchedEffect(Unit) {
         viewModel.message.collect { msg -> snackbarHost.showSnackbar(msg) }
@@ -112,7 +104,10 @@ fun ProfileScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         PullToRefreshBox(
             isRefreshing = refreshing,
-            onRefresh = { viewModel.pullToRefresh() },
+            onRefresh = {
+                viewModel.pullToRefresh()
+                scope.launch { storyManager.refreshMine() }
+            },
             modifier = Modifier.fillMaxSize()
         ) {
             Column(
@@ -140,10 +135,11 @@ fun ProfileScreen(
                     isVerified = currentUser.isVerified,
                     isPremium = currentUser.isPremium,
                     isUploading = uploading,
-                    onChangePhoto = {
-                        photoPicker.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
+                    onAddStory = { storyComposer.open() },
+                    storyRing = if (myStories.isEmpty()) StoryRingState.None else StoryRingState.Unseen,
+                    onAvatarClick = {
+                        if (myStories.isEmpty()) storyComposer.open()
+                        else { viewerStart = myStories.lastOrNull()?.id; viewerOpen = true }
                     },
                     topBar = {
                         ProfileHeaderBar(
@@ -169,6 +165,14 @@ fun ProfileScreen(
                         onFriends = onOpenFriends,
                         onChats = onOpenChats,
                         onVisitors = onOpenVisitors
+                    )
+
+                    MyStoriesCard(
+                        myImage = currentUser.profileImage,
+                        myName = currentUser.name,
+                        isPremium = currentUser.isPremium,
+                        onAdd = { storyComposer.open() },
+                        onOpenStory = { story -> viewerStart = story?.id; viewerOpen = true }
                     )
 
                     val completion = computeProfileCompletion(currentUser)
@@ -219,5 +223,21 @@ fun ProfileScreen(
     }
     if (showThemeSheet) {
         ThemePickerSheet(onDismiss = { showThemeSheet = false })
+    }
+
+    StoryComposerHost(
+        state = storyComposer,
+        onOpenPremium = onOpenPremium,
+        onOpenGuidelines = onOpenGuidelines
+    )
+    if (viewerOpen && currentUserSnapshot != null) {
+        StoryViewer(
+            owner = StoryOwner(currentUserSnapshot.id, currentUserSnapshot.name, currentUserSnapshot.profileImage),
+            isMine = true,
+            startStoryId = viewerStart,
+            onDismiss = { viewerOpen = false },
+            onAddStory = { storyComposer.open() },
+            onOpenPremium = onOpenPremium
+        )
     }
 }

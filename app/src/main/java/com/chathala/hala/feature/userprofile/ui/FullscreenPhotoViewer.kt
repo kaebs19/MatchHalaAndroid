@@ -48,7 +48,8 @@ import coil.compose.AsyncImage
 fun FullscreenPhotoViewer(
     urls: List<String>,
     initialIndex: Int,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    headerStart: (@Composable () -> Unit)? = null
 ) {
     if (urls.isEmpty()) return
     Dialog(
@@ -76,6 +77,15 @@ fun FullscreenPhotoViewer(
                     .background(Color.Black.copy(alpha = 0.4f))
             ) {
                 Icon(Icons.Filled.Close, contentDescription = S.get(R.string.action_close), tint = Color.White)
+            }
+
+            if (headerStart != null) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+                        .padding(16.dp)
+                ) { headerStart() }
             }
 
             if (urls.size > 1) {

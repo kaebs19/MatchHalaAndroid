@@ -48,6 +48,9 @@ object AdConfig {
     /** Discard cached fullscreen ads before their one-hour SDK expiry. */
     const val INTERSTITIAL_TTL_MS = 45 * 60 * 1000L
 
+    /** إعلان مدمج بين القصص: «متابعة القصص» يظهر بعد هذه المهلة (أقل من حدّ الحبس 8ث). */
+    const val STORY_AD_READ_DELAY_MS = 3_000L
+
     /** Never interrupt the first minute of a foreground discovery session. */
     const val INTERSTITIAL_WARMUP_MS = 60_000L
 }

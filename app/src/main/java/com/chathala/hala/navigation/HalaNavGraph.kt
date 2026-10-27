@@ -242,7 +242,8 @@ fun HalaNavGraph() {
                 onOpenMyInfo = { nav.navigate(Routes.MY_INFO) },
                 onOpenUserProfile = { userId -> nav.navigate(Routes.userProfile(userId)) },
                 onOpenUserSearch = { nav.navigate(Routes.USER_SEARCH) },
-                onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) }
+                onOpenRequests = { nav.navigate(Routes.SETTINGS_REQUESTS) },
+                onOpenTerms = { nav.navigate(Routes.LEGAL_TERMS) }
             )
         }
 

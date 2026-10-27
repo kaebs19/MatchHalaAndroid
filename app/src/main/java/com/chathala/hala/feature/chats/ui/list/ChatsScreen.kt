@@ -78,6 +78,9 @@ fun ChatsScreen(
     val adsEnabled = com.chathala.hala.core.ads.AdGate.rememberEnabled()
     val snackbarHost = rememberHalaSnackbarHost()
     var pendingDelete by remember { mutableStateOf<String?>(null) }
+    val storyManager = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.chathala.hala.HalaApp).storyManager
+    // (صاحب القصص، المحادثة) — «مراسلة» في العارض تعود للمحادثة نفسها
+    var storyViewer by remember { mutableStateOf<Pair<com.chathala.hala.feature.stories.ui.StoryOwner, String>?>(null) }
     var showReport by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -120,6 +123,18 @@ fun ChatsScreen(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f))
 
+            // حلقات القصص لأعلى 200 محادثة — المدير يمنع التكرار خلال 60ث
+            val storyIds = remember(state.visible, state.currentUserId) {
+                state.visible.asSequence()
+                    .mapNotNull { c -> c.participants.firstOrNull { it.id != state.currentUserId }?.id }
+                    .take(com.chathala.hala.feature.stories.data.StoryManager.STATUS_MAX)
+                    .toList()
+            }
+            LaunchedEffect(storyIds) {
+                kotlinx.coroutines.delay(400) // بعد انتهاء حركة الانتقال
+                storyManager.loadStatuses(storyIds)
+            }
+
             PullToRefreshBox(
                 isRefreshing = state.refreshing,
                 onRefresh = { viewModel.refresh() },
@@ -144,7 +159,15 @@ fun ChatsScreen(
                                 onPin = { viewModel.togglePin(conv.id) },
                                 onDelete = { pendingDelete = conv.id }
                             ) {
+                                val other = conv.participants.firstOrNull { it.id != state.currentUserId }
+                                val ring = com.chathala.hala.feature.stories.ui.rememberStoryRing(other?.id)
                                 ConversationRow(
+                                    storyRing = ring,
+                                    onAvatarClick = other?.let { o ->
+                                        {
+                                            storyViewer = com.chathala.hala.feature.stories.ui.StoryOwner(o.id, o.name.orEmpty(), o.profileImage) to conv.id
+                                        }
+                                    },
                                     conversation = conv,
                                     currentUserId = state.currentUserId,
                                     isMuted = conv.id in state.mutedConversationIds,
@@ -212,6 +235,15 @@ fun ChatsScreen(
     }
 
     // ── Delete confirmation ──
+    storyViewer?.let { (owner, convId) ->
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = owner,
+            isMine = false,
+            onDismiss = { storyViewer = null },
+            onMessage = { onOpenConversation(convId) }
+        )
+    }
+
     pendingDelete?.let { id ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },

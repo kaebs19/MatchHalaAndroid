@@ -28,5 +28,9 @@ enum class ReportReason(val apiValue: String, private val labelRes: Int) {
 data class CreateReportRequest(
     val reportedUser: String,
     val reason: String,
-    val description: String? = null
+    val description: String? = null,
+    /** الرسالة المبلَّغ عنها (صورة مؤقتة/فيديو) — يرفقها الخادم دليلاً. */
+    val messageId: String? = null,
+    /** القصة المبلَّغ عنها — من عارض القصص. */
+    val storyId: String? = null
 )

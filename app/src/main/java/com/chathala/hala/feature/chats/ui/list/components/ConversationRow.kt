@@ -4,6 +4,7 @@ import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -53,7 +54,9 @@ fun ConversationRow(
     isPinned: Boolean = false,
     onClick: () -> Unit,
     onLongPress: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    storyRing: com.chathala.hala.feature.stories.ui.StoryRingState = com.chathala.hala.feature.stories.ui.StoryRingState.None,
+    onAvatarClick: (() -> Unit)? = null
 ) {
     val other = conversation.otherParticipant(currentUserId)
     // الطرف الآخر حذف حسابه → لا نعرض بياناتي أنا بدلاً منه
@@ -95,7 +98,11 @@ fun ConversationRow(
             name = if (isDeletedAccount) null else other?.name,
             isOnline = isOnline,
             isRecentlyActive = isRecentlyActive,
-            isPremium = isPremium
+            isPremium = isPremium,
+            // لا حلقة قصة لحساب محذوف
+            storyRing = if (isDeletedAccount) com.chathala.hala.feature.stories.ui.StoryRingState.None else storyRing,
+            // الصورة وحدها تفتح القصص؛ باقي الصفّ يفتح المحادثة كالعادة
+            onClick = onAvatarClick
         )
 
         Spacer(Modifier.size(12.dp))
@@ -199,8 +206,11 @@ private fun RingAvatar(
     name: String?,
     isOnline: Boolean,
     isRecentlyActive: Boolean,
-    isPremium: Boolean
+    isPremium: Boolean,
+    storyRing: com.chathala.hala.feature.stories.ui.StoryRingState,
+    onClick: (() -> Unit)?
 ) {
+    val hasStory = storyRing != com.chathala.hala.feature.stories.ui.StoryRingState.None
     val ringColor = when {
         isOnline -> Color(0xFF22C55E)       // أخضر: متصل الآن (أولوية أعلى)
         isPremium -> Color(0xFFFFB300)      // ذهبي: بريميوم (غير متصل)
@@ -208,10 +218,25 @@ private fun RingAvatar(
         else -> MaterialTheme.colorScheme.primary
     }
     Box(
-        modifier = Modifier.size(58.dp),
+        modifier = Modifier
+            .size(58.dp)
+            .then(if (hasStory && onClick != null) Modifier.clip(CircleShape).clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.BottomEnd
     ) {
-        Box(
+        if (hasStory) com.chathala.hala.feature.stories.ui.StoryRingBox(
+            state = storyRing,
+            modifier = Modifier.size(58.dp),
+            ringWidth = 2.5.dp,
+            gap = 2.dp
+        ) {
+            HalaAsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                fallbackName = name,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else Box(
             modifier = Modifier
                 .size(58.dp)
                 .clip(CircleShape)

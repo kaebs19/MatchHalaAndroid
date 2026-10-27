@@ -3,6 +3,7 @@ package com.chathala.hala.core.storage
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -209,6 +210,20 @@ class AppPreferences(private val context: Context) {
     suspend fun setPromoKeywordsCache(json: String) {
         context.appPrefs.edit { it[promoKeywordsCacheKey] = json }
     }
+    // ── تنبيه محتوى القصص ──
+    // مفصّلاً حتى أول قصة ينشرها المستخدم، ثم سطراً واحداً. المفتاح لكل مستخدم مع رقم
+    // نسخة الإرشادات: رفع [STORY_POLICY_VERSION] يعيد التنبيه المفصّل للجميع مرة.
+
+    private fun storyPolicyKey(userId: String) = intPreferencesKey("story_policy_ack_$userId")
+
+    fun storyPolicyAcknowledged(userId: String): Flow<Boolean> = context.appPrefs.data.map {
+        (it[storyPolicyKey(userId)] ?: 0) >= STORY_POLICY_VERSION
+    }
+
+    suspend fun acknowledgeStoryPolicy(userId: String) {
+        context.appPrefs.edit { it[storyPolicyKey(userId)] = STORY_POLICY_VERSION }
+    }
+
     /** Device appearance remains; account searches and content trust do not. */
     suspend fun clearAccountData() {
         context.appPrefs.edit {
@@ -219,3 +234,6 @@ class AppPreferences(private val context: Context) {
     }
 
 }
+
+/** نسخة إرشادات محتوى القصص — ارفعها عند تحديث الإرشادات. */
+const val STORY_POLICY_VERSION = 1

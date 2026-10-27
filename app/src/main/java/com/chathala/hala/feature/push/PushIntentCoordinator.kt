@@ -47,7 +47,12 @@ object PushIntentCoordinator {
         val type = intent.getStringExtra(HalaMessagingService.EXTRA_TYPE) ?: extra("type")
         val isMessageType = type == "message" || type == "new_message"
 
-        _pendingTab.value = if (isMessageType) MainTab.CHATS else MainTab.NOTIFICATIONS
+        val isStoryNotice = com.chathala.hala.feature.notifications.ui.components.isStoryNotice(type)
+        _pendingTab.value = when {
+            isMessageType -> MainTab.CHATS
+            isStoryNotice -> MainTab.PROFILE
+            else -> MainTab.NOTIFICATIONS
+        }
 
         if (isMessageType) {
             val convId = extra("conversationId") ?: extra("conversation_id")

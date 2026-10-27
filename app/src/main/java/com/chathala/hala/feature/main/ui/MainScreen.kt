@@ -52,7 +52,8 @@ fun MainScreen(
     onOpenMyInfo: () -> Unit = {},
     onOpenUserProfile: (String) -> Unit = {},
     onOpenUserSearch: () -> Unit = {},
-    onOpenRequests: () -> Unit = {}
+    onOpenRequests: () -> Unit = {},
+    onOpenTerms: () -> Unit = {}
 ) {
     var selected by rememberSaveable { mutableStateOf(MainTab.DISCOVER) }
 
@@ -125,7 +126,8 @@ fun MainScreen(
                 MainTab.NOTIFICATIONS -> NotificationsScreen(
                     onOpenConversation = onOpenConversation,
                     onOpenRequestPreview = onOpenRequestPreview,
-                    onOpenUserProfile = onOpenUserProfile
+                    onOpenUserProfile = onOpenUserProfile,
+                    onOpenMyProfile = { selected = MainTab.PROFILE }
                 )
                 MainTab.PROFILE -> ProfileScreen(
                     onLoggedOut = onLoggedOut,
@@ -136,7 +138,8 @@ fun MainScreen(
                     onOpenFriends = onOpenFriends,
                     onOpenVisitors = onOpenVisitors,
                     onOpenMyInfo = onOpenMyInfo,
-                    onOpenChats = { selected = MainTab.CHATS }
+                    onOpenChats = { selected = MainTab.CHATS },
+                    onOpenGuidelines = onOpenTerms
                 )
             }
         }

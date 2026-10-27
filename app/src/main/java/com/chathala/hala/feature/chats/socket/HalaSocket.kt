@@ -210,6 +210,11 @@ class HalaSocket(
         s.on("appeal-message") { args ->
             args.firstJson()?.let { emit(SocketEvent.AppealReply(it)) }
         }
+        s.on("story:viewed") { args -> args.firstJson()?.let { emit(SocketEvent.StoryViewed(it)) } }
+        s.on("story:screenshot") { args -> args.firstJson()?.let { emit(SocketEvent.StoryScreenshot(it)) } }
+        s.on("conversation:block-state") { args ->
+            args.firstJson()?.let { emit(SocketEvent.ConversationBlockState(it)) }
+        }
         s.on("notification") { args ->
             emit(SocketEvent.OfficialNotification(args.firstJson() ?: JSONObject()))
         }

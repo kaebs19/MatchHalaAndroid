@@ -49,4 +49,13 @@ sealed class SocketEvent {
 
     /** إشعار جديد من لوحة الإدارة (حدث `notification`). */
     data class OfficialNotification(val json: JSONObject) : SocketEvent()
+
+    /** شوهدت إحدى قصصي — `{ storyId, viewCount }`. */
+    data class StoryViewed(val json: JSONObject) : SocketEvent()
+
+    /** التُقطت لقطة لإحدى قصصي — `{ storyId, screenshotCount }`. */
+    data class StoryScreenshot(val json: JSONObject) : SocketEvent()
+
+    /** تغيّرت حالة الحظر في محادثة — `{ conversationId, ... }`. */
+    data class ConversationBlockState(val json: JSONObject) : SocketEvent()
 }

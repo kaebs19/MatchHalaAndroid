@@ -144,6 +144,9 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var networkMonitor: NetworkMonitor
         private set
 
+    lateinit var storyManager: com.chathala.hala.feature.stories.data.StoryManager
+        private set
+
     private val appScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     lateinit var appPreferences: AppPreferences
@@ -212,8 +215,13 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         chatsCacheStorage = ChatsCacheStorage(applicationContext, ApiClient.moshi, tokenStorage)
         chatComposerStorage = com.chathala.hala.feature.chats.data.ChatComposerStorage(applicationContext, ApiClient.moshi, tokenStorage, appScope)
         chatAttachments = com.chathala.hala.feature.chats.data.ChatAttachmentStorage(applicationContext)
+        storyManager = com.chathala.hala.feature.stories.data.StoryManager(
+            repo = com.chathala.hala.feature.stories.data.StoryRepository(tokenStorage = tokenStorage),
+            socketEvents = socket.incoming
+        )
         tokenStorage.onSessionCleared = {
             if (::chatSendCoordinator.isInitialized) chatSendCoordinator.cancelAll()
+            storyManager.reset()
             chatComposerStorage.clear()
             chatAttachments.clear()
             socket.disconnect()
@@ -269,8 +277,13 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         }
 
         // بوابة الإعلانات تتبع حالة الاشتراك — لا إعلانات للمشتركين
+        var lastPremium: Boolean? = null
         userRepository.currentUser
             .onEach { user ->
+                // حدّ القصص يتبع الاشتراك (3 ↔ 10) — نعيد قراءته عند تغيّره
+                val premium = user?.isPremium
+                if (premium != null && lastPremium != null && premium != lastPremium) storyManager.onPremiumChanged()
+                lastPremium = premium
                 com.chathala.hala.core.ads.AdGate.update(user)
                 com.chathala.hala.feature.push.InAppAlerts.setCurrentUser(user?.id)
                 // استرجاع صامت للمشتريات عند أول معرفة بالمستخدم (جهاز جديد /

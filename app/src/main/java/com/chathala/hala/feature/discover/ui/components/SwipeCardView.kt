@@ -313,6 +313,14 @@ fun SwipeCardView(
                 modifier = Modifier.align(Alignment.BottomStart)
             )
 
+            // شارة «قصة جديدة»/«قصة» — شارة فقط، لا ضغط
+            com.chathala.hala.feature.stories.ui.StoryBadge(
+                userId = card.id,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = if (photos.size > 1) 30.dp else 14.dp, end = 14.dp)
+            )
+
             // Stamps
             val likeOpacity = (offset.x / 120f).coerceIn(0f, 1f)
             val nopeOpacity = (-offset.x / 120f).coerceIn(0f, 1f)

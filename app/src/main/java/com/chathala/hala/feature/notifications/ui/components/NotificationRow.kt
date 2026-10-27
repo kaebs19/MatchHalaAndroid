@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
@@ -270,8 +271,12 @@ private val OFFICIAL_TYPES = setOf(
     "account_unhidden", "account_unsuspended", "account_banned",
     "banned_word", "report_warning", "restriction", "restriction_lifted", "security_alert",
     "system", "general", "warning", "official_warning", "announcement", "broadcast",
-    "verification", "promo_warning", "appeal_update", "maintenance_start", "maintenance_end"
+    "verification", "promo_warning", "appeal_update", "maintenance_start", "maintenance_end",
+    "story_removed", "story_banned", "story_held"
 )
+
+/** إشعارات القصص الرسمية — الضغط يفتح «ملفي» لا بروفايل المرسل. */
+fun isStoryNotice(type: String?): Boolean = type == "story_removed" || type == "story_banned" || type == "story_held"
 
 /** إشعار رسمي؟ لا تُستعمل بيانات مرسِله (هو مشرف) في العرض ولا في التنقّل. */
 fun isOfficial(item: NotificationItem): Boolean {
@@ -329,6 +334,8 @@ private fun typeBadge(type: String?): Pair<ImageVector, Color>? = when (type) {
         Icons.Filled.Shield to MaterialTheme.colorScheme.error
     "announcement", "broadcast", "general", "system" ->
         Icons.Filled.Info to MaterialTheme.colorScheme.primary
+    "story_removed", "story_banned", "story_held" ->
+        Icons.Filled.AutoStories to Color(0xFFD62976)
     else -> null
 }
 

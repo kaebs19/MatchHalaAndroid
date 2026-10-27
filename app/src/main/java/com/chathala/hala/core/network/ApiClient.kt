@@ -104,12 +104,21 @@ object ApiClient {
             .build()
     }
 
-    val service: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttp)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
-            .create(ApiService::class.java)
     }
+
+    val service: ApiService by lazy { retrofit.create(ApiService::class.java) }
+
+    /** مسارات القصص — واجهة منفصلة كي لا يتضخّم [ApiService]. */
+    val storyService: com.chathala.hala.feature.stories.data.StoryApiService by lazy {
+        retrofit.create(com.chathala.hala.feature.stories.data.StoryApiService::class.java)
+    }
+
+    /** عميل HTTP المصادَق — لتنزيل ملفات (فيديو مؤقت) بنفس الترويسات. */
+    val httpClient: OkHttpClient get() = okHttp
 }

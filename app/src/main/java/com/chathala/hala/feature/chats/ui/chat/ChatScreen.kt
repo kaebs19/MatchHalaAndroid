@@ -125,6 +125,11 @@ fun ChatScreen(
     var menuExpanded by remember { mutableStateOf(false) }
     var showMuteDialog by remember { mutableStateOf(false) }
     var showChatModeDialog by remember { mutableStateOf(false) }
+    var storyViewerOpen by remember { mutableStateOf(false) }
+    val storyManager = (LocalContext.current.applicationContext as com.chathala.hala.HalaApp).storyManager
+    LaunchedEffect(state.otherUserId) {
+        state.otherUserId?.let { storyManager.loadStatuses(listOf(it)) }
+    }
     var showReportSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -297,6 +302,9 @@ fun ChatScreen(
                         state.otherUserId?.let { onOpenUserProfile(it) }
                     }
                 },
+                storyRing = if (state.blocked || state.blockedByThem || state.otherUserDeleted) com.chathala.hala.feature.stories.ui.StoryRingState.None
+                    else com.chathala.hala.feature.stories.ui.rememberStoryRing(state.otherUserId),
+                onStoryClick = { storyViewerOpen = true },
                 onChatModeClick = { showChatModeDialog = true },
                 menuExpanded = menuExpanded,
                 onMenuToggle = { menuExpanded = !menuExpanded },
@@ -638,6 +646,16 @@ fun ChatScreen(
         )
     }
 
+    if (storyViewerOpen && state.otherUserId != null) {
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = com.chathala.hala.feature.stories.ui.StoryOwner(state.otherUserId!!, state.otherUserName.orEmpty(), state.otherUserAvatar),
+            isMine = false,
+            onDismiss = { storyViewerOpen = false },
+            // «مراسلة» تعود للمحادثة نفسها
+            onMessage = {}
+        )
+    }
+
     if (showChatModeDialog) {
         ChatModeDialog(
             current = state.chatMode,
@@ -782,6 +800,8 @@ private fun ChatHeader(
     onBack: () -> Unit,
     isTrusted: Boolean = false,
     onAvatarClick: () -> Unit,
+    storyRing: com.chathala.hala.feature.stories.ui.StoryRingState = com.chathala.hala.feature.stories.ui.StoryRingState.None,
+    onStoryClick: () -> Unit = {},
     onChatModeClick: () -> Unit,
     menuExpanded: Boolean,
     onMenuToggle: () -> Unit,
@@ -819,9 +839,24 @@ private fun ChatHeader(
             )
         }
 
-        // Avatar + dot الاتصال
-        Box(modifier = Modifier.size(40.dp).clickable(onClick = onAvatarClick)) {
-            Box(
+        // Avatar + dot الاتصال — بقصة: الصورة تفتح العارض والاسم يبقى للبروفايل
+        val hasStory = storyRing != com.chathala.hala.feature.stories.ui.StoryRingState.None
+        Box(modifier = Modifier.size(40.dp).clickable(onClick = if (hasStory) onStoryClick else onAvatarClick)) {
+            if (hasStory) com.chathala.hala.feature.stories.ui.StoryRingBox(
+                state = storyRing,
+                modifier = Modifier.size(40.dp),
+                ringWidth = 2.dp,
+                gap = 1.5.dp,
+                gapColor = MaterialTheme.colorScheme.surface
+            ) {
+                HalaAsyncImage(
+                    model = avatarUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    fallbackName = title,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)

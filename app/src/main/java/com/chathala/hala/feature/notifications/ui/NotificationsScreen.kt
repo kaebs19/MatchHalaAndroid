@@ -80,6 +80,7 @@ fun NotificationsScreen(
     onOpenConversation: (String) -> Unit = {},
     onOpenRequestPreview: (String) -> Unit = {},
     onOpenUserProfile: (String) -> Unit = {},
+    onOpenMyProfile: () -> Unit = {},
     viewModel: NotificationsViewModel = viewModel(factory = NotificationsViewModel.Factory)
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -130,6 +131,11 @@ fun NotificationsScreen(
                             viewModel.markRead(item.id)
                             // إشعار رسمي → تفاصيله في نافذة. لا ننتقل بمعرّف المرسِل: هو
                             // المشرف، والاحتياط أدناه كان يفتح ملفه.
+                            // إشعارات القصص (حذف/منع/حجب) → «ملفي» حيث بطاقة «قصصي»
+                            if (com.chathala.hala.feature.notifications.ui.components.isStoryNotice(item.type)) {
+                                onOpenMyProfile()
+                                return@NotificationsList
+                            }
                             if (com.chathala.hala.feature.notifications.ui.components.isOfficial(item)) {
                                 officialItem = item
                                 return@NotificationsList

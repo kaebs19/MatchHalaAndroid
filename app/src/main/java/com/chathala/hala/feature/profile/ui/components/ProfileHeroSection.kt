@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Place
@@ -65,8 +65,10 @@ fun ProfileHeroSection(
     isVerified: Boolean,
     isPremium: Boolean,
     isUploading: Boolean,
-    onChangePhoto: () -> Unit,
+    onAddStory: () -> Unit,
     topBar: @Composable () -> Unit,
+    storyRing: com.chathala.hala.feature.stories.ui.StoryRingState = com.chathala.hala.feature.stories.ui.StoryRingState.None,
+    onAvatarClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val primary = MaterialTheme.colorScheme.primary
@@ -91,7 +93,9 @@ fun ProfileHeroSection(
             name = name,
             isPremium = isPremium,
             isUploading = isUploading,
-            onChangePhoto = onChangePhoto
+            onAddStory = onAddStory,
+            storyRing = storyRing,
+            onAvatarClick = onAvatarClick
         )
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -139,7 +143,9 @@ private fun HeroAvatar(
     name: String,
     isPremium: Boolean,
     isUploading: Boolean,
-    onChangePhoto: () -> Unit
+    onAddStory: () -> Unit,
+    storyRing: com.chathala.hala.feature.stories.ui.StoryRingState,
+    onAvatarClick: (() -> Unit)?
 ) {
     val ring: BorderStroke = if (isPremium) {
         BorderStroke(
@@ -149,8 +155,25 @@ private fun HeroAvatar(
     } else {
         BorderStroke(3.dp, Color.White.copy(alpha = 0.9f))
     }
-    Box(modifier = Modifier.size(128.dp), contentAlignment = Alignment.Center) {
-        Box(
+    Box(modifier = Modifier.size(108.dp), contentAlignment = Alignment.Center) {
+        // حلقة القصة تحلّ محلّ إطار البريميوم حين توجد قصة
+        if (storyRing != com.chathala.hala.feature.stories.ui.StoryRingState.None) {
+            com.chathala.hala.feature.stories.ui.StoryRingBox(
+                state = storyRing,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .clickable(enabled = onAvatarClick != null) { onAvatarClick?.invoke() }
+            ) {
+                HalaAsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    fallbackName = name,
+                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                )
+            }
+        } else Box(
             modifier = Modifier
                 .fillMaxSize()
                 .shadow(
@@ -163,6 +186,7 @@ private fun HeroAvatar(
                 .background(MaterialTheme.colorScheme.surface)
                 .border(ring, CircleShape)
                 .padding(3.dp)
+                .clickable(enabled = onAvatarClick != null) { onAvatarClick?.invoke() }
         ) {
             HalaAsyncImage(
                 model = imageUrl,
@@ -181,7 +205,7 @@ private fun HeroAvatar(
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary)
                 .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
-                .clickable(enabled = !isUploading, onClick = onChangePhoto),
+                .clickable(enabled = !isUploading, onClick = onAddStory),
             contentAlignment = Alignment.Center
         ) {
             if (isUploading) {
@@ -192,8 +216,8 @@ private fun HeroAvatar(
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Filled.CameraAlt,
-                    contentDescription = null,
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = S.get(R.string.story_new),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )

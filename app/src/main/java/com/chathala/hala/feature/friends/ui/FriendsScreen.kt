@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.friends.ui
 
+import com.chathala.hala.feature.stories.ui.ringState
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -69,9 +70,33 @@ fun FriendsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHost = rememberHalaSnackbarHost()
     var removeTarget by remember { mutableStateOf<FriendItem?>(null) }
+    val storyManager = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.chathala.hala.HalaApp).storyManager
+    val storyStatuses by storyManager.statuses.collectAsStateWithLifecycle()
+    val storyMuted by storyManager.muted.collectAsStateWithLifecycle()
+    var storyFriend by remember { mutableStateOf<FriendItem?>(null) }
+    LaunchedEffect(state.friends) { storyManager.loadStatuses(state.friends.map { it.user.id }) }
+    // أصحاب القصص غير المشاهدة أولاً، ثم المشاهدة، ثم الباقي
+    val sortedFriends = remember(state.friends, storyStatuses, storyMuted) {
+        state.friends.sortedBy { f ->
+            when (storyStatuses[f.user.id].takeUnless { f.user.id in storyMuted }.ringState()) {
+                com.chathala.hala.feature.stories.ui.StoryRingState.Unseen -> 0
+                com.chathala.hala.feature.stories.ui.StoryRingState.Seen -> 1
+                else -> 2
+            }
+        }
+    }
 
     LaunchedEffect(Unit) { viewModel.message.collect { snackbarHost.showSnackbar(it) } }
     LaunchedEffect(Unit) { viewModel.openConversation.collect { onOpenConversation(it) } }
+
+    storyFriend?.let { f ->
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = com.chathala.hala.feature.stories.ui.StoryOwner(f.user.id, f.user.name.orEmpty(), f.user.profileImage),
+            isMine = false,
+            onDismiss = { storyFriend = null },
+            onMessage = { viewModel.openChat(f) }
+        )
+    }
 
     removeTarget?.let { target ->
         androidx.compose.material3.AlertDialog(
@@ -131,9 +156,10 @@ fun FriendsScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (isFriendsTab) {
-                        items(state.friends, key = { it.friendshipId }) { friend ->
+                        items(sortedFriends, key = { it.friendshipId }) { friend ->
                             FriendRow(
                                 friend = friend,
+                                onOpenStory = { storyFriend = friend },
                                 processing = friend.user.id in state.processingIds,
                                 onOpenProfile = { onOpenUserProfile(friend.user.id) },
                                 onChat = { viewModel.openChat(friend) },
@@ -231,10 +257,11 @@ private fun FriendRow(
     processing: Boolean,
     onOpenProfile: () -> Unit,
     onChat: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onOpenStory: () -> Unit = {}
 ) {
     RowCard(onClick = onOpenProfile) {
-        Avatar(friend.user)
+        Avatar(friend.user, onOpenStory)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             NameRow(friend.user)
@@ -316,7 +343,24 @@ private fun NameRow(user: FriendUser) {
 }
 
 @Composable
-private fun Avatar(user: FriendUser) {
+private fun Avatar(user: FriendUser, onOpenStory: (() -> Unit)? = null) {
+    val ring = if (onOpenStory != null) com.chathala.hala.feature.stories.ui.rememberStoryRing(user.id)
+        else com.chathala.hala.feature.stories.ui.StoryRingState.None
+    if (ring != com.chathala.hala.feature.stories.ui.StoryRingState.None && onOpenStory != null) {
+        com.chathala.hala.feature.stories.ui.StoryRingBox(
+            state = ring,
+            modifier = Modifier.size(56.dp).clip(CircleShape).clickable(onClick = onOpenStory),
+            ringWidth = 2.5.dp,
+            gap = 2.dp,
+            gapColor = MaterialTheme.colorScheme.surface
+        ) {
+            HalaAsyncImage(
+                model = user.profileImage, contentDescription = null, contentScale = ContentScale.Crop,
+                fallbackName = user.name, modifier = Modifier.fillMaxSize()
+            )
+        }
+        return
+    }
     Box(
         modifier = Modifier.size(52.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center

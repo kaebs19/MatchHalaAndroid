@@ -17,14 +17,18 @@ class ReportRepository(
     suspend fun reportUser(
         userId: String,
         reason: ReportReason,
-        description: String? = null
+        description: String? = null,
+        messageId: String? = null,
+        storyId: String? = null
     ): NetworkResult<String> = safeApiCall {
         val resp = api.reportUser(
             bearer = bearer(),
             body = CreateReportRequest(
                 reportedUser = userId,
                 reason = reason.apiValue,
-                description = description?.takeIf { it.isNotBlank() }
+                description = description?.takeIf { it.isNotBlank() },
+                messageId = messageId,
+                storyId = storyId
             )
         )
         S.serverOr(resp.message, R.string.report_sent)
