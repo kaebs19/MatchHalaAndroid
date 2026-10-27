@@ -21,9 +21,15 @@ class ChatAttachmentStorage(private val context: Context) : OutgoingAttachments 
         }
         val source = entry.message.mediaUrl ?: throw IOException("Missing attachment")
         val audio = entry.message.type == "audio"
+        // الفيديو مضغوط مسبقاً في الكاش (file://) — يُنقل للصندوق ويُحذف الأصل كالصوت
+        val video = entry.message.type == "video"
         val uri = if (audio) Uri.fromFile(File(source)) else Uri.parse(source)
         val mime = context.contentResolver.getType(uri)
-        val extension = if (audio) "m4a" else MimeTypeMap.getSingleton().getExtensionFromMimeType(mime ?: "image/jpeg") ?: "jpg"
+        val extension = when {
+            audio -> "m4a"
+            video -> "mp4"
+            else -> MimeTypeMap.getSingleton().getExtensionFromMimeType(mime ?: "image/jpeg") ?: "jpg"
+        }
         check(directory.mkdirs() || directory.isDirectory)
         val target = File(directory, "${UUID.randomUUID()}.$extension")
         try {
@@ -31,6 +37,7 @@ class ChatAttachmentStorage(private val context: Context) : OutgoingAttachments 
                 target.outputStream().use { output -> input.copyTo(output) }
             } ?: throw IOException("Cannot open attachment")
             if (audio) File(source).delete()
+            if (video) uri.path?.let { File(it).delete() }
             entry.copy(
                 attachmentPath = target.absolutePath,
                 message = entry.message.copy(mediaUrl = if (audio) target.absolutePath else Uri.fromFile(target).toString())

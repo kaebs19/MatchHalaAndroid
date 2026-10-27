@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import androidx.compose.material.icons.filled.Flag
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -93,6 +94,10 @@ fun MessageBubble(
     revealedContent: String? = null,
     onRevealSensitive: (Message) -> Unit = {},
     onShowExternalPromoInfo: (Message) -> Unit = {},
+    videoState: VideoRowState = VideoRowState.NOT_OPENED,
+    onOpenVideo: (Message) -> Unit = {},
+    /** ⚑ من داخل عارض الصورة المؤقتة — يُرفق المحتوى دليلاً. */
+    onReportMedia: (Message, com.chathala.hala.feature.reporting.data.ReportReason) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     // محتوى حساس — يُعرض للمُستقبِل فقط قبل الكشف
@@ -195,6 +200,13 @@ fun MessageBubble(
             }
 
             when (message.type) {
+                "video" -> VideoMessageContent(
+                    message = message,
+                    isMine = isMine,
+                    state = videoState,
+                    textColor = textColor,
+                    onOpen = { onOpenVideo(message) }
+                )
                 "image" -> {
                     if (message.disappearing?.enabled == true && !isMine) {
                         DisappearingImageContent(
@@ -202,7 +214,8 @@ fun MessageBubble(
                             expiresAtMs = disappearingExpiresAtMs,
                             isLoading = disappearingLoading,
                             isDestroyed = disappearingExpired,
-                            onView = { onViewDisappearing(message) }
+                            onView = { onViewDisappearing(message) },
+                            onReport = { reason -> onReportMedia(message, reason) }
                         )
                     } else if (message.disappearing?.enabled == true) {
                         // عند المرسِل: لا تُعرض الصورة نفسها — حالة فقط
@@ -615,9 +628,18 @@ private fun DisappearingImageContent(
     expiresAtMs: Long?,
     isLoading: Boolean,
     isDestroyed: Boolean,
-    onView: () -> Unit
+    onView: () -> Unit,
+    onReport: (com.chathala.hala.feature.reporting.data.ReportReason) -> Unit = {}
 ) {
     val durationSec = message.disappearing?.duration ?: 10
+    var reportOpen by remember { mutableStateOf(false) }
+    if (reportOpen) {
+        com.chathala.hala.feature.stories.ui.StoryReportDialog(
+            title = S.get(R.string.media_report),
+            onDismiss = { reportOpen = false },
+            onReason = { reason -> reportOpen = false; onReport(reason) }
+        )
+    }
     val nowMs by produceNow()
     val isViewing = !isDestroyed && expiresAtMs != null && nowMs < expiresAtMs
     val isExpired = isDestroyed || (expiresAtMs != null && nowMs >= expiresAtMs)
@@ -689,6 +711,24 @@ private fun DisappearingImageContent(
                             text = "⏱  $remainingSec",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                    // ⚑ بلاغ
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .size(30.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f))
+                            .clickable { reportOpen = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            androidx.compose.material.icons.Icons.Filled.Flag,
+                            contentDescription = S.get(R.string.media_report),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }

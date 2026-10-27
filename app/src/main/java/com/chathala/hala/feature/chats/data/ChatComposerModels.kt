@@ -36,7 +36,9 @@ private val permanentSendRejections = setOf(
     "USER_BLOCKED", "ACCOUNT_BANNED", "ACCOUNT_SUSPENDED", "DEVICE_BANNED",
     "CONVERSATION_PENDING", "CONVERSATION_CANCELLED", "CONVERSATION_INACTIVE",
     "RECIPIENT_SUSPENDED", "EXTERNAL_PROMO_BLOCKED", "MESSAGING_RESTRICTED",
-    "MESSAGING_LOCKED", "PREMIUM_REQUIRED", "REFRESH_TOKEN_EXPIRED"
+    "MESSAGING_LOCKED", "PREMIUM_REQUIRED", "REFRESH_TOKEN_EXPIRED",
+    // رفض نهائي للفيديو — لا طابور ولا إعادة تلقائية
+    "VIDEO_LIMIT_REACHED", "VIDEO_TOO_LARGE", "VIDEO_TOO_LONG", "VIDEO_INVALID"
 )
 
 /** Server restrictions take precedence; other temporary HTTP failures permit a manual retry. */

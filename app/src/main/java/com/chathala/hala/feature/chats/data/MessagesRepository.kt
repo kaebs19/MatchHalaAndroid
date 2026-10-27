@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.data
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.MultipartBody
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -128,6 +131,49 @@ class MessagesRepository(
         val response = api.viewDisappearingPhoto(bearer(), messageId)
         check(response.success) { S.serverOr(response.message, R.string.err_unexpected) }
         Unit
+    }
+
+    /** تسجيل مشاهدة فيديو مؤقت — بعد تنزيله كاملاً (التسجيل يبدأ العدّ). 410 PHOTO_EXPIRED إن انتهى. */
+    suspend fun viewDisappearingVideo(messageId: String): NetworkResult<ViewPhotoData> = safeApiCall {
+        val response = api.viewDisappearingPhoto(bearer(), messageId)
+        check(response.success) { S.serverOr(response.message, R.string.err_unexpected) }
+        response.data ?: ViewPhotoData()
+    }
+
+    /** إغلاق فيديو «مرة واحدة» ← يُدمَّر على الخادم. */
+    suspend fun expireDisappearingMedia(messageId: String): NetworkResult<Unit> = safeApiCall {
+        api.expireDisappearingMedia(bearer(), messageId)
+        Unit
+    }
+
+    /**
+     * فيديو ≤15ث ≤6MB، مؤقت دائماً. رموز الرفض النهائي: VIDEO_LIMIT_REACHED (429)،
+     * VIDEO_TOO_LARGE، VIDEO_TOO_LONG، VIDEO_INVALID — لا إعادة تلقائية.
+     */
+    suspend fun sendVideo(
+        conversationId: String,
+        file: File,
+        durationSeconds: Double,
+        mode: String,
+        width: Int?,
+        height: Int?,
+        replyTo: String?,
+        expectedSessionId: String? = null
+    ): NetworkResult<Message> = safeApiCall {
+        val part = MultipartBody.Part.createFormData(
+            "video", file.name, file.asRequestBody("video/mp4".toMediaTypeOrNull())
+        )
+        val resp = api.sendVideoMessage(
+            bearer = bearer(expectedSessionId),
+            video = part,
+            conversationId = MediaUploadHelper.plainText(conversationId),
+            duration = MediaUploadHelper.plainText("%.1f".format(java.util.Locale.US, durationSeconds)),
+            mode = MediaUploadHelper.plainText(mode),
+            width = width?.let { MediaUploadHelper.plainText(it.toString()) },
+            height = height?.let { MediaUploadHelper.plainText(it.toString()) },
+            replyTo = replyTo?.let(MediaUploadHelper::plainText)
+        )
+        resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_video_send_failed))
     }
 
     suspend fun revealSensitiveContent(messageId: String): NetworkResult<String> = safeApiCall {

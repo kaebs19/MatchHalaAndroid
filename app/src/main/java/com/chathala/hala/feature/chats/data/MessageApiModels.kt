@@ -58,6 +58,10 @@ data class Message(
     // ── image (disappearing) ──
     val imageSource: String? = null,   // camera | gallery
     val disappearing: DisappearingInfo? = null,
+    // ── video (مؤقت دائماً: once | 24h) ──
+    val videoDuration: Double? = null,
+    val mediaWidth: Int? = null,
+    val mediaHeight: Int? = null,
     // ── reactions ──
     val reactions: List<Reaction>? = null
 )
@@ -92,9 +96,28 @@ data class Reaction(
 @JsonClass(generateAdapter = true)
 data class DisappearingInfo(
     val enabled: Boolean? = null,
+    /** للصورة: مهلة العرض. ⚠️ للفيديو: **طوله** لا مهلته. */
     val duration: Int? = null,
-    val expiresAt: String? = null
+    val expiresAt: String? = null,
+    /** للفيديو فقط: `once` | `24h`. */
+    val mode: String? = null,
+    val viewedBy: List<DisappearingView>? = null
 )
+
+@JsonClass(generateAdapter = true)
+data class DisappearingView(
+    val user: String? = null,
+    val viewedAt: String? = null,
+    val expired: Boolean? = null
+)
+
+/** وضع الفيديو المؤقت. */
+object VideoMode {
+    const val ONCE = "once"
+    const val DAY = "24h"
+}
+
+fun Message.isVideo(): Boolean = type == "video"
 
 @JsonClass(generateAdapter = true)
 data class MessageSender(
@@ -294,5 +317,14 @@ data class PromoKeywordsData(
 data class ViewPhotoResponse(
     val success: Boolean,
     val message: String? = null,
-    val code: String? = null
+    val code: String? = null,
+    val data: ViewPhotoData? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class ViewPhotoData(
+    val duration: Int? = null,
+    val mode: String? = null,
+    val expiresAt: String? = null,
+    val mediaUrl: String? = null
 )

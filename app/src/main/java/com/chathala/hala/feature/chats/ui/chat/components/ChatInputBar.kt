@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
@@ -66,7 +68,8 @@ fun ChatInputBar(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
-    onPickImage: (Uri, ImageSource) -> Unit,
+    onPickImages: (List<Uri>, ImageSource) -> Unit,
+    onPickVideo: (Uri) -> Unit,
     onStartRecord: () -> Unit,
     onStopRecord: () -> Unit,
     onCancelRecord: () -> Unit,
@@ -83,16 +86,22 @@ fun ChatInputBar(
     // قائمة الإرفاق (معرض / كاميرا)
     var showAttachMenu by remember { mutableStateOf(false) }
 
-    // Photo picker (المعرض)
+    // المعرض: «الصور» (حتى 10 دفعة واحدة) و«فيديو» منفصلان — «فيديو» يفتح منتقي الفيديو مباشرة
     val picker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
+    ) { uris: List<Uri> -> if (uris.isNotEmpty()) onPickImages(uris, ImageSource.GALLERY) }
+    val videoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri: Uri? -> uri?.let { onPickImage(it, ImageSource.GALLERY) } }
+    ) { uri: Uri? -> uri?.let(onPickVideo) }
 
-    // الكاميرا — نلتقط إلى Uri مؤقت عبر FileProvider
+    // الكاميرا — صورة أو فيديو (حتى 15ث) إلى Uri مؤقت عبر FileProvider
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
-    ) { success -> if (success) cameraUri?.let { onPickImage(it, ImageSource.CAMERA) } }
+    ) { success -> if (success) cameraUri?.let { onPickImages(listOf(it), ImageSource.CAMERA) } }
+    val videoCameraLauncher = rememberLauncherForActivityResult(
+        contract = CaptureShortVideo()
+    ) { success -> if (success) cameraUri?.let(onPickVideo) }
 
     // Audio permission
     var audioPermissionJustGranted by remember { mutableStateOf(false) }
@@ -217,11 +226,23 @@ fun ChatInputBar(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
+                onVideo = {
+                    showAttachMenu = false
+                    videoPicker.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                    )
+                },
                 onCamera = {
                     showAttachMenu = false
                     val uri = createCameraImageUri(context)
                     cameraUri = uri
                     cameraLauncher.launch(uri)
+                },
+                onVideoCamera = {
+                    showAttachMenu = false
+                    val uri = createCameraImageUri(context, video = true)
+                    cameraUri = uri
+                    videoCameraLauncher.launch(uri)
                 }
             )
         }
@@ -231,7 +252,9 @@ fun ChatInputBar(
 @Composable
 private fun AttachSheetContent(
     onGallery: () -> Unit,
-    onCamera: () -> Unit
+    onVideo: () -> Unit,
+    onCamera: () -> Unit,
+    onVideoCamera: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -245,9 +268,10 @@ private fun AttachSheetContent(
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.size(20.dp))
+        // شبكة 4 أعمدة
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(28.dp)
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             AttachOption(
                 icon = Icons.Filled.PhotoCamera,
@@ -256,10 +280,22 @@ private fun AttachSheetContent(
                 onClick = onCamera
             )
             AttachOption(
+                icon = Icons.Filled.Videocam,
+                label = S.get(R.string.chat_attach_video_camera),
+                tint = Color(0xFFFF6D00),
+                onClick = onVideoCamera
+            )
+            AttachOption(
                 icon = Icons.Filled.Image,
-                label = S.get(R.string.chat_attach_gallery),
+                label = S.get(R.string.chat_attach_photos),
                 tint = Color(0xFF7B1FA2),
                 onClick = onGallery
+            )
+            AttachOption(
+                icon = Icons.Filled.VideoLibrary,
+                label = S.get(R.string.chat_attach_video),
+                tint = Color(0xFF1976D2),
+                onClick = onVideo
             )
         }
     }
@@ -299,10 +335,16 @@ private fun AttachOption(
     }
 }
 
-/** ينشئ Uri مؤقتاً عبر FileProvider لاستقبال صورة الكاميرا. */
-private fun createCameraImageUri(context: android.content.Context): Uri {
+/** تصوير فيديو بحدّ 15 ثانية (EXTRA_DURATION_LIMIT). */
+private class CaptureShortVideo : ActivityResultContracts.CaptureVideo() {
+    override fun createIntent(context: android.content.Context, input: Uri): android.content.Intent =
+        super.createIntent(context, input).putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, 15)
+}
+
+/** ينشئ Uri مؤقتاً عبر FileProvider لاستقبال صورة/فيديو الكاميرا. */
+private fun createCameraImageUri(context: android.content.Context, video: Boolean = false): Uri {
     val dir = File(context.cacheDir, "images").apply { mkdirs() }
-    val file = File(dir, "cam_${System.currentTimeMillis()}.jpg")
+    val file = File(dir, "cam_${System.currentTimeMillis()}.${if (video) "mp4" else "jpg"}")
     return FileProvider.getUriForFile(
         context,
         "${context.packageName}.fileprovider",

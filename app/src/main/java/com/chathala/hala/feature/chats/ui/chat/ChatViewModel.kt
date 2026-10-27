@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.chats.ui.chat
 
+import com.chathala.hala.feature.chats.data.isVideo
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -90,6 +91,15 @@ data class ChatUiState(
     val chatMode: String = "snap",    // snap | 24h | keep
     val forwardTarget: Message? = null,
     val pendingImageUri: android.net.Uri? = null,
+    // المحرّر الموحّد: صور (واحدة أو أكثر) أو فيديو قيد التحرير
+    val pendingImages: List<android.net.Uri> = emptyList(),
+    val pendingVideo: android.net.Uri? = null,
+    // فيديو مؤقت قيد المشاهدة (نُزّل كاملاً)
+    val playingVideo: PlayingVideo? = null,
+    // فيديوهاتي التي شاهدها الطرف الآخر (سوكت photo-viewed)
+    val viewedVideos: Set<String> = emptySet(),
+    // رفض الحدّ اليومي للفيديو — نصّ الخادم
+    val videoLimitMessage: String? = null,
     // مصدر الصورة قيد المعاينة: معرض أو كاميرا
     val pendingImageSource: com.chathala.hala.feature.chats.ui.chat.components.ImageSource =
         com.chathala.hala.feature.chats.ui.chat.components.ImageSource.GALLERY,
@@ -157,6 +167,15 @@ data class ChatUiState(
 
     val hasMore: Boolean get() = currentPage < totalPages
 }
+
+/** فيديو مؤقت جاهز للعرض: الملف المنزَّل كاملاً وموعد إغلاقه (24h). */
+data class PlayingVideo(
+    val messageId: String,
+    val file: java.io.File,
+    val once: Boolean,
+    val isMine: Boolean,
+    val deadlineMs: Long?
+)
 
 class ChatViewModel(
     private val conversationId: String,
@@ -594,6 +613,12 @@ class ChatViewModel(
                 val msgId = evt.json.optString("messageId").takeIf { it.isNotBlank() }
                     ?: return
                 val msg = _state.value.messages.firstOrNull { it.id == msgId } ?: return
+                // ⚠️ للفيديو duration طوله لا مهلته — لا نجدول إخفاءه بها (فيديو 24h كان
+                // يختفي بعد ثوانٍ في iOS). الخادم يرسل photo-expired حين يُدمَّر.
+                if (msg.isVideo()) {
+                    _state.update { it.copy(viewedVideos = it.viewedVideos + msgId) }
+                    return
+                }
                 val duration = msg.disappearing?.duration ?: return
                 // أظهر للمرسِل أنها فُتحت وتختفي بعد N ثانية
                 _state.update {
@@ -608,6 +633,7 @@ class ChatViewModel(
                 // الخادم دمّر الصورة — امسحها من الكاش والواجهة فوراً عند الطرفين
                 val msgId = evt.json.optString("messageId").takeIf { it.isNotBlank() } ?: return
                 disappearingRemovalJobs.remove(msgId)?.cancel()
+                if (_state.value.playingVideo?.messageId == msgId) _state.update { it.copy(playingVideo = null) }
                 _state.value.messages.firstOrNull { it.id == msgId }?.mediaUrl?.let(::evictImageCache)
                 _state.update { s ->
                     s.copy(
@@ -691,6 +717,7 @@ class ChatViewModel(
                 "CONVERSATION_INACTIVE" -> _state.update { it.copy(conversationStatus = "expired") }
                 "RECIPIENT_SUSPENDED" -> _state.update { it.copy(otherUserSuspended = true) }
                 "USER_BLOCKED" -> _state.value.otherUserId?.let { viewModelScope.launch { refreshBlockStatus(it) } }
+                "VIDEO_LIMIT_REACHED" -> _state.update { it.copy(videoLimitMessage = entry.failure) }
             }
         }
     }
@@ -838,7 +865,11 @@ class ChatViewModel(
 
     private fun canSendNow(): Boolean {
         val state = _state.value
-        if (!state.composerReady || state.sending || state.uploadingMedia || state.deleting || state.recording) return false
+        // رفع وسيط/إرسال جارٍ لا يحجز إرسالاً آخر (لكلٍّ فقاعته) — إلا داخل طلب محادثة
+        // معلّق حيث المسموح رسالة واحدة
+        val pendingRequest = state.conversationStatus == "pending"
+        if (!state.composerReady || state.deleting || state.recording) return false
+        if (pendingRequest && (state.sending || state.uploadingMedia)) return false
         val error = when {
             state.otherUserDeleted -> S.get(R.string.chat_cannot_message_deleted_acc)
             state.otherUserSuspended -> S.get(R.string.chat_cannot_message_suspended)
@@ -1082,6 +1113,160 @@ class ChatViewModel(
         }
     }
 
+    // ── المحرّر الموحّد: صور وفيديو ─────────────────────────────
+
+    fun previewImages(uris: List<android.net.Uri>, source: com.chathala.hala.feature.chats.ui.chat.components.ImageSource) {
+        if (isMessagingLocked() || uris.isEmpty()) return
+        _state.update { it.copy(pendingImages = uris, pendingImageSource = source) }
+    }
+
+    fun previewVideo(uri: android.net.Uri) {
+        if (isMessagingLocked()) return
+        _state.update { it.copy(pendingVideo = uri) }
+    }
+
+    fun dismissMediaEditor() {
+        _state.update { it.copy(pendingImages = emptyList(), pendingVideo = null) }
+    }
+
+    /** صور المحرّر (JPEG ≤1MB مرسومة على الأصل) — كل صورة رسالة، والردّ على الأولى. */
+    fun sendEditedPhotos(photos: List<com.chathala.hala.feature.editor.EditedPhoto>) {
+        val source = if (_state.value.pendingImageSource ==
+            com.chathala.hala.feature.chats.ui.chat.components.ImageSource.CAMERA) "camera" else "gallery"
+        _state.update { it.copy(pendingImages = emptyList()) }
+        if (!canSendNow()) return
+        val reply = currentDraft().reply
+        viewModelScope.launch {
+            val dir = java.io.File(appContext.cacheDir, "images").apply { mkdirs() }
+            photos.forEachIndexed { i, photo ->
+                val file = java.io.File(dir, "edited_${System.nanoTime()}.jpg")
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { file.writeBytes(photo.jpeg) }
+                val base = outgoingMessage("image", mediaUrl = android.net.Uri.fromFile(file).toString())
+                    .copy(imageSource = source, replyTo = if (i == 0) reply else null)
+                enqueue(
+                    if (photo.timerSec != null) base.copy(
+                        disappearing = com.chathala.hala.feature.chats.data.DisappearingInfo(enabled = true, duration = photo.timerSec)
+                    ) else base
+                )
+            }
+            if (reply != null) cancelReply()
+        }
+    }
+
+    /** فيديو مضغوط من المحرّر. فشل الرفع يبقى بفقاعة «لم يُرسل» بالملف المضغوط نفسه. */
+    fun sendEditedVideo(video: com.chathala.hala.feature.editor.EditedVideo) {
+        _state.update { it.copy(pendingVideo = null) }
+        if (!canSendNow()) { video.output.file.delete(); return }
+        val out = video.output
+        val reply = currentDraft().reply
+        enqueue(
+            outgoingMessage("video", mediaUrl = android.net.Uri.fromFile(out.file).toString()).copy(
+                videoDuration = out.durationSec,
+                mediaWidth = out.width,
+                mediaHeight = out.height,
+                replyTo = reply,
+                disappearing = com.chathala.hala.feature.chats.data.DisappearingInfo(
+                    enabled = true,
+                    mode = video.mode,
+                    duration = kotlin.math.ceil(out.durationSec).toInt()
+                )
+            )
+        )
+        if (reply != null) cancelReply()
+    }
+
+    fun dismissVideoLimit() { _state.update { it.copy(videoLimitMessage = null) } }
+
+    /**
+     * فتح فيديو مؤقت: **نزّل الملف كاملاً قبل `view-photo`** (التسجيل يبدأ العدّ)، ثم سجّل
+     * المشاهدة. المرسل يشاهد فيديوه دون تسجيل.
+     */
+    fun openVideo(message: Message) {
+        val url = message.mediaUrl ?: return
+        val id = message.id
+        val s = _state.value
+        if (id in s.expiredDisappearing || id in s.loadingDisappearing || s.playingVideo != null) return
+        val isMine = message.sender?.id == s.currentUserId
+        _state.update { it.copy(loadingDisappearing = it.loadingDisappearing + id) }
+        viewModelScope.launch {
+            val dir = java.io.File(appContext.cacheDir, "video_view").apply { mkdirs() }
+            val file = java.io.File(dir, "$id.mp4")
+            val downloaded = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                runCatching {
+                    val full = if (url.startsWith("http")) url else com.chathala.hala.core.network.ApiClient.BASE_URL.trimEnd('/') + "/" + url.trimStart('/')
+                    com.chathala.hala.core.network.ApiClient.httpClient
+                        .newCall(okhttp3.Request.Builder().url(full).build()).execute().use { resp ->
+                            check(resp.isSuccessful)
+                            file.outputStream().use { out -> resp.body!!.byteStream().copyTo(out) }
+                        }
+                }.isSuccess
+            }
+            if (!downloaded) {
+                file.delete()
+                _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - id) }
+                _message.tryEmit(S.get(R.string.video_load_failed))
+                return@launch
+            }
+            val once = message.disappearing?.mode != com.chathala.hala.feature.chats.data.VideoMode.DAY
+            var deadline = messageTimestamp(message.disappearing?.expiresAt)
+            if (!isMine) {
+                when (val r = messagesRepo.viewDisappearingVideo(id)) {
+                    is NetworkResult.Error -> {
+                        file.delete()
+                        _state.update { st ->
+                            st.copy(
+                                loadingDisappearing = st.loadingDisappearing - id,
+                                expiredDisappearing = if (r.httpCode == 410) st.expiredDisappearing + id else st.expiredDisappearing
+                            )
+                        }
+                        _message.tryEmit(if (r.httpCode == 410) S.get(R.string.video_state_expired) else ErrorMessages.friendly(r))
+                        return@launch
+                    }
+                    is NetworkResult.Success -> deadline = messageTimestamp(r.data.expiresAt) ?: deadline
+                }
+            }
+            _state.update {
+                it.copy(
+                    loadingDisappearing = it.loadingDisappearing - id,
+                    viewedDisappearing = if (isMine) it.viewedDisappearing else it.viewedDisappearing + (id to (deadline ?: 0L)),
+                    playingVideo = PlayingVideo(id, file, once, isMine, if (once) null else deadline)
+                )
+            }
+        }
+    }
+
+    /** إغلاق العارض: «مرة واحدة» ← expire-photo ويُدمَّر محلياً. 24h يبقى قابلاً للإعادة. */
+    fun closeVideo() {
+        val playing = _state.value.playingVideo ?: return
+        _state.update { it.copy(playingVideo = null) }
+        if (playing.once && !playing.isMine) {
+            markDisappearingExpired(playing.messageId)
+            viewModelScope.launch { messagesRepo.expireDisappearingMedia(playing.messageId) }
+        }
+    }
+
+    private fun markDisappearingExpired(messageId: String) {
+        disappearingRemovalJobs.remove(messageId)?.cancel()
+        _state.update { s ->
+            s.copy(
+                messages = s.messages.map { if (it.id == messageId) it.copy(mediaUrl = null) else it },
+                viewedDisappearing = s.viewedDisappearing - messageId,
+                expiredDisappearing = s.expiredDisappearing + messageId
+            )
+        }
+    }
+
+    /** بلاغ من داخل عارض الصورة المؤقتة/الفيديو — يُرفق المحتوى دليلاً. */
+    fun reportMedia(messageId: String, reason: com.chathala.hala.feature.reporting.data.ReportReason) {
+        val uid = _state.value.otherUserId ?: return
+        viewModelScope.launch {
+            when (val r = reportRepo.reportUser(uid, reason, messageId = messageId)) {
+                is NetworkResult.Success -> _message.tryEmit(r.data)
+                is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
+            }
+        }
+    }
+
     // ── Disappearing Photo ────────────────────────────────────────
     fun previewImage(
         uri: android.net.Uri,
@@ -1239,7 +1424,10 @@ class ChatViewModel(
     private fun restoreDisappearingDeadlines() {
         _state.value.messages.filter { it.disappearing?.enabled == true }.forEach { message ->
             val deadline = messageTimestamp(message.disappearing?.expiresAt) ?: return@forEach
-            _state.update { it.copy(viewedDisappearing = it.viewedDisappearing + (message.id to deadline)) }
+            // الفيديو: expiresAt حدّه الأقصى (24 ساعة) لا «فُتح» — نجدول الانتهاء فقط
+            if (!message.isVideo()) {
+                _state.update { it.copy(viewedDisappearing = it.viewedDisappearing + (message.id to deadline)) }
+            }
             scheduleDisappearingRemoval(message.id, deadline)
         }
     }

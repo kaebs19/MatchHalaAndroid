@@ -464,6 +464,25 @@ interface ApiService {
         @Path("messageId") messageId: String
     ): ViewPhotoResponse
 
+    @POST("api/mobile/messages/{messageId}/expire-photo")
+    suspend fun expireDisappearingMedia(
+        @Header("Authorization") bearer: String,
+        @Path("messageId") messageId: String
+    ): ViewPhotoResponse
+
+    @Multipart
+    @POST("api/mobile/messages/send-video")
+    suspend fun sendVideoMessage(
+        @Header("Authorization") bearer: String,
+        @Part video: MultipartBody.Part,
+        @Part("conversationId") conversationId: okhttp3.RequestBody,
+        @Part("duration") duration: okhttp3.RequestBody,
+        @Part("mode") mode: okhttp3.RequestBody,
+        @Part("width") width: okhttp3.RequestBody?,
+        @Part("height") height: okhttp3.RequestBody?,
+        @Part("replyTo") replyTo: okhttp3.RequestBody?
+    ): SendMessageResponse
+
     @Multipart
     @POST("api/mobile/messages/send-image")
     suspend fun sendDisappearingImage(

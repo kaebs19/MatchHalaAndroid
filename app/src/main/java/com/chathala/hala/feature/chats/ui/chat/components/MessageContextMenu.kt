@@ -78,6 +78,8 @@ fun MessageContextMenu(
     canDelete: Boolean,
     isPremium: Boolean,
     onPick: (String) -> Unit,
+    /** الخادم يرفض توجيه الوسائط المؤقتة (صورة مؤقتة/فيديو) — نخفي الخيار. */
+    canForward: Boolean = true,
     onReply: () -> Unit,
     onCopy: () -> Unit,
     onForward: () -> Unit,
@@ -94,7 +96,7 @@ fun MessageContextMenu(
     val actions = buildList {
         add(MenuAction(S.get(R.string.action_reply), Icons.AutoMirrored.Filled.Reply, onReply))
         if (canCopy) add(MenuAction(S.get(R.string.action_copy), Icons.Filled.ContentCopy, onCopy))
-        add(MenuAction(S.get(R.string.action_forward), Icons.AutoMirrored.Filled.Send, onForward))
+        if (canForward) add(MenuAction(S.get(R.string.action_forward), Icons.AutoMirrored.Filled.Send, onForward))
         if (canEdit) add(MenuAction(S.get(R.string.action_edit), Icons.Filled.Edit, onEdit, premium = true))
         if (canDelete) {
             add(MenuAction(S.get(R.string.action_delete), Icons.Filled.Delete, onDelete, destructive = true, premium = true))

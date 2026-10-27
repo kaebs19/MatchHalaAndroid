@@ -141,6 +141,14 @@ dependencies {
     // تسجيل الدخول عبر فيسبوك
     implementation(libs.facebook.login)
 
+    // فيديو المحادثة: ضغط على الجهاز (Transformer) وتشغيل (ExoPlayer) + تمويه الوجوه
+    implementation(libs.media3.transformer)
+    implementation(libs.media3.effect)
+    implementation(libs.media3.common)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
+    implementation(libs.mlkit.face.detection)
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     // Analytics: يُفعّل مقاييس المستخدمين في لوحة AdMob بعد ربط مشروع Firebase بها

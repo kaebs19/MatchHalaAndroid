@@ -415,7 +415,10 @@ fun ChatScreen(
                                                 isPending = isPending,
                                                 deliveryFailure = outgoing?.failure?.let { S.serverOr(it, R.string.chat_send_failed) },
                                                 retryAllowed = outgoing?.retryAllowed == true && outgoing.status == com.chathala.hala.feature.chats.data.OutgoingStatus.FAILED,
-                                                retryEnabled = !state.sending && !state.uploadingMedia && !state.recording && state.canSend && !state.otherUserSuspended && state.messagingRestriction == null,
+                                                retryEnabled = !state.recording && state.canSend && !state.otherUserSuspended && state.messagingRestriction == null,
+                                                videoState = videoRowState(msg, isMine, outgoing, state),
+                                                onOpenVideo = { m -> viewModel.openVideo(m) },
+                                                onReportMedia = { m, reason -> viewModel.reportMedia(m.id, reason) },
                                                 onRetry = { viewModel.retryMessage(msg.id) },
                                                 onDiscardFailed = { viewModel.discardFailedMessage(msg.id) },
                                                 audioPlayingId = playback.playingId,
@@ -564,13 +567,16 @@ fun ChatScreen(
                         value = state.input,
                         onValueChange = viewModel::onInputChange,
                         onSend = viewModel::send,
-                        onPickImage = { uri, source -> viewModel.previewImage(uri, source) },
+                        onPickImages = { uris, source -> viewModel.previewImages(uris, source) },
+                        onPickVideo = { uri -> viewModel.previewVideo(uri) },
                         onStartRecord = { viewModel.startRecording(context) },
                         onStopRecord = viewModel::stopAndSendRecording,
                         onCancelRecord = viewModel::cancelRecording,
                         isRecording = state.recording,
                         recordingSeconds = state.recordingSeconds,
-                        enabled = state.composerReady && !state.deleting && !state.sending && !state.uploadingMedia
+                        // الرفع الجاري لا يحجز الإرسال — إلا داخل طلب معلّق (رسالة واحدة)
+                        enabled = state.composerReady && !state.deleting &&
+                            !(state.conversationStatus == "pending" && (state.sending || state.uploadingMedia))
                     )
                 }
                 else -> {
@@ -600,6 +606,7 @@ fun ChatScreen(
                 canEdit = viewModel.canEdit(target),
                 canDelete = isMine,
                 isPremium = state.isPremium,
+                canForward = target.type != "video" && target.disappearing?.enabled != true,
                 onPick = { emoji -> viewModel.react(target, emoji) },
                 onReply = {
                     viewModel.dismissReactionSheet()
@@ -675,6 +682,50 @@ fun ChatScreen(
                 viewModel.sendPendingImage(context, duration)
             },
             onDismiss = viewModel::dismissImagePreview
+        )
+    }
+
+    if (state.pendingImages.isNotEmpty()) {
+        com.chathala.hala.feature.editor.PhotoEditorDialog(
+            uris = state.pendingImages,
+            mode = com.chathala.hala.feature.editor.EditorMode.CHAT,
+            onDismiss = viewModel::dismissMediaEditor,
+            onDone = viewModel::sendEditedPhotos
+        )
+    }
+    state.pendingVideo?.let { uri ->
+        com.chathala.hala.feature.editor.VideoEditorDialog(
+            uri = uri,
+            onDismiss = viewModel::dismissMediaEditor,
+            onDone = viewModel::sendEditedVideo
+        )
+    }
+    state.playingVideo?.let { playing ->
+        com.chathala.hala.feature.chats.ui.chat.components.DisappearingVideoViewer(
+            file = playing.file,
+            deadlineMs = playing.deadlineMs,
+            canReport = !playing.isMine,
+            onReport = { reason ->
+                viewModel.reportMedia(playing.messageId, reason)
+                viewModel.closeVideo()
+            },
+            onClose = viewModel::closeVideo
+        )
+    }
+    state.videoLimitMessage?.let { msg ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = viewModel::dismissVideoLimit,
+            title = { Text(S.get(R.string.video_limit_title)) },
+            text = { Text(msg) },
+            confirmButton = {
+                if (!state.isPremium) androidx.compose.material3.Button(onClick = {
+                    viewModel.dismissVideoLimit(); onOpenSubscription()
+                }) { Text(S.get(R.string.story_subscribe)) }
+                else TextButton(onClick = viewModel::dismissVideoLimit) { Text(S.get(R.string.action_close)) }
+            },
+            dismissButton = {
+                if (!state.isPremium) TextButton(onClick = viewModel::dismissVideoLimit) { Text(S.get(R.string.story_later)) }
+            }
         )
     }
 
@@ -1439,3 +1490,24 @@ private fun EmptyChat() {
     }
 }
 
+/** حالة صفّ الفيديو من الرسالة وطابور الإرسال وحالة الشاشة. */
+private fun videoRowState(
+    msg: com.chathala.hala.feature.chats.data.Message,
+    isMine: Boolean,
+    outgoing: com.chathala.hala.feature.chats.data.OutgoingMessage?,
+    state: ChatUiState
+): com.chathala.hala.feature.chats.ui.chat.components.VideoRowState {
+    return when {
+        msg.type != "video" -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.NOT_OPENED
+        outgoing?.busy == true -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.SENDING
+        outgoing != null && outgoing.status != com.chathala.hala.feature.chats.data.OutgoingStatus.SENT ->
+            com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.FAILED
+        msg.id in state.loadingDisappearing -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.LOADING
+        msg.id in state.expiredDisappearing || msg.mediaUrl.isNullOrBlank() -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.EXPIRED
+        isMine && (msg.id in state.viewedVideos || !msg.disappearing?.viewedBy.isNullOrEmpty()) ->
+            com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.VIEWED
+        !isMine && (msg.id in state.viewedDisappearing || msg.disappearing?.viewedBy?.any { it.user == state.currentUserId } == true) ->
+            com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.VIEWED
+        else -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.NOT_OPENED
+    }
+}

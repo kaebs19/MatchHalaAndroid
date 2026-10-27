@@ -34,6 +34,16 @@ class OutgoingMessageSender(private val context: Context, private val repository
                     repository.sendImage(context, conversation, uri, imageSource = message.imageSource ?: "gallery", expectedSessionId = sessionId)
                 })
             }
+            "video" -> OutgoingSendResult(repository.sendVideo(
+                conversationId = conversation,
+                file = File(requireNotNull(entry.attachmentPath)),
+                durationSeconds = message.videoDuration ?: 1.0,
+                mode = message.disappearing?.mode ?: VideoMode.ONCE,
+                width = message.mediaWidth,
+                height = message.mediaHeight,
+                replyTo = message.replyTo?.id,
+                expectedSessionId = sessionId
+            ))
             else -> error("Unsupported outgoing type")
         }
         if (message.type == "text" && outcome.result is NetworkResult.Success) {

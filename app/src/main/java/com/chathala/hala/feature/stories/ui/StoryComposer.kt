@@ -182,17 +182,31 @@ fun StoryComposerHost(
     }
 
     if (state.photos.isNotEmpty()) {
-        PhotoStoryComposer(
+        // المحرّر الموحّد بوضع «قصة»: بلا صورة مؤقتة، مع تنبيه المحتوى فوق «نشر»
+        com.chathala.hala.feature.editor.PhotoEditorDialog(
             uris = state.photos,
-            policyAcknowledged = acked,
-            onGuidelines = onOpenGuidelines,
+            mode = com.chathala.hala.feature.editor.EditorMode.STORY,
             onDismiss = { state.photos = emptyList() },
-            onPublish = { bitmaps ->
+            footer = {
+                Column {
+                    StoryContentWarning(expandedInitially = !acked, onGuidelines = onOpenGuidelines, dark = true)
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        S.get(R.string.story_visible_24h_profile),
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            },
+            onDone = { photos ->
                 state.photos = emptyList()
+                // عدة صور تُرفع واحدة تلو الأخرى، وبطاقة رفع بحلقة تقدّم في الشريط
                 app.appScopeLaunch {
                     var published = 0
-                    for (bytes in bitmaps) {
-                        when (val r = manager.publishImage(bytes)) {
+                    for (photo in photos) {
+                        when (val r = manager.publishImage(photo.jpeg)) {
                             is NetworkResult.Success -> published++
                             is NetworkResult.Error -> {
                                 handleError(r)
@@ -379,128 +393,6 @@ fun StoryContentWarning(
                 modifier = Modifier.clickable(onClick = onGuidelines)
             )
         }
-    }
-}
-
-// ── نشر صورة ─────────────────────────────────────────────────────
-
-/**
- * معاينة صور القصة قبل النشر: الصورة بأكبر حجم، مصغّرات عند تعدّد الصور، وقصّ
- * جاهز 9:16. الضغط (JPEG ≤1MB، جودة 0.82) يجري عند «نشر».
- */
-@Composable
-private fun PhotoStoryComposer(
-    uris: List<Uri>,
-    policyAcknowledged: Boolean,
-    onGuidelines: () -> Unit,
-    onDismiss: () -> Unit,
-    onPublish: (List<ByteArray>) -> Unit
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var selected by remember { mutableIntStateOf(0) }
-    val crop916 = remember { mutableStateOf(uris.map { false }) }
-    var busy by remember { mutableStateOf(false) }
-
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-        FullScreenDialogWindow()
-        Column(
-            Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-        ) {
-            Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, S.get(R.string.action_close), tint = Color.White) }
-                Text(
-                    S.get(R.string.story_new),
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
-                IconButton(onClick = {
-                    crop916.value = crop916.value.toMutableList().also { it[selected] = !it[selected] }
-                }) {
-                    Icon(
-                        Icons.Filled.Crop, S.get(R.string.story_crop_916),
-                        tint = if (crop916.value[selected]) Color(0xFFFA7E1E) else Color.White
-                    )
-                }
-            }
-            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                val crop = crop916.value[selected]
-                AsyncImage(
-                    model = uris[selected],
-                    contentDescription = null,
-                    contentScale = if (crop) ContentScale.Crop else ContentScale.Fit,
-                    modifier = if (crop) Modifier.fillMaxSize().aspectRatio(9f / 16f, matchHeightConstraintsFirst = true).clip(RoundedCornerShape(12.dp))
-                    else Modifier.fillMaxSize()
-                )
-            }
-            if (uris.size > 1) {
-                LazyRow(
-                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                ) {
-                    itemsIndexed(uris) { i, uri ->
-                        AsyncImage(
-                            model = uri,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(54.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .border(BorderStroke(2.dp, if (i == selected) Color.White else Color.Transparent), RoundedCornerShape(8.dp))
-                                .clickable { selected = i }
-                        )
-                    }
-                }
-            }
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                StoryContentWarning(expandedInitially = !policyAcknowledged, onGuidelines = onGuidelines, dark = true)
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    S.get(R.string.story_visible_24h_profile),
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        busy = true
-                        scope.launch {
-                            val out = uris.mapIndexedNotNull { i, uri ->
-                                val bmp = ImageCompressor.decode(context, uri) ?: return@mapIndexedNotNull null
-                                ImageCompressor.compress(if (crop916.value[i]) bmp.centerCrop(9f / 16f) else bmp)
-                            }
-                            busy = false
-                            if (out.isEmpty()) context.showToast(S.get(R.string.profile_photo_read_failed)) else onPublish(out)
-                        }
-                    },
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD62976))
-                ) {
-                    if (busy) CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
-                    else Text(S.get(R.string.story_publish), fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-    }
-}
-
-private fun android.graphics.Bitmap.centerCrop(ratio: Float): android.graphics.Bitmap {
-    val current = width.toFloat() / height
-    return if (current > ratio) {
-        val w = (height * ratio).toInt().coerceAtLeast(1)
-        android.graphics.Bitmap.createBitmap(this, (width - w) / 2, 0, w, height)
-    } else {
-        val h = (width / ratio).toInt().coerceAtLeast(1)
-        android.graphics.Bitmap.createBitmap(this, 0, (height - h) / 2, width, h)
     }
 }
 
