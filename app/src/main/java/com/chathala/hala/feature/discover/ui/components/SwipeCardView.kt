@@ -93,8 +93,13 @@ fun SwipeCardView(
     onDoubleTap: () -> Unit = {},
     showOverlay: Boolean = true,
     // طلب إزاحة من الأزرار (تخطٍّ/سوبر لايك) — نفس حركة السحب بدل الاختفاء الفوري
-    flingRequest: SwipeDirection? = null
+    flingRequest: SwipeDirection? = null,
+    /** فتح قصص صاحب البطاقة — من شارة القصة. */
+    onOpenStory: () -> Unit = {}
 ) {
+    // صاحب قصة نشطة ← إطار البطاقة بتدرّج القصص (مثل التطبيقات المشهورة)
+    val storyRing = if (showOverlay) com.chathala.hala.feature.stories.ui.rememberStoryRing(card.id)
+        else com.chathala.hala.feature.stories.ui.StoryRingState.None
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
     var offset by remember(card.id) { mutableStateOf(Offset.Zero) }
@@ -189,8 +194,17 @@ fun SwipeCardView(
             // خلفية صلبة خلف الصورة (iOS #1F1233) — لا بطاقة شفّافة أثناء التحميل
             .background(Brush.linearGradient(listOf(Color(0xFF3A2B5F), Color(0xFF1F1233))))
             .border(
-                width = if (card.isPremium == true) 2.dp else 1.dp,
-                brush = if (card.isPremium == true) Brush.linearGradient(
+                width = when {
+                    storyRing == com.chathala.hala.feature.stories.ui.StoryRingState.Unseen -> 3.5.dp
+                    storyRing == com.chathala.hala.feature.stories.ui.StoryRingState.Seen -> 2.dp
+                    card.isPremium == true -> 2.dp
+                    else -> 1.dp
+                },
+                brush = if (storyRing == com.chathala.hala.feature.stories.ui.StoryRingState.Unseen) {
+                    com.chathala.hala.feature.stories.ui.StoryRingBrush
+                } else if (storyRing == com.chathala.hala.feature.stories.ui.StoryRingState.Seen) {
+                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.45f), Color.White.copy(alpha = 0.25f)))
+                } else if (card.isPremium == true) Brush.linearGradient(
                     listOf(Color(0xFFFFD54F).copy(alpha = 0.6f), Color(0xFFFFA726).copy(alpha = 0.5f))
                 ) else Brush.linearGradient(
                     listOf(Color.White.copy(alpha = 0.15f), Color.White.copy(alpha = 0.05f))
@@ -313,9 +327,12 @@ fun SwipeCardView(
                 modifier = Modifier.align(Alignment.BottomStart)
             )
 
-            // شارة «قصة جديدة»/«قصة» — شارة فقط، لا ضغط
+            // شارة القصة: صورة صغيرة بحلقة + «قصة جديدة» — الضغط يفتح القصص
             com.chathala.hala.feature.stories.ui.StoryBadge(
                 userId = card.id,
+                avatarUrl = photos.firstOrNull(),
+                name = card.name,
+                onClick = onOpenStory,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = if (photos.size > 1) 30.dp else 14.dp, end = 14.dp)

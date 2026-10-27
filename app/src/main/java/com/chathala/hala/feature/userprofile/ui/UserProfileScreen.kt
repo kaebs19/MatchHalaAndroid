@@ -512,11 +512,28 @@ private fun HeroSection(
     storyStatus: com.chathala.hala.feature.stories.data.StoryStatus? = null,
     onOpenStories: () -> Unit = {}
 ) {
+    // قصة نشطة: إطار بتدرّج القصص حول الصورة، والضغط عليها يفتح القصص (مثل التطبيقات
+    // المشهورة) — الصور تبقى من قسم الصور وزرّ القصص في الصورة الكاملة
+    val hasStory = (storyStatus?.count ?: 0) > 0
+    val unseen = storyStatus?.hasUnseen == true
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(460.dp)
-            .clickable(onClick = onOpenPhoto)
+            .clickable(onClick = if (hasStory) onOpenStories else onOpenPhoto)
+            .then(
+                if (hasStory) Modifier
+                    .padding(6.dp)
+                    .border(
+                        width = if (unseen) 4.dp else 2.dp,
+                        brush = if (unseen) com.chathala.hala.feature.stories.ui.StoryRingBrush
+                            else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.3f))),
+                        shape = RoundedCornerShape(22.dp)
+                    )
+                    .padding(if (unseen) 4.dp else 2.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                else Modifier
+            )
     ) {
         // الصورة الرئيسية كخلفية غامرة
         val mainPhoto = user.galleryUrls.firstOrNull()
@@ -552,7 +569,13 @@ private fun HeroSection(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            com.chathala.hala.feature.stories.ui.StoriesPill(status = storyStatus, onClick = onOpenStories)
+            if (hasStory) com.chathala.hala.feature.stories.ui.StoryBadge(
+                userId = user.id,
+                avatarUrl = user.galleryUrls.firstOrNull(),
+                name = user.name,
+                onClick = onOpenStories,
+                ignoreMute = true
+            )
             if (user.likedYou == true) LikedYouBadge()
             NameRow(user)
             HeroPillsRow(user)

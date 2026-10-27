@@ -161,6 +161,16 @@ fun DiscoverScreen(
 
     // «إضافة قصة» من الاكتشاف بجوار «الزوار»
     val storyComposer = com.chathala.hala.feature.stories.ui.rememberStoryComposerState()
+    // قصص صاحب البطاقة الحالية
+    var storyCard by remember { mutableStateOf<com.chathala.hala.feature.discover.data.DiscoverCard?>(null) }
+    storyCard?.let { c ->
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = com.chathala.hala.feature.stories.ui.StoryOwner(c.id, c.name.orEmpty(), c.galleryPhotos.firstOrNull()),
+            isMine = false,
+            onDismiss = { storyCard = null },
+            onMessage = { detailCard = c }
+        )
+    }
     LaunchedEffect(Unit) { storyManagerForCards.refreshMine() }
     com.chathala.hala.feature.stories.ui.StoryComposerHost(
         state = storyComposer,
@@ -235,7 +245,8 @@ fun DiscoverScreen(
                             if (isPremium) viewModel.undoLast()
                             else premiumGate = PremiumGateReason.UNDO
                         },
-                        onMessage = { detailCard = state.currentCard }
+                        onMessage = { detailCard = state.currentCard },
+                        onOpenStory = { storyCard = it }
                     )
                 }
             }
@@ -445,7 +456,8 @@ private fun CardStack(
     onLike: () -> Unit,
     onSuperLike: () -> Unit,
     onUndo: () -> Unit,
-    onMessage: () -> Unit
+    onMessage: () -> Unit,
+    onOpenStory: (DiscoverCard) -> Unit = {}
 ) {
     val current = state.currentCard ?: return
     val next = state.nextCard
@@ -492,7 +504,8 @@ private fun CardStack(
                     onSwiped = onSwipe,
                     onTap = { onTapCard(current) },
                     onDoubleTap = onLike,
-                    flingRequest = flingRequest
+                    flingRequest = flingRequest,
+                    onOpenStory = { onOpenStory(current) }
                 )
             }
         }

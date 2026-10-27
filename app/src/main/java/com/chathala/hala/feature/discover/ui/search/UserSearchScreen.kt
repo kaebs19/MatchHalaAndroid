@@ -107,6 +107,9 @@ private val GoldColor = Color(0xFFE6B800)
 private val LikeColor = Color(0xFFFF3B6B)
 private val OnlineColor = Color(0xFF4CAF50)
 
+/** فتح قصص مستخدم من أي بطاقة/صفّ في البحث دون تمريرها عبر كل طبقة. */
+private val LocalOpenStory = androidx.compose.runtime.staticCompositionLocalOf<(SearchUser) -> Unit> { {} }
+
 @Composable
 fun UserSearchScreen(
     onBack: () -> Unit,
@@ -139,6 +142,25 @@ fun UserSearchScreen(
         viewModel.rememberQuery()
         onOpenUserProfile(id)
     }
+
+    // حلقات القصص لكل من يظهر في البحث (النتائج والاقتراحات) — المدير يمنع التكرار خلال 60ث
+    val storyManager = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.chathala.hala.HalaApp).storyManager
+    val storyIds = remember(state.results, state.premium, state.online, state.recentlyActive) {
+        (state.results + state.premium + state.online + state.recentlyActive).map { it.id }.distinct()
+    }
+    LaunchedEffect(storyIds) {
+        if (storyIds.isNotEmpty()) storyManager.loadStatuses(storyIds, batchSize = com.chathala.hala.feature.stories.data.StoryManager.DISCOVER_BATCH)
+    }
+    var storyUser by remember { mutableStateOf<SearchUser?>(null) }
+    storyUser?.let { u ->
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = com.chathala.hala.feature.stories.ui.StoryOwner(u.id, u.name.orEmpty(), u.profileImage),
+            isMine = false,
+            onDismiss = { storyUser = null },
+            // «مراسلة» ← ملفه حيث زرّ الرسالة
+            onMessage = { openProfile(u.id) }
+        )
+    }
     // الفلترة ميزة مدفوعة
     val onFiltersClick: () -> Unit = {
         if (state.isPremium) showFilters = true else showGate = true
@@ -163,6 +185,7 @@ fun UserSearchScreen(
         )
     }
 
+    androidx.compose.runtime.CompositionLocalProvider(LocalOpenStory provides { u: SearchUser -> storyUser = u }) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -303,6 +326,7 @@ fun UserSearchScreen(
                 )
             }
         }
+    }
     }
 }
 
@@ -491,6 +515,9 @@ private fun SearchResultCard(
         label = "cardPress"
     )
 
+    // قصة نشطة ← إطار بتدرّج القصص وشارة تفتحها
+    val storyRing = com.chathala.hala.feature.stories.ui.rememberStoryRing(user.id)
+    val openStory = LocalOpenStory.current
     Box(
         modifier = Modifier
             .aspectRatio(0.75f)
@@ -617,6 +644,26 @@ private fun SearchResultCard(
                         brush = Brush.linearGradient(listOf(GoldColor, Color(0xFFFFE9A8), GoldColor)),
                         shape = shape
                     )
+            )
+        }
+        if (storyRing != com.chathala.hala.feature.stories.ui.StoryRingState.None) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .border(
+                        width = if (storyRing == com.chathala.hala.feature.stories.ui.StoryRingState.Unseen) 3.dp else 1.5.dp,
+                        brush = if (storyRing == com.chathala.hala.feature.stories.ui.StoryRingState.Unseen) com.chathala.hala.feature.stories.ui.StoryRingBrush
+                            else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.3f))),
+                        shape = shape
+                    )
+            )
+            com.chathala.hala.feature.stories.ui.StoryBadge(
+                userId = user.id,
+                avatarUrl = user.profileImage,
+                name = user.name,
+                onClick = { openStory(user) },
+                compact = true,
+                modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
             )
         }
     }
@@ -904,8 +951,24 @@ private fun PremiumChip(user: SearchUser, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(contentAlignment = Alignment.TopCenter) {
-            // الحلقة الذهبية
-            HalaAsyncImage(
+            // حلقة القصة إن وُجدت (تفتحها)، وإلا الحلقة الذهبية
+            val storyRing = com.chathala.hala.feature.stories.ui.rememberStoryRing(user.id)
+            val openStory = LocalOpenStory.current
+            if (storyRing != com.chathala.hala.feature.stories.ui.StoryRingState.None) {
+                com.chathala.hala.feature.stories.ui.StoryRingBox(
+                    state = storyRing,
+                    modifier = Modifier.size(66.dp).clip(CircleShape).clickable { openStory(user) },
+                    ringWidth = 2.5.dp,
+                    gap = 2.dp
+                ) {
+                    HalaAsyncImage(
+                        model = user.profileImage,
+                        contentDescription = user.name,
+                        fallbackName = user.name,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    )
+                }
+            } else HalaAsyncImage(
                 model = user.profileImage,
                 contentDescription = user.name,
                 fallbackName = user.name,
@@ -1048,8 +1111,27 @@ private fun SearchResultRow(
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val storyRing = com.chathala.hala.feature.stories.ui.rememberStoryRing(user.id)
+        val openStory = LocalOpenStory.current
         Box {
-            HalaAsyncImage(
+            if (storyRing != com.chathala.hala.feature.stories.ui.StoryRingState.None) {
+                // حلقة القصة تحلّ محلّ الإطار الذهبي، والصورة وحدها تفتح القصص
+                com.chathala.hala.feature.stories.ui.StoryRingBox(
+                    state = storyRing,
+                    modifier = Modifier.size(60.dp).clip(CircleShape).clickable { openStory(user) },
+                    ringWidth = 2.5.dp,
+                    gap = 2.dp,
+                    gapColor = MaterialTheme.colorScheme.surface
+                ) {
+                    HalaAsyncImage(
+                        model = user.profileImage,
+                        contentDescription = user.name,
+                        contentScale = ContentScale.Crop,
+                        fallbackName = user.name,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    )
+                }
+            } else HalaAsyncImage(
                 model = user.profileImage,
                 contentDescription = user.name,
                 contentScale = ContentScale.Crop,

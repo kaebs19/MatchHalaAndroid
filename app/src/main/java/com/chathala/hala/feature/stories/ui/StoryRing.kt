@@ -161,22 +161,66 @@ fun StoriesPill(status: StoryStatus?, onClick: () -> Unit, modifier: Modifier = 
     }
 }
 
-/** شارة على بطاقة الاكتشاف: «قصة جديدة» أو «قصة» إن شوهدت (شارة فقط، لا ضغط). */
+/**
+ * شارة القصة على بطاقة الاكتشاف: صورة صغيرة بحلقة القصص (تدور ما دامت غير مشاهدة)
+ * + «قصة جديدة» أو «قصة». الضغط يفتح العارض.
+ */
 @Composable
-fun StoryBadge(userId: String?, modifier: Modifier = Modifier) {
-    val ring = rememberStoryRing(userId)
+fun StoryBadge(
+    userId: String?,
+    modifier: Modifier = Modifier,
+    avatarUrl: String? = null,
+    name: String? = null,
+    onClick: (() -> Unit)? = null,
+    /** البروفايل يعرض القصص حتى للمكتوم (الكتم يخفي الحلقة من القوائم فقط). */
+    ignoreMute: Boolean = false,
+    /** للبطاقات الصغيرة (شبكة البحث): أصغر وبلا صورة. */
+    compact: Boolean = false
+) {
+    val ring = if (ignoreMute) {
+        val statuses by (LocalContext.current.applicationContext as HalaApp).storyManager.statuses.collectAsState()
+        statuses[userId].ringState()
+    } else rememberStoryRing(userId)
     if (ring == StoryRingState.None) return
     val unseen = ring == StoryRingState.Unseen
-    androidx.compose.material3.Text(
-        com.chathala.hala.core.i18n.S.get(if (unseen) com.chathala.hala.R.string.story_badge_new else com.chathala.hala.R.string.story_badge_seen),
-        color = Color.White,
-        fontSize = 12.sp,
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-        modifier = modifier
+    if (compact) {
+        androidx.compose.material3.Text(
+            com.chathala.hala.core.i18n.S.get(if (unseen) com.chathala.hala.R.string.story_badge_new else com.chathala.hala.R.string.story_badge_seen),
+            color = Color.White,
+            fontSize = 11.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            modifier = modifier
+                .clip(CircleShape)
+                .then(if (unseen) Modifier.background(StoryRingBrush) else Modifier.background(Color.Black.copy(alpha = 0.5f)))
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                .padding(horizontal = 9.dp, vertical = 4.dp)
+        )
+        return
+    }
+    androidx.compose.foundation.layout.Row(
+        modifier
             .clip(CircleShape)
-            .then(if (unseen) Modifier.background(StoryRingBrush) else Modifier.background(Color.Black.copy(alpha = 0.45f)))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
-    )
+            .background(Color.Black.copy(alpha = 0.5f))
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        StoryRingBox(state = ring, modifier = Modifier.size(34.dp), ringWidth = 2.5.dp, gap = 1.5.dp, gapColor = Color.Black) {
+            com.chathala.hala.ui.components.HalaAsyncImage(
+                model = avatarUrl,
+                contentDescription = null,
+                fallbackName = name,
+                modifier = Modifier.fillMaxSize().clip(CircleShape)
+            )
+        }
+        androidx.compose.foundation.layout.Spacer(Modifier.size(8.dp))
+        androidx.compose.material3.Text(
+            com.chathala.hala.core.i18n.S.get(if (unseen) com.chathala.hala.R.string.story_badge_new else com.chathala.hala.R.string.story_badge_seen),
+            color = Color.White,
+            fontSize = 13.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
+    }
 }
 
 /**
