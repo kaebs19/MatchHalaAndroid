@@ -30,6 +30,7 @@ internal fun Map<String, Any?>.toUserDomain(): User? {
         bio = str("bio"),
         interests = extractStringList(this["interests"]),
         isPremium = bool("isPremium") ?: false,
+        premiumStatusKnown = bool("isPremium") != null,
         isVerified = bool("isVerified")
             ?: (verificationMap?.get("isVerified") as? Boolean)
             ?: false,

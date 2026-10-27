@@ -22,6 +22,7 @@ data class User(
     val bio: String? = null,
     val interests: List<String> = emptyList(),
     val isPremium: Boolean = false,
+    val premiumStatusKnown: Boolean = true,
     val isVerified: Boolean = false,
     val verificationStatus: String? = null, // none | pending | rejected | verified
     val authProvider: String? = null,

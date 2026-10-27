@@ -31,9 +31,10 @@ class SubscriptionRepository(
         purchaseToken: String,
         plan: PremiumPlan
     ): Boolean {
+        val session = tokenStorage.snapshot() ?: return false
         val result = safeApiCall {
             api.verifyGoogleSubscription(
-                bearer(),
+                "Bearer ${session.accessToken}",
                 GoogleVerifyRequest(
                     purchaseToken = purchaseToken,
                     productId = plan.productId,
@@ -42,6 +43,7 @@ class SubscriptionRepository(
                 )
             )
         }
+        if (tokenStorage.snapshot()?.sessionId != session.sessionId) return false
         return when (result) {
             is NetworkResult.Success -> {
                 val ok = result.data.success && result.data.data?.isPremium == true

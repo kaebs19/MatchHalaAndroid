@@ -39,7 +39,9 @@ class UserRepository(
                 name = name,
                 email = email,
                 role = authUser.role,
-                profileImage = authUser.profileImage
+                profileImage = authUser.profileImage,
+                isPremium = authUser.isPremium == true,
+                premiumStatusKnown = authUser.isPremium != null
             )
         )
     }
@@ -47,8 +49,9 @@ class UserRepository(
     /** يجلب بيانات المستخدم الكاملة من السيرفر ويحدّث الكاش. */
     @Suppress("UNCHECKED_CAST")
     suspend fun refresh(): NetworkResult<User> = safeApiCall {
-        val token = tokenStorage.token.first()
+        val session = tokenStorage.snapshot()
             ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
+        val token = session.accessToken
 
         val raw = api.getMe("Bearer $token")
         val data = raw["data"] as? Map<String, Any?>
@@ -58,7 +61,8 @@ class UserRepository(
 
         val user = userMap.toUserDomain()
             ?: throw IllegalStateException(S.get(R.string.err_user_data_incomplete))
-        userStorage.save(user)
+        tokenStorage.withSession(session.sessionId) { userStorage.save(user) }
+            ?: throw kotlinx.coroutines.CancellationException("Session changed")
         user
     }
 

@@ -44,6 +44,7 @@ fun AboutScreen(
         title = S.get(R.string.about_title),
         onBack = onBack
     ) {
+        com.chathala.hala.core.ads.AdInspectorButton()
         when {
             state.loading -> Box(
                 modifier = Modifier.fillMaxSize().padding(40.dp),

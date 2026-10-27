@@ -27,8 +27,8 @@ android {
         //
         // تنبيه تاريخي: 2.2.3 (20) بُنيت من فرع لم يكن مدموجاً مع main، فشُحنت
         // ناقصةً UMP وترقية SDK الإعلانات واستعادة المشتريات. 2.2.4 حملتها.
-        versionCode = 25
-        versionName = "2.4.1"
+        versionCode = 26
+        versionName = "2.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -56,7 +56,18 @@ android {
     }
 
     buildTypes {
+        debug {
+            val mediationTesting = providers.gradleProperty("halaMediationTest").orNull == "true"
+            val adTestDevices = providers.gradleProperty("halaAdTestDeviceIds").orNull.orEmpty()
+                .split(',').map(String::trim).filter(String::isNotEmpty)
+            require(adTestDevices.all { it.matches(Regex("[A-Fa-f0-9]{32}")) }) { "Invalid AdMob test device ID" }
+            require(!mediationTesting || adTestDevices.isNotEmpty()) { "Mediation testing requires -PhalaAdTestDeviceIds=<registered-device-id>" }
+            buildConfigField("boolean", "MEDIATION_TESTING", mediationTesting.toString())
+            buildConfigField("String[]", "AD_TEST_DEVICE_IDS", adTestDevices.joinToString(prefix = "new String[]{", postfix = "}") { "\"$it\"" })
+        }
         release {
+            buildConfigField("boolean", "MEDIATION_TESTING", "false")
+            buildConfigField("String[]", "AD_TEST_DEVICE_IDS", "new String[]{}")
             // R8: تصغير الكود + إزالة الموارد غير المستخدمة. قواعد الحفظ في
             // proguard-rules.pro — انتبه أن Moshi هنا يعمل بالانعكاس، فأي نموذج
             // شبكة جديد خارج حزم data/network يحتاج قاعدة حفظ صريحة.
@@ -136,6 +147,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.play.services.location)
     implementation(libs.play.services.ads)
+    // AdMob remains the mediator; dashboard mappings supply Unity Game/Placement IDs.
+    implementation(libs.unity.ads)
+    implementation(libs.admob.unity.adapter)
     implementation(libs.play.review.ktx)
     implementation(libs.user.messaging.platform)
 

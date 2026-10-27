@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.CancellationException
 import org.json.JSONObject
 
 /**
@@ -38,7 +40,14 @@ class HalaSocket(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var socket: Socket? = null
     private var connectJob: Job? = null
-    @Volatile private var connecting = false
+    private var activeToken: String? = null
+    @Volatile private var connectionRequested = false
+
+    init {
+        scope.launch {
+            tokenStorage.token.collect { if (connectionRequested) connect() }
+        }
+    }
 
     private val _connected = MutableStateFlow(false)
     val connected: StateFlow<Boolean> = _connected.asStateFlow()
@@ -46,52 +55,62 @@ class HalaSocket(
     private val _incoming = MutableSharedFlow<SocketEvent>(extraBufferCapacity = 64)
     val incoming: SharedFlow<SocketEvent> = _incoming.asSharedFlow()
 
-    /** يفتح الاتصال إذا لم يكن مفتوحاً. Safe للاستدعاء المتكرر. */
+    /** Rebuild credentials after rotation; serialize socket lifecycle changes. */
+    @Synchronized
     fun connect() {
-        // أعد استخدام السوكِت القائم بدل إنشاء واحد جديد (يمنع الاتصالات المكرّرة/التذبذب)
-        val existing = socket
-        if (existing != null) {
-            if (!existing.connected()) existing.connect()
-            return
-        }
-        if (connecting) return
-        connecting = true
+        connectionRequested = true
         connectJob?.cancel()
         connectJob = scope.launch {
             val token = tokenStorage.token.first()
-            if (token.isNullOrBlank()) {
-                Log.d(TAG, "connect: no token — skip")
-                connecting = false
-                return@launch
-            }
-            try {
-                val opts = IO.Options().apply {
-                    auth = mapOf("token" to token)
-                    reconnection = true
-                    reconnectionAttempts = Int.MAX_VALUE   // لا تستسلم
-                    reconnectionDelay = 1000
-                    reconnectionDelayMax = 5000
-                    transports = arrayOf("websocket")
+            ensureActive()
+            synchronized(this@HalaSocket) {
+                ensureActive()
+                if (!connectionRequested) return@synchronized
+                if (token.isNullOrBlank()) {
+                    closeSocket()
+                    return@synchronized
                 }
-                val s = IO.socket(baseUrl, opts)
-                attachListeners(s)
-                socket = s
-                s.connect()
-                Log.d(TAG, "connecting…")
-            } catch (e: Exception) {
-                Log.e(TAG, "connect failed: ${e.message}", e)
-            } finally {
-                connecting = false
+                val existing = socket
+                if (existing != null && activeToken == token) {
+                    if (!existing.connected()) existing.connect()
+                    return@synchronized
+                }
+                closeSocket()
+                try {
+                    val opts = IO.Options().apply {
+                        auth = mapOf("token" to token)
+                        reconnection = true
+                        reconnectionAttempts = Int.MAX_VALUE
+                        reconnectionDelay = 1000
+                        reconnectionDelayMax = 5000
+                        transports = arrayOf("websocket")
+                    }
+                    val s = IO.socket(baseUrl, opts)
+                    activeToken = token
+                    socket = s
+                    attachListeners(s)
+                    s.connect()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "connect failed", e)
+                }
             }
         }
     }
 
+    @Synchronized
     fun disconnect() {
+        connectionRequested = false
         connectJob?.cancel()
-        connecting = false
+        closeSocket()
+    }
+
+    private fun closeSocket() {
         socket?.off()
         socket?.disconnect()
         socket = null
+        activeToken = null
         _connected.value = false
     }
 
@@ -145,10 +164,12 @@ class HalaSocket(
 
     private fun attachListeners(s: Socket) {
         s.on(Socket.EVENT_CONNECT) {
+            if (socket !== s) return@on
             Log.d(TAG, "connected")
             _connected.value = true
         }
         s.on(Socket.EVENT_DISCONNECT) {
+            if (socket !== s) return@on
             Log.d(TAG, "disconnected")
             _connected.value = false
         }
@@ -174,7 +195,6 @@ class HalaSocket(
         s.on("conversation-accepted") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationAccepted(it)) } }
         s.on("conversation-rejected") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationRejected(it)) } }
         s.on("conversation:cancelled") { args -> args.firstJson()?.let { emit(SocketEvent.ConversationCancelled(it)) } }
-        s.on("chat-mode-changed") { args -> args.firstJson()?.let { emit(SocketEvent.ChatModeChanged(it)) } }
         s.on("users-online") { args -> args.firstJson()?.let { emit(SocketEvent.UsersOnline(it)) } }
         s.on("user:online") { args -> args.firstJson()?.let { emit(SocketEvent.UserOnline(it)) } }
         s.on("user:offline") { args -> args.firstJson()?.let { emit(SocketEvent.UserOffline(it)) } }

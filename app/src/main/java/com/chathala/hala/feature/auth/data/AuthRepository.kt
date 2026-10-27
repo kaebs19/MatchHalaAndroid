@@ -5,28 +5,22 @@ import com.chathala.hala.core.i18n.LocaleManager
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
-import android.util.Log
 import com.chathala.hala.core.device.DeviceIdentity
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.core.network.ApiService
 import com.chathala.hala.core.network.NetworkResult
 import com.chathala.hala.core.network.safeApiCall
 import com.chathala.hala.core.storage.TokenStorage
-import com.chathala.hala.feature.chats.data.ChatsCacheStorage
-import com.chathala.hala.feature.chats.socket.HalaSocket
-import com.chathala.hala.feature.discover.data.DiscoverCacheStorage
 import com.chathala.hala.feature.push.data.DeviceTokenRepository
 import com.chathala.hala.feature.user.data.UserRepository
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 class AuthRepository(
     private val api: ApiService = ApiClient.service,
     private val tokenStorage: TokenStorage,
     private val userRepository: UserRepository,
-    private val deviceTokenRepository: DeviceTokenRepository? = null,
-    private val socket: HalaSocket? = null,
-    private val discoverCache: DiscoverCacheStorage? = null,
-    private val chatsCache: ChatsCacheStorage? = null
+    private val deviceTokenRepository: DeviceTokenRepository? = null
 ) {
 
     suspend fun register(name: String, email: String, password: String): NetworkResult<AuthResponse> =
@@ -116,14 +110,12 @@ class AuthRepository(
 
     /** يمسح الجلسة والمستخدم المحفوظ. */
     suspend fun logout() {
-        // حاول إلغاء FCM قبل مسح التوكن (يحتاج bearer)
-        runCatching { deviceTokenRepository?.unregister() }
-            .onFailure { Log.w("AuthRepository", "FCM unregister failed: ${it.message}") }
-        runCatching { socket?.disconnect() }
-        runCatching { discoverCache?.clear() }
-        runCatching { chatsCache?.clear() }
-        tokenStorage.clear()
-        userRepository.clear()
+        val session = tokenStorage.snapshot() ?: return
+        try {
+            deviceTokenRepository?.unregister()
+        } finally {
+            withContext(NonCancellable) { tokenStorage.endSession(session.sessionId) }
+        }
     }
 
     /**
@@ -133,26 +125,27 @@ class AuthRepository(
      */
     suspend fun deleteAccount(password: String?): NetworkResult<String> =
         safeApiCall {
-            val token = tokenStorage.token.first()
+            val session = tokenStorage.snapshot()
                 ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
+            val token = session.accessToken
             val resp = api.deleteAccount(
                 bearer = "Bearer $token",
                 body = DeleteAccountRequest(password = password)
             )
-            runCatching { deviceTokenRepository?.unregister() }
-                .onFailure { Log.w("AuthRepository", "FCM unregister failed: ${it.message}") }
-            runCatching { socket?.disconnect() }
-            runCatching { discoverCache?.clear() }
-        runCatching { chatsCache?.clear() }
-            tokenStorage.clear()
-            userRepository.clear()
+            try {
+                if (tokenStorage.snapshot()?.sessionId == session.sessionId) deviceTokenRepository?.unregister()
+            } finally {
+                withContext(NonCancellable) { tokenStorage.endSession(session.sessionId) }
+            }
             S.serverOr(resp.message, R.string.auth_account_deleted)
         }
 
     private suspend fun persistAuth(resp: AuthResponse) {
         val data = resp.data ?: return
         val token = data.token ?: return
-        tokenStorage.save(token = token, refreshToken = data.refreshToken)
-        data.user?.let { userRepository.saveFromAuth(it) }
+        val session = tokenStorage.save(token = token, refreshToken = data.refreshToken)
+        tokenStorage.withSession(session.sessionId) {
+            data.user?.let { userRepository.saveFromAuth(it) }
+        }
     }
 }

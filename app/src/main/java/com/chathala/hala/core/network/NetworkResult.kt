@@ -3,6 +3,7 @@ package com.chathala.hala.core.network
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
+import kotlinx.coroutines.CancellationException
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -34,6 +35,8 @@ sealed class NetworkResult<out T> {
  */
 internal inline fun <T> safeApiCall(block: () -> T): NetworkResult<T> = try {
     NetworkResult.Success(block())
+} catch (e: CancellationException) {
+    throw e
 } catch (e: HttpException) {
     val raw = e.response()?.errorBody()?.string()
     val parsed = raw?.let {

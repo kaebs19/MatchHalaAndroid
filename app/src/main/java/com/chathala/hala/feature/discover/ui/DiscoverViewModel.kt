@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 data class DiscoverUiState(
@@ -67,6 +69,8 @@ class DiscoverViewModel(
     private val cache: DiscoverCacheStorage,
     private val userRepository: UserRepository
 ) : ViewModel() {
+
+    private val cacheSession = viewModelScope.async(start = CoroutineStart.UNDISPATCHED) { cache.sessionId() }
 
     private val _state = MutableStateFlow(DiscoverUiState())
     val state: StateFlow<DiscoverUiState> = _state.asStateFlow()
@@ -111,7 +115,7 @@ class DiscoverViewModel(
     fun load() {
         viewModelScope.launch {
             // 1) عرض الكاش فوراً إن وُجد (لا نُظهر شاشة التحميل)
-            val cached = runCatching { cache.read() }.getOrNull()
+            val cached = runCatching { cache.read(cacheSession.await()) }.getOrNull()
             if (cached != null && cached.cards.isNotEmpty()) {
                 _state.update {
                     it.copy(
@@ -223,7 +227,7 @@ class DiscoverViewModel(
                 }
                 // حفظ الصفحة الأولى في الكاش فقط لتسريع الفتح القادم
                 if (!append) {
-                    runCatching { cache.save(r.data.cards) }
+                    runCatching { cache.save(r.data.cards, cacheSession.await()) }
                 }
             }
             is NetworkResult.Error -> {
@@ -350,13 +354,11 @@ class DiscoverViewModel(
                 swipeHistory = s.swipeHistory + s.currentIndex
             )
         }
-        // إعلانات الاكتشاف: مدمج بعد كل N بطاقة، بيني بعد كل M بطاقة
         swipeCount++
-        if (swipeCount % com.chathala.hala.core.ads.AdConfig.NATIVE_EVERY_CARDS == 0) {
-            _showNativeAd.tryEmit(Unit)
-        }
-        if (swipeCount % com.chathala.hala.core.ads.AdConfig.DISCOVER_INTERSTITIAL_EVERY_CARDS == 0) {
-            _showInterstitial.tryEmit(Unit)
+        when (com.chathala.hala.core.ads.discoveryAdOpportunity(swipeCount)) {
+            com.chathala.hala.core.ads.DiscoveryAdOpportunity.NATIVE -> _showNativeAd.tryEmit(Unit)
+            com.chathala.hala.core.ads.DiscoveryAdOpportunity.INTERSTITIAL -> _showInterstitial.tryEmit(Unit)
+            com.chathala.hala.core.ads.DiscoveryAdOpportunity.NONE -> Unit
         }
         val s = _state.value
         val remaining = s.cards.size - s.currentIndex

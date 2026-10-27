@@ -353,9 +353,9 @@ private fun ResultsGrid(
                     onToggleLike = { onToggleLike(user) }
                 )
             }
-            // إعلان مدمج بين المستخدمين — يشغل خانة واحدة كبطاقة مستخدم فلا يكسر الشبكة
+            // Sponsored content spans the grid to keep media and disclosure readable.
             if ((index + 1) % AdConfig.SEARCH_NATIVE_EVERY == 0) {
-                item(key = "ad_$index") {
+                item(key = "ad_$index", span = { GridItemSpan(maxLineSpan) }) {
                     NativeAdGridItem(slot = "search_grid_${(index + 1) / AdConfig.SEARCH_NATIVE_EVERY}")
                 }
             }

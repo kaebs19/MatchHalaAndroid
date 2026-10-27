@@ -1,378 +1,227 @@
 package com.chathala.hala.core.ads
 
+import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.ViewGroup
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import com.google.android.gms.ads.*
 import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import java.lang.ref.WeakReference
 
-/**
- * مخزن الإعلانات — يبقى الإعلان حيّاً بعد خروج الواجهة من التركيب.
- *
- * لماذا؟ كان كل موضع إعلان ينشئ `AdView`/`NativeAd` جديداً في `factory` ويُدمّره في
- * `onDispose`. داخل `LazyColumn`/`LazyVerticalGrid` هذا يحدث مع كل تمرير يُخرج العنصر
- * من نافذة العرض، وعند كل مغادرة للشاشة وعودة. النتيجة: طلب AdMob جديد في كل مرة،
- * والطلبات المتلاحقة على نفس الوحدة تُقابَل بـ `no fill` (code 3) — فيختفي الإعلان
- * الذي كان ظاهراً قبل قليل.
- *
- * الحل: خانات (slots) بمفاتيح ثابتة؛ كل خانة تحتفظ بإعلانها بين مرّات الظهور،
- * وتُعيد الطلب فقط إذا لم يكن لديها إعلان صالح.
- *
- * كل الدوال تُستدعى من الخيط الرئيسي (Compose + ردود AdMob)، عدا [clearAll] التي
- * تُحوِّل نفسها إليه.
- */
-
-/** أقل فاصل بين محاولتَي تحميل لخانة فشلت — لا نُغرق AdMob بطلبات فاشلة. */
 private const val RETRY_AFTER_MS = 30_000L
-
-/** سقف التراجع الأسّي بين المحاولات — خمس دقائق. */
-private const val MAX_RETRY_MS = 5 * 60 * 1000L
-
-/**
- * أقصى عدد خانات **خاملة** (غير معروضة) نحتفظ بها قبل التخلّص من الأقدم.
- *
- * يُقاس على الخاملة وحدها لا على مجموع الخانات: قائمة محادثات طويلة فيها بانر بعد
- * كل خمس محادثات تُنشئ خانات بعدد التمرير، فمقارنة المجموع كانت تُزيح خانة رآها
- * المستخدم قبل ثوانٍ، والعودة إليها تعني طلباً جديداً — و«لا امتلاء» يترك مكانه
- * فارغاً بعد أن كان فيه إعلان.
- */
 private const val MAX_IDLE_SLOTS = 4
-
-/**
- * مهلة حماية للخانة حديثة اللمس من الإزاحة.
- *
- * التركيب يقرأ حالة الخانة قبل أن يُشغّل `DisposableEffect` دالة الإرفاق، فتمرّ
- * لحظة تكون فيها الخانة موجودة و`active == 0`. بدون هذه المهلة تُزيحها أوّل خانة
- * أخرى تُرفَق، فيبقى العنصر مشتركاً في حالة خانة مهجورة ولا يظهر إعلانه أبداً.
- */
 private const val EVICTION_GRACE_MS = 10_000L
-
-/** صلاحية الإعلان المدمج لدى AdMob ساعة تقريباً — نجدّده قبلها بهامش. */
 private const val NATIVE_TTL_MS = 45 * 60 * 1000L
+internal val adMainHandler = Handler(Looper.getMainLooper())
 
-private val mainHandler = Handler(Looper.getMainLooper())
+internal fun Activity.canLoadAds(): Boolean = !isFinishing && !isDestroyed &&
+    ((this as? LifecycleOwner)?.lifecycle?.currentState?.isAtLeast(Lifecycle.State.RESUMED) != false)
 
-/**
- * يؤجّل إلى الخيط الرئيسي — كل حالة المخزن تُقرأ وتُكتب هناك (التركيب + ردود AdMob)،
- * ونداءات التفريغ تأتي من [AdGate] على خيط خلفي.
- *
- * تأجيل دائم لا تنفيذ فوري عند وجودنا على الخيط الرئيسي أصلاً: التدمير يُستدعى من
- * نفس اللحظة التي تُخفي فيها الإعلان، فلا بدّ أن تكتمل إعادة التركيب أوّلاً وإلّا
- * بقي `NativeAdView` مربوطاً بإعلان مُدمَّر إطاراً كاملاً.
- */
-private fun postMain(block: () -> Unit) {
-    mainHandler.post(block)
+internal fun releaseActivityAds(activity: Activity) {
+    BannerAdPool.clearForActivity(activity)
+    NativeAdPool.clearForActivity(activity)
+    InterstitialAdManager.clearForActivity(activity)
 }
 
-// ─────────────────────────────── البانر ───────────────────────────────
-
-/**
- * يحتفظ بـ `AdView` لكل خانة. الـ view نفسه يُعاد إرفاقه عند العودة، فيظهر الإعلان
- * فوراً بدل انتظار طلب جديد (وبدل ألّا يظهر أصلاً عند no fill).
- */
+/** Banners retain their view while scrolling, but never cross Activity or size boundaries. */
 internal object BannerAdPool {
-
-    private class Slot(val view: AdView, val widthDp: Int) {
-        var loaded = false
-        var requesting = false
-        var lastFailAt = 0L
-        /** إخفاقات متتالية — أساس التراجع الأسّي بين المحاولات. */
+    internal class Slot(val view: AdView, val width: Int, val unitId: String, owner: Activity) {
+        val owner = WeakReference(owner)
+        var loaded by mutableStateOf(false)
+        var requesting by mutableStateOf(false)
+        var lastFailure = 0L
         var failures = 0
-        var retryScheduled = false
-        /** عدّاد لا راية: أثناء التنقّل قد تُرفَق الشاشة الجديدة قبل تحرير القديمة. */
         var active = 0
-        var lastTouch = 0L
+        var lastTouch = System.currentTimeMillis()
     }
+    private val slots = mutableStateMapOf<String, Slot>()
+    fun stateOf(key: String): Slot? = slots[key]
 
-    private val slots = LinkedHashMap<String, Slot>()
-
-    /**
-     * يُعيد `AdView` الخانة (يُنشئه ويطلب إعلاناً أول مرة)، جاهزاً للإرفاق.
-     *
-     * [widthDp] يأتي مقيساً من التخطيط ([BannerAd])، لا من `displayMetrics` — انظر
-     * التعليل هناك.
-     */
-    fun obtain(context: Context, key: String, adUnitId: String, widthDp: Int): AdView {
-        val now = System.currentTimeMillis()
-
-        // مقاس البانر مثبَّت عند الإنشاء (`setAdSize` قبل التحميل)، والنشاط يُعاد
-        // إنشاؤه عند الدوران بينما يبقى المخزون حيّاً — فبانر الوضع الرأسي يظهر
-        // بعرض خاطئ في الأفقي. عند تغيّر العرض نبني بانراً بمقاس الاتجاه الجديد.
-        // مقاس البانر مثبَّت عند الإنشاء (`setAdSize` قبل التحميل)، فتغيّر العرض يوجب
-        // بناء `AdView` جديداً. لكن **لا نهدم إعلاناً محمّلاً من أجل ذلك**: رُصد على
-        // الجهاز عرضٌ عابر خاطئ (752dp — وهو ارتفاع منطقة المحتوى لا عرضها، والدوران
-        // التلقائي مطفأ) يصل بعد ثوانٍ من التحميل فيُتلف إعلاناً ظاهراً، ويُقابَل
-        // الطلب التالي بـ no fill فيبقى الموضع أبيض. بانر بمقاس قديم أهون بكثير من
-        // موضع فارغ، فنؤجّل العرض الجديد إلى أوّل لحظة لا يوجد فيها ما نُتلفه.
-        slots[key]?.takeIf { it.widthDp != widthDp }?.let { stale ->
-            if (stale.loaded) {
-                // نتجاهله ولا نخزّنه: متى فقدت الخانة إعلانها وعاد `obtain` بعرض
-                // مختلف، أعادت هذه الكتلة نفسها البناء بالمقاس الصحيح.
-                AdLog.slot("«$key» عرض جديد ${stale.widthDp}→$widthDp أُهمل — الإعلان محمّل")
-            } else {
-                AdLog.slot("«$key» تغيّر العرض ${stale.widthDp}→$widthDp، إعادة بناء")
-                slots.remove(key)
-                destroy(stale.view)
-            }
+    fun obtain(context: Context, key: String, unitId: String, width: Int): AdView {
+        val activity = requireNotNull(context.findActivity())
+        slots[key]?.takeIf { it.width != width || it.unitId != unitId || it.owner.get() !== activity }?.let {
+            slots.remove(key)
+            destroy(it)
         }
-        val existing = slots[key]
-        if (existing != null) {
-            AdLog.slot("«$key» إعادة استعمال — محمّل=${existing.loaded} جارٍ=${existing.requesting}")
-        }
-        val slot = existing ?: newSlot(context.applicationContext, key, adUnitId, widthDp)
-
+        val slot = slots[key] ?: create(activity, key, unitId, width).also { slots[key] = it }
         slot.active++
-        slot.lastTouch = now
-        // الـ view قد يكون ما يزال مُرفَقاً بالشاشة السابقة — الإضافة بأبٍ قائم تُسقط التطبيق.
-        // لكن إن كان مرفَقاً وللخانة تركيب حيّ آخر، فالانتزاع يُفرِّغ بانراً ظاهراً:
-        // مفتاح مكرَّر بين موضعين، وهو خطأ استدعاء يستحقّ أثراً في السجل.
-        if (slot.view.parent != null && slot.active > 1) {
-            Log.w(AdLog.TAG, "خانة البانر «$key» مطلوبة من تركيبين معاً — الـ view يُنتزع من الأول")
-        }
+        slot.lastTouch = System.currentTimeMillis()
         (slot.view.parent as? ViewGroup)?.removeView(slot.view)
-        slot.view.resume()
-
-        if (!slot.loaded && !slot.requesting && now - slot.lastFailAt >= retryDelay(slot)) {
-            request(slot)
-        }
+        resume(key)
         trim()
         return slot.view
     }
 
-    /** الخانة لم تعد معروضة — لا تدمير، فقط إيقاف التحديث التلقائي. */
-    fun release(key: String) {
-        val slot = slots[key] ?: return
+    fun release(key: String, view: AdView) {
+        val slot = slots[key]?.takeIf { it.view === view } ?: return
         slot.active = (slot.active - 1).coerceAtLeast(0)
         slot.lastTouch = System.currentTimeMillis()
         if (slot.active == 0) slot.view.pause()
     }
 
-    fun clearAll() = postMain {
-        slots.values.forEach { destroy(it.view) }
-        slots.clear()
+    fun resume(key: String) {
+        val slot = slots[key] ?: return
+        if (!AdGate.enabled || slot.active == 0 || slot.owner.get()?.canLoadAds() != true) return
+        slot.view.resume()
+        if (!slot.loaded && !slot.requesting && System.currentTimeMillis() - slot.lastFailure >= retryDelay(slot)) {
+            slot.requesting = true
+            slot.view.loadAd(AdRequest.Builder().build())
+        }
+    }
+    fun pause(key: String) { slots[key]?.view?.pause() }
+    fun clearAll() { adMainHandler.post { slots.values.toList().forEach(::destroy); slots.clear() } }
+    fun clearForActivity(activity: Activity) {
+        slots.entries.filter { it.value.owner.get() === activity }.map { it.key }.forEach { key -> slots.remove(key)?.let(::destroy) }
     }
 
-    private fun newSlot(appContext: Context, key: String, adUnitId: String, widthDp: Int): Slot {
-        val view = AdView(appContext).apply {
-            setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(appContext, widthDp))
-            this.adUnitId = adUnitId
+    private fun create(activity: Activity, key: String, unitId: String, width: Int): Slot {
+        val view = AdView(activity).apply {
+            adUnitId = unitId
+            setAdSize(AdSize.getLargeAnchoredAdaptiveBannerAdSize(activity, width))
         }
-        val slot = Slot(view, widthDp)
+        val slot = Slot(view, width, unitId, activity)
         view.adListener = object : AdListener() {
             override fun onAdLoaded() {
+                if (slots[key] !== slot || !AdGate.enabled) return
                 slot.loaded = true
-                slot.requesting = false
                 slot.failures = 0
-                AdLog.loaded("بانر")
-            }
-
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                slot.loaded = false
                 slot.requesting = false
-                slot.lastFailAt = System.currentTimeMillis()
-                slot.failures++
+                AdLog.loaded("بانر", view.responseInfo)
+            }
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                if (slots[key] !== slot) return
+                slot.requesting = false
+                slot.lastFailure = System.currentTimeMillis()
                 AdLog.failure("بانر", error)
-                scheduleRetry(key, slot)
+                if (!slot.loaded) {
+                    slot.failures++
+                    // A collapsed unfilled banner is not visible, so SDK auto-refresh may be paused.
+                    val failure = slot.lastFailure
+                    adMainHandler.postDelayed({
+                        if (slots[key] === slot && slot.lastFailure == failure && !slot.loaded) resume(key)
+                    }, retryDelay(slot))
+                }
+                // Once a creative is visible, the unit's SDK auto-refresh owns its refreshes.
             }
         }
-        slots[key] = slot
-        AdLog.slot("«$key» خانة جديدة بعرض ${widthDp}dp (المجموع=${slots.size})")
         return slot
     }
 
-    private fun request(slot: Slot) {
-        slot.requesting = true
-        slot.view.loadAd(AdRequest.Builder().build())
-    }
-
-    /** تراجع أسّي: 30ث ثم 60 ثم 120… بسقف [MAX_RETRY_MS]. */
     private fun retryDelay(slot: Slot): Long =
-        (RETRY_AFTER_MS shl (slot.failures - 1).coerceIn(0, 4)).coerceAtMost(MAX_RETRY_MS)
+        (RETRY_AFTER_MS shl (slot.failures - 1).coerceIn(0, 4)).coerceAtMost(300_000L)
 
-    /**
-     * يعيد المحاولة لخانة **معروضة** فشل طلبها.
-     *
-     * بدون هذا يبقى الموضع فارغاً ما دام المستخدم واقفاً على الشاشة: `obtain` وحده
-     * كان يطلق الطلبات، فلا شيء يعيد المحاولة حتى يخرج المستخدم ويعود. ومع نسبة
-     * تعبئة منخفضة يعني ذلك أن أغلب المواضع تُقابَل برفض واحد ثم تُترك بيضاء.
-     *
-     * لا نعيد المحاولة لخانة غير معروضة: طلبٌ لا يراه أحد يُهدر ولا يُحتسب ظهوراً.
-     */
-    private fun scheduleRetry(key: String, slot: Slot) {
-        if (slot.retryScheduled || slot.active == 0) return
-        slot.retryScheduled = true
-        // بصمة الإخفاق الذي أطلق هذه الجدولة — لكشف تحديث الـ SDK التلقائي (أدناه).
-        val failAtWhenScheduled = slot.lastFailAt
-        mainHandler.postDelayed({
-            slot.retryScheduled = false
-            if (slots[key] !== slot) return@postDelayed
-            if (slot.loaded || slot.requesting || slot.active == 0 || !AdGate.enabled) {
-                return@postDelayed
-            }
-            // إن كان التحديث التلقائي مفعّلاً في إعدادات الوحدة (الافتراضي 60 ثانية)
-            // فالـ SDK يعيد الطلب من تلقاء نفسه بعد الفشل أيضاً — ورُصد ذلك على الإنتاج
-            // (`code=3` كل 60 ثانية). محاولتنا اليدوية فوقه كانت **تضاعف** الطلبات
-            // الفاشلة للخانة الواحدة بلا ظهور إضافي، فتهبط نسبة التعبئة (Match rate)
-            // في لوحة AdMob. وصول إخفاق جديد منذ الجدولة = الـ SDK يتولّى الأمر، فنتنحّى.
-            if (slot.lastFailAt != failAtWhenScheduled) {
-                AdLog.slot("«$key» التحديث التلقائي يعيد المحاولة — لا طلب يدوي")
-                return@postDelayed
-            }
-            AdLog.slot("«$key» إعادة محاولة (بعد ${slot.failures} إخفاق)")
-            request(slot)
-        }, retryDelay(slot))
-    }
-
-    /** يتخلّص من أقدم الخانات الخاملة فقط — المعروضة أو حديثة اللمس لا تُمسّ. */
     private fun trim() {
-        val idle = slots.entries.filter { it.value.active == 0 }
-        var excess = idle.size - MAX_IDLE_SLOTS
-        if (excess <= 0) return
-        val cutoff = System.currentTimeMillis() - EVICTION_GRACE_MS
-        idle
-            .filter { it.value.lastTouch < cutoff }
-            .sortedBy { it.value.lastTouch }
-            .forEach { entry ->
-                if (excess <= 0) return
-                AdLog.slot("«${entry.key}» إزاحة خانة خاملة (محمّل=${entry.value.loaded})")
-                slots.remove(entry.key)
-                destroy(entry.value.view)
-                excess--
-            }
+        val idle = slots.entries.filter { it.value.active == 0 }.sortedBy { it.value.lastTouch }
+        idle.take((idle.size - MAX_IDLE_SLOTS).coerceAtLeast(0)).filter {
+            System.currentTimeMillis() - it.value.lastTouch > EVICTION_GRACE_MS
+        }.forEach { slots.remove(it.key)?.let(::destroy) }
     }
-
-    private fun destroy(view: AdView) {
-        (view.parent as? ViewGroup)?.removeView(view)
-        view.destroy()
+    private fun destroy(slot: Slot) {
+        (slot.view.parent as? ViewGroup)?.removeView(slot.view)
+        slot.view.destroy()
     }
 }
 
-// ─────────────────────────────── المدمج ───────────────────────────────
-
-/**
- * يحتفظ بـ `NativeAd` لكل خانة. الإعلان المدمج لا يجوز ربطه بأكثر من `NativeAdView`
- * في وقت واحد (يفسد تتبّع الظهور لدى AdMob)، لذا لكل خانة إعلانها الخاص بدل مشاركة
- * إعلان واحد بين المواضع.
- */
+/** One native object per placement, Activity-bound loads, bounded caching and stale-response guards. */
 internal object NativeAdPool {
-
     internal class Slot {
-        /** حالة Compose: قراءتها من دالة @Composable تُعيد التركيب عند وصول الإعلان. */
         var ad by mutableStateOf<NativeAd?>(null)
         var loading by mutableStateOf(false)
         var loadedAt = 0L
-        var lastFailAt = 0L
+        var lastFailure = 0L
+        var failures = 0
         var active = 0
-        var lastTouch = 0L
+        var generation = 0
+        var lastTouch = System.currentTimeMillis()
+        var owner = WeakReference<Activity>(null)
     }
-
     private val slots = LinkedHashMap<String, Slot>()
+    fun slotOf(key: String): Slot = slots.getOrPut(key) { Slot() }
 
-    /**
-     * يُعيد خانة المفتاح (يُنشئها فارغة إن لزم) **دون** بدء أي طلب.
-     * الإنشاء هنا ضروري ليشترك التركيب في حالة `ad` قبل اكتمال التحميل.
-     */
-    fun slotOf(key: String): Slot = slots.getOrPut(key) {
-        // ختم الوقت عند الإنشاء: خانة بـ lastTouch = 0 تتصدّر ترتيب الإزاحة فتُحذف
-        // قبل أن يلحقها الإرفاق أصلاً.
-        Slot().apply { lastTouch = System.currentTimeMillis() }
-    }
-
-    /** الخانة صارت معروضة: يبدأ التحميل إن لم يكن لديها إعلان صالح. */
     fun attach(context: Context, key: String) {
-        val appContext = context.applicationContext
-        val now = System.currentTimeMillis()
+        val activity = context.findActivity() ?: return
         val slot = slotOf(key)
-        slot.active++
-        slot.lastTouch = now
-
-        val current = slot.ad
-        if (current != null && now - slot.loadedAt > NATIVE_TTL_MS) {
+        if (slot.owner.get() !== activity) {
+            slot.generation++
+            slot.ad?.destroy()
             slot.ad = null
-            current.destroy()
+            slot.loading = false
+            slot.active = 0
+            slot.lastFailure = 0L
+            slot.owner = WeakReference(activity)
         }
-        if (slot.ad == null && !slot.loading && now - slot.lastFailAt >= RETRY_AFTER_MS) {
-            request(appContext, key, slot)
+        slot.active++
+        slot.lastTouch = System.currentTimeMillis()
+        if (slot.ad != null && !isFreshAd(slot.loadedAt, System.currentTimeMillis(), NATIVE_TTL_MS)) {
+            slot.ad?.destroy(); slot.ad = null
         }
+        requestIfEligible(key, slot)
         trim()
     }
 
-    fun detach(key: String) {
-        val slot = slots[key] ?: return
+    fun detach(key: String, activity: Activity) {
+        val slot = slots[key]?.takeIf { it.owner.get() === activity } ?: return
         slot.active = (slot.active - 1).coerceAtLeast(0)
         slot.lastTouch = System.currentTimeMillis()
     }
 
-    /**
-     * يُسقِط إعلان الخانة ليُطلب غيره — لموضع يُعرض مراراً ويجب ألّا يكرّر نفس الإعلان.
-     *
-     * مؤجَّل عمداً: يُستدعى عادةً من نفس النقرة التي تُخفي الإعلان، والتدمير الفوري
-     * يطال إعلاناً ما يزال مربوطاً بـ `NativeAdView` حتى تكتمل إعادة التركيب.
-     */
-    fun invalidate(key: String) = postMain {
-        val slot = slots[key] ?: return@postMain
-        slot.ad?.destroy()
-        slot.ad = null
-        slot.loadedAt = 0L
-        slot.lastFailAt = 0L
+    fun invalidate(key: String) { adMainHandler.post {
+        val slot = slots[key] ?: return@post
+        slot.generation++
+        slot.ad?.destroy(); slot.ad = null
+        slot.loading = false; slot.loadedAt = 0L; slot.lastFailure = 0L
+        requestIfEligible(key, slot)
+    } }
+    fun clearAll() { adMainHandler.post { slots.values.forEach { it.generation++; it.ad?.destroy(); it.ad = null }; slots.clear() } }
+    fun clearForActivity(activity: Activity) {
+        slots.entries.filter { it.value.owner.get() === activity }.map { it.key }.forEach { key ->
+            slots.remove(key)?.let { it.generation++; it.ad?.destroy(); it.ad = null }
+        }
     }
 
-    fun clearAll() = postMain {
-        slots.values.forEach { it.ad?.destroy(); it.ad = null }
-        slots.clear()
-    }
-
-    private fun request(appContext: Context, key: String, slot: Slot) {
-        if (!AdGate.enabled) return
+    private fun requestIfEligible(key: String, slot: Slot) {
+        val activity = slot.owner.get() ?: return
+        if (!AdGate.enabled || slot.active == 0 || !activity.canLoadAds() || slot.ad != null || slot.loading) return
+        val delay = (RETRY_AFTER_MS shl (slot.failures - 1).coerceIn(0, 4)).coerceAtMost(300_000L)
+        if (System.currentTimeMillis() - slot.lastFailure < delay) return
         slot.loading = true
-        AdLoader.Builder(appContext, AdConfig.nativeUnitId)
+        val generation = ++slot.generation
+        AdLoader.Builder(activity, AdConfig.nativeUnitId)
+            .withNativeAdOptions(NativeAdOptions.Builder()
+                .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_LANDSCAPE).build())
             .forNativeAd { loaded ->
-                slot.loading = false
-                // وصل بعد التخلّص من الخانة (تمرير سريع/خروج) — لا تسرّبه.
-                if (slots[key] !== slot || !AdGate.enabled) {
+                if (slots[key] !== slot || slot.generation != generation || !AdGate.enabled || slot.owner.get()?.isDestroyed != false) {
                     loaded.destroy()
-                    return@forNativeAd
+                } else {
+                    slot.loading = false; slot.ad = loaded
+                    slot.loadedAt = System.currentTimeMillis(); slot.failures = 0
+                    AdLog.loaded("مدمج", loaded.responseInfo)
                 }
-                slot.ad?.destroy()
-                slot.ad = loaded
-                slot.loadedAt = System.currentTimeMillis()
-                AdLog.loaded("مدمج")
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    slot.loading = false
-                    slot.lastFailAt = System.currentTimeMillis()
+                    if (slots[key] !== slot || slot.generation != generation) return
+                    slot.loading = false; slot.lastFailure = System.currentTimeMillis(); slot.failures++
                     AdLog.failure("مدمج", error)
+                    val retry = (RETRY_AFTER_MS shl (slot.failures - 1).coerceIn(0, 4)).coerceAtMost(300_000L)
+                    adMainHandler.postDelayed({ if (slots[key] === slot && slot.generation == generation) requestIfEligible(key, slot) }, retry)
                 }
-            })
-            .build()
-            .loadAd(AdRequest.Builder().build())
+            }).build().loadAd(AdRequest.Builder().build())
     }
 
     private fun trim() {
-        val idle = slots.entries.filter { it.value.active == 0 }
-        var excess = idle.size - MAX_IDLE_SLOTS
-        if (excess <= 0) return
-        val cutoff = System.currentTimeMillis() - EVICTION_GRACE_MS
-        idle
-            .filter { it.value.lastTouch < cutoff }
-            .sortedBy { it.value.lastTouch }
-            .forEach { entry ->
-                if (excess <= 0) return
-                slots.remove(entry.key)
-                entry.value.ad?.destroy()
-                entry.value.ad = null
-                excess--
-            }
+        val idle = slots.entries.filter { it.value.active == 0 }.sortedBy { it.value.lastTouch }
+        idle.take((idle.size - MAX_IDLE_SLOTS).coerceAtLeast(0)).filter {
+            System.currentTimeMillis() - it.value.lastTouch > EVICTION_GRACE_MS
+        }.forEach { slots.remove(it.key)?.ad?.destroy() }
     }
 }

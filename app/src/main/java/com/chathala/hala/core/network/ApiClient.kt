@@ -1,8 +1,9 @@
 package com.chathala.hala.core.network
 
 import com.chathala.hala.BuildConfig
+import com.chathala.hala.core.session.SessionTokens
+import kotlinx.coroutines.runBlocking
 import com.chathala.hala.core.storage.TokenStorage
-import com.chathala.hala.core.storage.UserStorage
 import com.chathala.hala.feature.auth.data.ErrorBody
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -34,11 +35,9 @@ object ApiClient {
     }
 
     private lateinit var tokenStorage: TokenStorage
-    private lateinit var userStorage: UserStorage
 
-    fun init(tokenStorage: TokenStorage, userStorage: UserStorage) {
+    fun init(tokenStorage: TokenStorage) {
         this.tokenStorage = tokenStorage
-        this.userStorage = userStorage
     }
 
     /**
@@ -86,12 +85,19 @@ object ApiClient {
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(DeviceHeaderInterceptor())
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val tokens = runBlocking { tokenStorage.snapshot() }
+                val tagged = if (tokens != null && request.header("Authorization") == "Bearer ${tokens.accessToken}") {
+                    request.newBuilder().tag(SessionTokens::class.java, tokens).build()
+                } else request
+                chain.proceed(tagged)
+            }
             .addInterceptor(SuspensionInterceptor())
             .addInterceptor(logging)
             .authenticator(
                 TokenAuthenticator(
                     tokenStorage = tokenStorage,
-                    userStorage = userStorage,
                     refreshService = refreshService
                 )
             )

@@ -1,72 +1,70 @@
 package com.chathala.hala.core.network
 
-import com.chathala.hala.core.storage.TokenStorage
-import com.chathala.hala.core.storage.UserStorage
+import com.chathala.hala.core.session.SessionTokenStore
+import com.chathala.hala.core.session.SessionTokens
 import com.chathala.hala.feature.auth.data.RefreshTokenRequest
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
+import retrofit2.HttpException
+import java.io.IOException
 
-/**
- * OkHttp Authenticator — عند استلام 401 من السيرفر:
- *  1. يقرأ refreshToken المحفوظ
- *  2. يستدعي POST /api/auth/refresh-token
- *  3. ينجح → يحفظ الرموز الجديدة ويُعيد الطلب الأصلي بـ header محدّث
- *  4. يفشل → يمسح الجلسة ويُرجع null (OkHttp يتوقف عن المحاولة)
- *
- * مسح الجلسة يُطلق تلقائياً UI للعودة لـ Login (عبر tokenStorage.token Flow).
- */
+/** Serializes refreshes and never replays a request under another account's session. */
 class TokenAuthenticator(
-    private val tokenStorage: TokenStorage,
-    private val userStorage: UserStorage,
+    private val tokenStorage: SessionTokenStore,
     private val refreshService: RefreshApiService
 ) : Authenticator {
+    private val refreshLock = Any()
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        // تجنّب الحلقة اللانهائية
-        if (response.request.header("Authorization") == null) return null
         if (responseCount(response) >= 2) return null
-        // استثنِ نفس طلب الـ refresh من هذا الـ authenticator
         if (response.request.url.encodedPath.endsWith("/api/auth/refresh-token")) return null
+        val sent = response.request.tag(SessionTokens::class.java) ?: return null
+        if (response.request.header("Authorization") != "Bearer ${sent.accessToken}") return null
 
-        val refreshToken = runBlocking { tokenStorage.refreshToken.first() } ?: run {
-            clearSession()
-            return null
-        }
-
-        val newAccessToken = try {
+        return synchronized(refreshLock) {
             runBlocking {
-                val r = refreshService.refreshToken(RefreshTokenRequest(refreshToken))
-                val newAccess = r.data?.token
-                val newRefresh = r.data?.refreshToken
-                if (newAccess != null) {
-                    tokenStorage.save(newAccess, newRefresh)
-                    newAccess
-                } else null
+                val current = tokenStorage.snapshot() ?: return@runBlocking null
+                if (current.sessionId != sent.sessionId) return@runBlocking null
+                // A parallel request has already renewed this session.
+                if (current.accessToken != sent.accessToken) {
+                    return@runBlocking retry(response, current)
+                }
+                val refreshToken = current.refreshToken?.takeIf { it.isNotBlank() } ?: run {
+                    tokenStorage.clearIfCurrent(current)
+                    return@runBlocking null
+                }
+                val refreshed = try {
+                    refreshService.refreshToken(RefreshTokenRequest(refreshToken))
+                } catch (e: HttpException) {
+                    // Only an explicit authentication rejection invalidates a session.
+                    if (e.code() == 401 || e.code() == 403) tokenStorage.clearIfCurrent(current)
+                    return@runBlocking null
+                } catch (_: IOException) {
+                    return@runBlocking null
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    // Malformed responses also must not destroy a valid refresh token.
+                    return@runBlocking null
+                }
+                val access = refreshed.data?.token?.takeIf { it.isNotBlank() }
+                if (!refreshed.success || access == null) return@runBlocking null
+                if (!tokenStorage.replaceIfCurrent(current, access, refreshed.data?.refreshToken)) {
+                    return@runBlocking null
+                }
+                retry(response, current.copy(accessToken = access, refreshToken = refreshed.data?.refreshToken ?: refreshToken))
             }
-        } catch (e: Exception) {
-            null
-        }
-
-        if (newAccessToken == null) {
-            clearSession()
-            return null
-        }
-
-        return response.request.newBuilder()
-            .header("Authorization", "Bearer $newAccessToken")
-            .build()
-    }
-
-    private fun clearSession() {
-        runBlocking {
-            tokenStorage.clear()
-            userStorage.clear()
         }
     }
+
+    private fun retry(response: Response, tokens: SessionTokens): Request = response.request.newBuilder()
+        .header("Authorization", "Bearer ${tokens.accessToken}")
+        .tag(SessionTokens::class.java, tokens)
+        .build()
 
     private fun responseCount(response: Response): Int {
         var count = 1

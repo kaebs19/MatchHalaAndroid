@@ -10,7 +10,7 @@ import com.chathala.hala.BuildConfig
  */
 object AdConfig {
 
-    private val debug = BuildConfig.DEBUG
+    private val debug = BuildConfig.DEBUG && !BuildConfig.MEDIATION_TESTING
 
     // ── معرّفات Google التجريبية (لا تُغيّر) ──
     private const val TEST_BANNER = "ca-app-pub-3940256099942544/6300978111"
@@ -31,7 +31,7 @@ object AdConfig {
     const val CHAT_LIST_BANNER_EVERY = 5
 
     /** إعلان بيني بعد كل N بطاقة في الاكتشاف. */
-    const val DISCOVER_INTERSTITIAL_EVERY_CARDS = 15
+    const val DISCOVER_INTERSTITIAL_EVERY_CARDS = 20
 
     /** بطاقة إعلان مدمج بعد كل N بطاقة في مكدّس الاكتشاف. */
     const val NATIVE_EVERY_CARDS = 8
@@ -45,12 +45,9 @@ object AdConfig {
      */
     const val INTERSTITIAL_MIN_INTERVAL_MS = 30 * 60 * 1000L
 
-    /** مدة العدّ التنازلي قبل تفعيل زر «متابعة» في نافذة الإعلان المدمج بالاكتشاف. */
-    const val DISCOVER_NATIVE_MIN_SECONDS = 5
+    /** Discard cached fullscreen ads before their one-hour SDK expiry. */
+    const val INTERSTITIAL_TTL_MS = 45 * 60 * 1000L
 
-    /**
-     * البيني يُعرض فقط إذا كان محمّلاً مسبقاً (لا ننتظر التحميل) — يضمن ألّا يُعطّل
-     * المستخدم؛ ومهلة التحميل المسبق لا تتجاوز هذه القيمة (5 ثوانٍ).
-     */
-    const val INTERSTITIAL_LOAD_TIMEOUT_MS = 5_000L
+    /** Never interrupt the first minute of a foreground discovery session. */
+    const val INTERSTITIAL_WARMUP_MS = 60_000L
 }

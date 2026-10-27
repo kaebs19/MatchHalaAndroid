@@ -60,7 +60,8 @@ data class AuthUser(
     val name: String?,
     val email: String?,
     val role: String?,
-    val profileImage: String?
+    val profileImage: String?,
+    val isPremium: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)

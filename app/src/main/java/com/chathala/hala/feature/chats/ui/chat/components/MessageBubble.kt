@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.DoneAll
@@ -70,6 +72,11 @@ fun MessageBubble(
     isMine: Boolean,
     currentUserId: String? = null,
     isPending: Boolean = false,
+    deliveryFailure: String? = null,
+    retryAllowed: Boolean = false,
+    retryEnabled: Boolean = true,
+    onRetry: () -> Unit = {},
+    onDiscardFailed: () -> Unit = {},
     audioPlayingId: String? = null,
     audioPositionMs: Int = 0,
     audioDurationMs: Int = 0,
@@ -271,7 +278,11 @@ fun MessageBubble(
                     )
                     if (isMine) {
                         Spacer(Modifier.size(4.dp))
-                        MineStatusIcon(
+                        if (deliveryFailure != null) Icon(
+                            imageVector = Icons.Filled.ErrorOutline,
+                            contentDescription = S.get(R.string.chat_send_failed),
+                            tint = textColor, modifier = Modifier.size(16.dp)
+                        ) else MineStatusIcon(
                             isPending = isPending,
                             isRead = message.isRead == true,
                             isDelivered = message.isDelivered == true,
@@ -294,6 +305,23 @@ fun MessageBubble(
                 }
             }
         } // end Box
+
+        if (isMine && deliveryFailure != null) {
+            Text(
+                text = deliveryFailure,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.widthIn(max = 280.dp).padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+            Row {
+                if (retryAllowed) TextButton(onClick = onRetry, enabled = retryEnabled) {
+                    Text(S.get(R.string.chat_retry_send))
+                }
+                TextButton(onClick = onDiscardFailed) {
+                    Text(S.get(R.string.chat_remove_failed))
+                }
+            }
+        }
 
         // زر كشف الكلمات المحجوبة — للمرسل فقط عند الترويج الخارجي
         if (isMine && message.isExternalPromoBlocked == true) {
@@ -639,7 +667,11 @@ private fun DisappearingImageContent(
             "viewing" -> {
                 Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
                     HalaAsyncImage(
-                        model = message.mediaUrl,
+                        model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(message.mediaUrl)
+                            .diskCachePolicy(coil.request.CachePolicy.DISABLED)
+                            .memoryCacheKey(message.mediaUrl)
+                            .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.width(240.dp).height(280.dp)

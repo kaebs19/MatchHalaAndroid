@@ -2,75 +2,83 @@
 <com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
-
-        <!-- الرأس: أيقونة + عنوان + شارة "إعلان" -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/ad_app_icon"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="@null"
-                android:scaleType="centerCrop" />
-
-            <TextView
-                android:id="@+id/ad_headline"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
+        <!-- Top-right space is reserved for the SDK's AdChoices overlay in either language. -->
+        <FrameLayout android:layout_width="match_parent" android:layout_height="28dp">
             <TextView
                 android:id="@+id/ad_attribution"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#E85A9B"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:text="إعلان"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp" />
+                android:layout_gravity="left|center_vertical"
+                android:background="@drawable/bg_ad_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="@string/ad_label"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <ImageView
+                android:id="@+id/ad_app_icon"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="@null"
+                android:background="@drawable/bg_ad_avatar"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/ad_headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/ad_advertiser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
-
-        <!-- الوسائط (الصورة/الفيديو) -->
         <com.google.android.gms.ads.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="match_parent"
-            android:layout_height="170dp"
+            android:layout_height="180dp"
             android:layout_marginTop="12dp" />
-
-        <!-- نص الإعلان -->
         <TextView
             android:id="@+id/ad_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:maxLines="3"
             android:ellipsize="end"
+            android:maxLines="3"
             android:textSize="14sp" />
-
-        <!-- زر الإجراء -->
         <Button
             android:id="@+id/ad_call_to_action"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:textAllCaps="false" />
+            android:layout_marginTop="12dp"
+            android:minHeight="48dp"
+            android:textAllCaps="false"
+            android:textSize="14sp" />
     </LinearLayout>
 </com.google.android.gms.ads.nativead.NativeAdView>

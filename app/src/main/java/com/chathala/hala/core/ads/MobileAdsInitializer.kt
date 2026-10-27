@@ -27,11 +27,26 @@ internal object MobileAdsInitializer {
 
     fun start(context: Context) {
         if (!started.compareAndSet(false, true)) return
-        val appContext = context.applicationContext
+        if (com.chathala.hala.BuildConfig.DEBUG) {
+            MobileAds.setRequestConfiguration(MobileAds.getRequestConfiguration().toBuilder()
+                .setTestDeviceIds(com.chathala.hala.BuildConfig.AD_TEST_DEVICE_IDS.toList()).build())
+        }
+        // Keep Activity context for mediated networks that require it during initialization.
         Thread({
-            runCatching { MobileAds.initialize(appContext) {} }
-                .onSuccess { Log.i(AdLog.TAG, "تهيئة SDK الإعلانات تمّت") }
-                .onFailure { Log.w(AdLog.TAG, "تعذّرت تهيئة SDK الإعلانات: ${it.message}") }
+            runCatching {
+                MobileAds.initialize(context) { status ->
+                    AdGate.updateSdkReady(true)
+                    if (com.chathala.hala.BuildConfig.DEBUG) {
+                        status.adapterStatusMap.forEach { (name, adapter) ->
+                            Log.d(AdLog.TAG, "adapter=$name state=${adapter.initializationState} latency=${adapter.latency}")
+                        }
+                    }
+                }
+            }.onFailure {
+                started.set(false)
+                AdGate.updateSdkReady(false)
+                Log.w(AdLog.TAG, "تعذّرت تهيئة SDK الإعلانات: ${it.message}")
+            }
         }, "mobile-ads-init").start()
     }
 }

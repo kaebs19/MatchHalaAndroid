@@ -209,4 +209,13 @@ class AppPreferences(private val context: Context) {
     suspend fun setPromoKeywordsCache(json: String) {
         context.appPrefs.edit { it[promoKeywordsCacheKey] = json }
     }
+    /** Device appearance remains; account searches and content trust do not. */
+    suspend fun clearAccountData() {
+        context.appPrefs.edit {
+            it.remove(recentSearchesKey)
+            it.remove(trustedConversationsKey)
+            it.remove(sensitiveContentKey)
+        }
+    }
+
 }

@@ -106,6 +106,14 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
     lateinit var discoverCacheStorage: DiscoverCacheStorage
         private set
 
+    lateinit var chatComposerStorage: com.chathala.hala.feature.chats.data.ChatComposerStorage
+        private set
+
+    lateinit var chatSendCoordinator: com.chathala.hala.feature.chats.data.ChatSendCoordinator
+        private set
+
+    private lateinit var chatAttachments: com.chathala.hala.feature.chats.data.ChatAttachmentStorage
+
     lateinit var chatsCacheStorage: ChatsCacheStorage
         private set
 
@@ -155,6 +163,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
 
             override fun onActivityStarted(activity: android.app.Activity) {
                 started++
+                if (started == 1) com.chathala.hala.core.ads.InterstitialAdManager.onForegroundStarted()
                 com.chathala.hala.feature.push.InAppAlerts.appInForeground = true
             }
 
@@ -185,7 +194,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         // خلفي — انظر core/ads/MobileAdsInitializer.
         tokenStorage = TokenStorage(applicationContext)
         userStorage = UserStorage(applicationContext, ApiClient.moshi)
-        ApiClient.init(tokenStorage = tokenStorage, userStorage = userStorage)
+        ApiClient.init(tokenStorage = tokenStorage)
         networkMonitor = NetworkMonitor(applicationContext)
         appPreferences = AppPreferences(applicationContext)
         // اللغة يجب أن تُضبط قبل أي نص يُقرأ (رسائل الإشعارات، الـ repositories)
@@ -199,15 +208,26 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         )
         deviceTokenRepository = DeviceTokenRepository(tokenStorage = tokenStorage)
         socket = HalaSocket(tokenStorage = tokenStorage)
-        discoverCacheStorage = DiscoverCacheStorage(applicationContext, ApiClient.moshi)
-        chatsCacheStorage = ChatsCacheStorage(applicationContext, ApiClient.moshi)
+        discoverCacheStorage = DiscoverCacheStorage(applicationContext, ApiClient.moshi, tokenStorage)
+        chatsCacheStorage = ChatsCacheStorage(applicationContext, ApiClient.moshi, tokenStorage)
+        chatComposerStorage = com.chathala.hala.feature.chats.data.ChatComposerStorage(applicationContext, ApiClient.moshi, tokenStorage, appScope)
+        chatAttachments = com.chathala.hala.feature.chats.data.ChatAttachmentStorage(applicationContext)
+        tokenStorage.onSessionCleared = {
+            if (::chatSendCoordinator.isInitialized) chatSendCoordinator.cancelAll()
+            chatComposerStorage.clear()
+            chatAttachments.clear()
+            socket.disconnect()
+            userStorage.clear()
+            chatsCacheStorage.clear()
+            discoverCacheStorage.clear()
+            appPreferences.clearAccountData()
+            com.chathala.hala.feature.push.InAppAlerts.dismiss()
+            com.chathala.hala.feature.push.InAppAlerts.setActiveConversation(null)
+        }
         authRepository = AuthRepository(
             tokenStorage = tokenStorage,
             userRepository = userRepository,
-            deviceTokenRepository = deviceTokenRepository,
-            socket = socket,
-            discoverCache = discoverCacheStorage,
-            chatsCache = chatsCacheStorage
+            deviceTokenRepository = deviceTokenRepository
         )
         profileRepository = ProfileRepository(storage = tokenStorage)
         legalRepository = LegalRepository()
@@ -216,6 +236,14 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         notificationsRepository = NotificationsRepository(tokenStorage = tokenStorage)
         conversationsRepository = ConversationsRepository(tokenStorage = tokenStorage)
         messagesRepository = MessagesRepository(tokenStorage = tokenStorage)
+        val outgoingSender = com.chathala.hala.feature.chats.data.OutgoingMessageSender(applicationContext, messagesRepository)
+        chatSendCoordinator = com.chathala.hala.feature.chats.data.ChatSendCoordinator(
+            storage = chatComposerStorage, tokens = tokenStorage, scope = appScope,
+            attachments = chatAttachments,
+            interruptedMessage = { com.chathala.hala.core.i18n.S.get(R.string.chat_send_interrupted) },
+            attachmentError = { com.chathala.hala.core.i18n.S.get(R.string.chat_attachment_unavailable) },
+            send = outgoingSender::send
+        )
         discoverRepository = DiscoverRepository(tokenStorage = tokenStorage)
         blockingRepository = BlockingRepository(tokenStorage = tokenStorage)
         verificationRepository = VerificationRepository(tokenStorage = tokenStorage)

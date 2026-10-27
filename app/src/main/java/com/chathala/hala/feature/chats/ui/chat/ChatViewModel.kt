@@ -23,6 +23,14 @@ import com.chathala.hala.feature.chats.data.otherParticipant
 import com.chathala.hala.feature.chats.data.ExternalPromoBlockedInfo
 import com.chathala.hala.feature.chats.data.ConversationsRepository
 import com.chathala.hala.feature.chats.data.Message
+import com.chathala.hala.feature.chats.data.ChatDraft
+import com.chathala.hala.feature.chats.data.ChatComposerStorage
+import com.chathala.hala.feature.chats.data.ChatSendCoordinator
+import com.chathala.hala.feature.chats.data.OutgoingMessage
+import com.chathala.hala.feature.chats.data.OutgoingStatus
+import com.chathala.hala.feature.chats.data.mergeCachedMessages
+import com.chathala.hala.feature.chats.data.mergeFetchedMessages
+import com.chathala.hala.feature.chats.data.messageTimestamp
 import com.chathala.hala.feature.chats.data.PromoKeywordDetector
 import com.chathala.hala.feature.reporting.data.ReportReason
 import com.chathala.hala.feature.blocking.data.BlockingRepository
@@ -37,6 +45,8 @@ import com.chathala.hala.feature.chats.socket.HalaSocket
 import com.chathala.hala.feature.chats.socket.SocketEvent
 import com.chathala.hala.feature.user.data.User
 import com.chathala.hala.feature.user.data.UserRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,6 +59,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -60,6 +74,9 @@ data class ChatUiState(
     val messages: List<Message> = emptyList(),
     val sending: Boolean = false,
     val input: String = "",
+    val composerReady: Boolean = false,
+    val outgoing: List<OutgoingMessage> = emptyList(),
+    val retryConfirmationId: String? = null,
     val currentUserId: String? = null,
     val currentUserName: String? = null,
     val typingUser: String? = null,
@@ -151,8 +168,12 @@ class ChatViewModel(
     private val reportRepo: ReportRepository,
     private val blockingRepo: BlockingRepository,
     private val appPreferences: AppPreferences,
-    private val appContext: Context
+    private val appContext: Context,
+    private val composerStorage: ChatComposerStorage,
+    private val sendCoordinator: ChatSendCoordinator
 ) : ViewModel() {
+
+    private val cacheSession = viewModelScope.async(start = CoroutineStart.UNDISPATCHED) { cache.sessionId() }
 
     private val _state = MutableStateFlow(ChatUiState())
     val state: StateFlow<ChatUiState> = _state.asStateFlow()
@@ -160,6 +181,11 @@ class ChatViewModel(
     private val _message = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val message: SharedFlow<String> = _message.asSharedFlow()
 
+    private var messagesLoadJob: Job? = null
+    private var composerLoadJob: Job? = null
+    private var composerSessionId: String? = null
+    private val stagedOutgoing = mutableMapOf<String, OutgoingMessage>()
+    private val handledOutgoing = mutableSetOf<String>()
     private var typingEmitJob: Job? = null
     // هل أعلنّا للطرف الآخر أننا نكتب حالياً؟ (لمنع إرسال typing مع كل حرف)
     private var isTypingNotified = false
@@ -171,6 +197,36 @@ class ChatViewModel(
     val audioPlayer = AudioPlayer()
 
     init {
+        viewModelScope.launch {
+            sendCoordinator.localFailures.collect { failed ->
+                if (failed.sessionId == composerSessionId && failed.conversationId == conversationId) {
+                    stagedOutgoing[failed.entry.localId] = failed.entry
+                    applyOutgoing(_state.value.outgoing.filterNot { it.localId == failed.entry.localId })
+                    _message.tryEmit(S.get(R.string.chat_draft_save_failed))
+                }
+            }
+        }
+        viewModelScope.launch {
+            composerStorage.draftSaveFailures.collect { _message.tryEmit(S.get(R.string.chat_draft_save_failed)) }
+        }
+        viewModelScope.launch {
+            state.filter { !it.loading }.map { it.messages }.distinctUntilChanged().collectLatest { messages ->
+                delay(200)
+                try {
+                    cache.saveMessages(conversationId, messages, cacheSession.await())
+                    // Acknowledge local success only after its server bubble is safely cached.
+                    val savedIds = messages.map { it.id }.toSet()
+                    val completed = _state.value.outgoing.filter { it.status == OutgoingStatus.SENT && it.message.id in savedIds }
+                    composerSessionId?.let { session ->
+                        if (completed.isNotEmpty()) composerStorage.remove(session, conversationId, completed.map { it.localId }.toSet())
+                    }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (_: java.io.IOException) {
+                    // Cache failure must not prevent live messaging.
+                }
+            }
+        }
         // المحادثة معروضة الآن: رسائلها تصل أمام المستخدم مباشرةً، فلا شريط داخلياً لها.
         com.chathala.hala.feature.push.InAppAlerts.setActiveConversation(conversationId)
         viewModelScope.launch {
@@ -193,6 +249,7 @@ class ChatViewModel(
                 if (c) {
                     socket.joinConversation(conversationId)
                     socket.markRead(conversationId)
+                    if (!_state.value.loading) loadMessages()
                 }
             }
             .launchIn(viewModelScope)
@@ -201,7 +258,7 @@ class ChatViewModel(
             .onEach(::onSocketEvent)
             .launchIn(viewModelScope)
 
-        loadMessages()
+        initializeComposer()
 
         // تعليم كمقروء — يتكفّل به مراقب الاتصال أعلاه عبر السوكِت.
         // HTTP كـ fallback فقط لو السوكِت غير متصل، لضمان حفظ الحالة.
@@ -241,7 +298,7 @@ class ChatViewModel(
     private suspend fun resolveOtherUser() {
         val selfId = userRepo.currentUser.first()?.id
         // جرّب من الكاش أولاً (فوري) — القائمة المخزّنة محلياً
-        val cached = runCatching { cache.readConversations() }.getOrNull()
+        val cached = runCatching { cache.readConversations(cacheSession.await()) }.getOrNull()
             ?.firstOrNull { it.id == conversationId }
         applyOtherFrom(cached, selfId)
         // ثم من الشبكة: نجلب هذه المحادثة فقط (بدل القائمة كاملة) → أسرع بكثير
@@ -346,7 +403,9 @@ class ChatViewModel(
         viewModelScope.launch {
             when (val r = conversationsRepo.deleteConversation(conversationId)) {
                 is NetworkResult.Success -> {
-                    runCatching { cache.saveMessages(conversationId, emptyList()) }
+                    composerSessionId?.let { sendCoordinator.clearConversation(it, conversationId) }
+                    stagedOutgoing.clear()
+                    runCatching { cache.saveMessages(conversationId, emptyList(), cacheSession.await()) }
                     _state.update { it.copy(deleting = false, conversationDeleted = true) }
                     _message.tryEmit(r.data)
                 }
@@ -543,12 +602,13 @@ class ChatViewModel(
                             (msgId to System.currentTimeMillis() + duration * 1000L)
                     )
                 }
-                scheduleDisappearingRemoval(msgId, duration)
+                scheduleDisappearingRemoval(msgId, _state.value.viewedDisappearing.getValue(msgId))
             }
             is SocketEvent.PhotoExpired -> {
                 // الخادم دمّر الصورة — امسحها من الكاش والواجهة فوراً عند الطرفين
                 val msgId = evt.json.optString("messageId").takeIf { it.isNotBlank() } ?: return
                 disappearingRemovalJobs.remove(msgId)?.cancel()
+                _state.value.messages.firstOrNull { it.id == msgId }?.mediaUrl?.let(::evictImageCache)
                 _state.update { s ->
                     s.copy(
                         messages = s.messages.map {
@@ -571,16 +631,95 @@ class ChatViewModel(
         }
     }
 
+    private fun initializeComposer() {
+        if (composerLoadJob?.isActive == true || _state.value.composerReady) return
+        composerLoadJob = viewModelScope.launch {
+            try {
+                val session = cacheSession.await() ?: return@launch
+                composerSessionId = session
+                val draft = composerStorage.readDraft(session, conversationId)
+                sendCoordinator.restore(session, conversationId)
+                _state.update { it.copy(
+                    input = draft?.text.orEmpty(),
+                    replyingTo = draft?.reply?.let { reply -> Message(
+                        id = reply.id ?: return@let null, content = reply.content, type = reply.type,
+                        sender = MessageSender(name = reply.sender?.name)
+                    ) },
+                    promoWarningCategory = PromoKeywordDetector.getMatchedCategory(draft?.text.orEmpty()),
+                    composerReady = true
+                ) }
+                applyOutgoing(composerStorage.readOutgoing(session, conversationId))
+                viewModelScope.launch { composerStorage.outgoing(session, conversationId).collect(::applyOutgoing) }
+                loadMessages()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _state.update { it.copy(loading = false, error = S.get(R.string.chat_local_load_failed)) }
+            }
+        }
+    }
+
+    private fun applyOutgoing(storedEntries: List<OutgoingMessage>) {
+        storedEntries.forEach { stagedOutgoing.remove(it.localId) }
+        val entries = storedEntries + stagedOutgoing.values
+        _state.update { current ->
+            val localIds = current.outgoing.map { it.localId }.toSet()
+            val existing = current.messages.filterNot { it.id in localIds }.associateBy { it.id }
+            val merged = existing.toMutableMap()
+            entries.forEach { entry ->
+                if (entry.status != OutgoingStatus.SENT || entry.message.id !in merged) {
+                    merged[entry.message.id] = entry.displayMessage()
+                }
+            }
+            current.copy(
+                outgoing = entries,
+                messages = merged.values.sortedBy { messageTimestamp(it.createdAt) ?: 0L },
+                sending = entries.any { it.busy && it.message.type == "text" },
+                uploadingMedia = entries.any { it.busy && it.message.type != "text" }
+            )
+        }
+        entries.filter { !it.busy && handledOutgoing.add(it.localId + it.status.name) }.forEach { entry ->
+            if (entry.promo != null) _state.update { it.copy(externalPromoDialog = entry.promo) }
+            entry.locked?.let { locked ->
+                _state.update { it.copy(
+                    messagingRestriction = MessagingRestrictionInfo(restricted = true, hoursLeft = locked.hoursLeft, lockedUntil = locked.lockedUntil),
+                    externalPromoDialog = ExternalPromoBlockedInfo(title = locked.title, message = locked.message, severity = "locked")
+                ) }
+            }
+            when (entry.errorCode) {
+                "CONVERSATION_CANCELLED" -> _state.update { it.copy(conversationStatus = "cancelled") }
+                "CONVERSATION_INACTIVE" -> _state.update { it.copy(conversationStatus = "expired") }
+                "RECIPIENT_SUSPENDED" -> _state.update { it.copy(otherUserSuspended = true) }
+                "USER_BLOCKED" -> _state.value.otherUserId?.let { viewModelScope.launch { refreshBlockStatus(it) } }
+            }
+        }
+    }
+
+    private fun currentDraft() = ChatDraft(_state.value.input, _state.value.replyingTo?.let {
+        MessageReply(id = it.id, content = it.content, type = it.type, sender = MessageReplySender(it.sender?.name))
+    })
+
+    private fun persistDraft() {
+        if (_state.value.composerReady) composerStorage.queueDraft(composerSessionId, conversationId, currentDraft())
+    }
+
     fun loadMessages() {
-        viewModelScope.launch {
+        if (!_state.value.composerReady) { initializeComposer(); return }
+        if (messagesLoadJob?.isActive == true) return
+        messagesLoadJob = viewModelScope.launch {
             // 1) عرض الرسائل المخزّنة فوراً (بدون شاشة تحميل) إن وُجدت
-            val cached = runCatching { cache.readMessages(conversationId) }.getOrNull()
-            if (!cached.isNullOrEmpty()) {
-                _state.update { it.copy(loading = false, messages = cached, error = null) }
+            val cached = runCatching { cache.readMessages(conversationId, cacheSession.await()) }.getOrNull()
+            if (!cached.isNullOrEmpty() && _state.value.loading) {
+                _state.update { it.copy(loading = false, messages = mergeCachedMessages(cached, it.messages), error = null) }
+            } else if (_state.value.messages.isNotEmpty()) {
+                // Keep live messages while reconciling after reconnect.
             } else {
                 _state.update { it.copy(loading = true, error = null) }
             }
             // 2) ثم اجلب من الشبكة وحدّث (page=1 = أحدث الرسائل)
+            val before = _state.value.messages
+            val deliveredBefore = composerStorage.readOutgoing(cacheSession.await(), conversationId)
+                .filter { it.status == OutgoingStatus.SENT }.map { it.localId }.toSet()
             when (val r = messagesRepo.fetchMessages(conversationId, page = 1)) {
                 is NetworkResult.Success -> {
                     val selfId = _state.value.currentUserId
@@ -590,7 +729,7 @@ class ChatViewModel(
                     _state.update {
                         it.copy(
                             loading = false,
-                            messages = r.data.messages,
+                            messages = mergeFetchedMessages(r.data.messages, before, it.messages),
                             error = null,
                             currentPage = r.data.currentPage,
                             totalPages = r.data.totalPages,
@@ -599,7 +738,9 @@ class ChatViewModel(
                             messagingRestriction = r.data.messagingRestriction?.takeIf { mr -> mr.restricted }
                         )
                     }
-                    runCatching { cache.saveMessages(conversationId, r.data.messages) }
+                    composerSessionId?.let { composerStorage.remove(it, conversationId, deliveredBefore) }
+                    restoreDisappearingDeadlines()
+                    runCatching { cache.saveMessages(conversationId, _state.value.messages, cacheSession.await()) }
                     // Auto-reveal للمحادثات الموثوقة
                     if (_state.value.isTrustedConversation) {
                         r.data.messages.filter { m ->
@@ -642,6 +783,7 @@ class ChatViewModel(
                             loadingOlder = false
                         )
                     }
+                    restoreDisappearingDeadlines()
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(loadingOlder = false) }
@@ -668,7 +810,9 @@ class ChatViewModel(
 
     fun onInputChange(text: String) {
         val category = PromoKeywordDetector.getMatchedCategory(text)
+        if (!_state.value.composerReady || _state.value.deleting) return
         _state.update { it.copy(input = text, promoWarningCategory = category) }
+        persistDraft()
         // أعلِن «يكتب» مرة واحدة عند بدء الكتابة فقط — لا مع كل حرف —
         // وأعِد ضبط مؤقّت التوقّف بعد 3 ثوانٍ من آخر ضغطة.
         if (!isTypingNotified) {
@@ -692,122 +836,75 @@ class ChatViewModel(
         }
     }
 
+    private fun canSendNow(): Boolean {
+        val state = _state.value
+        if (!state.composerReady || state.sending || state.uploadingMedia || state.deleting || state.recording) return false
+        val error = when {
+            state.otherUserDeleted -> S.get(R.string.chat_cannot_message_deleted_acc)
+            state.otherUserSuspended -> S.get(R.string.chat_cannot_message_suspended)
+            state.messagingRestriction != null -> state.messagingRestriction.hoursLeft?.let { S.get(R.string.chat_locked_send_after, it) }
+                ?: S.get(R.string.chat_locked_promo)
+            !state.canSend -> S.get(R.string.chat_cannot_reply_before_accept)
+            else -> null
+        }
+        if (error != null) _message.tryEmit(error)
+        return error == null
+    }
+
+    private fun outgoingMessage(type: String, content: String? = null, mediaUrl: String? = null): Message = Message(
+        id = "tmp-${java.util.UUID.randomUUID()}", conversation = conversationId,
+        sender = MessageSender(id = _state.value.currentUserId, name = _state.value.currentUserName),
+        content = content, type = type, mediaUrl = mediaUrl, status = "sending",
+        isRead = false, isDelivered = false, createdAt = nowIsoUtc()
+    )
+
+    private fun enqueue(message: Message, consumedDraft: ChatDraft? = null) {
+        val session = composerSessionId ?: return
+        val entry = OutgoingMessage(localId = message.id, message = message)
+        stagedOutgoing[entry.localId] = entry
+        _state.update { it.copy(
+            messages = it.messages + message,
+            outgoing = it.outgoing + entry,
+            sending = message.type == "text", uploadingMedia = message.type != "text"
+        ) }
+        sendCoordinator.submit(session, conversationId, entry, consumedDraft)
+    }
+
     fun send() {
-        val content = _state.value.input.trim()
-        if (content.isBlank() || _state.value.sending) return
-        // الطرف الآخر حذف حسابه → لا مراسلة
-        if (_state.value.otherUserDeleted) {
-            _message.tryEmit(S.get(R.string.chat_cannot_message_deleted_acc))
-            return
-        }
-        // الطرف الآخر موقوف → منع الإرسال نهائياً
-        if (_state.value.otherUserSuspended) {
-            _message.tryEmit(S.get(R.string.chat_cannot_message_suspended))
-            return
-        }
-        // مقيّد بسبب نشر حسابات خارجية → منع الإرسال نهائياً
-        _state.value.messagingRestriction?.let { r ->
-            _message.tryEmit(
-                r.hoursLeft?.let { S.get(R.string.chat_locked_send_after, it) }
-                    ?: S.get(R.string.chat_locked_promo)
-            )
-            return
-        }
-        if (!_state.value.canSend) {
-            _message.tryEmit(S.get(R.string.chat_cannot_reply_before_accept))
-            return
-        }
-
-        // optimistic — أضف رسالة مؤقتة
-        val tempId = "tmp-${System.currentTimeMillis()}"
-        val selfId = _state.value.currentUserId
-        val selfName = _state.value.currentUserName
-        val replyTarget = _state.value.replyingTo
-        val optimistic = Message(
-            id = tempId,
-            conversation = conversationId,
-            sender = MessageSender(id = selfId, name = selfName),
-            content = content,
-            type = "text",
-            status = "sent",
-            isRead = false,
-            isDelivered = false,
-            createdAt = nowIsoUtc(),
-            replyTo = replyTarget?.let {
-                MessageReply(
-                    id = it.id,
-                    content = it.content,
-                    type = it.type,
-                    sender = MessageReplySender(name = it.sender?.name)
-                )
-            }
-        )
-        _state.update {
-            it.copy(
-                messages = it.messages + optimistic,
-                input = "",
-                sending = true,
-                replyingTo = null
-            )
-        }
+        val draft = currentDraft()
+        if (draft.text.isBlank() || !canSendNow()) return
+        val message = outgoingMessage("text", content = draft.text.trim()).copy(replyTo = draft.reply)
+        _state.update { it.copy(input = "", replyingTo = null, promoWarningCategory = null) }
         stopTypingNow()
+        enqueue(message, draft)
+    }
 
+    fun retryMessage(localId: String, confirmed: Boolean = false) {
+        val entry = _state.value.outgoing.firstOrNull { it.localId == localId } ?: return
+        if (entry.status != OutgoingStatus.FAILED || !entry.retryAllowed || !canSendNow()) return
+        if (entry.deliveryUncertain && !confirmed) {
+            _state.update { it.copy(retryConfirmationId = localId) }
+            return
+        }
+        dismissRetryConfirmation()
+        // Update synchronously so a second tap cannot enqueue the same message.
+        _state.update { it.copy(sending = entry.message.type == "text", uploadingMedia = entry.message.type != "text") }
         viewModelScope.launch {
-            when (val r = messagesRepo.sendText(conversationId, content, replyTo = replyTarget?.id)) {
-                is NetworkResult.Success -> {
-                    val (real, promoInfo, lockedInfo) = r.data
-                    if (lockedInfo != null) {
-                        // لم تُرسَل — احذف الرسالة المؤقتة وأظهر dialog التقييد
-                        _state.update { s ->
-                            s.copy(
-                                messages = s.messages.filterNot { it.id == tempId },
-                                sending = false,
-                                externalPromoDialog = ExternalPromoBlockedInfo(
-                                    title = lockedInfo.title,
-                                    message = lockedInfo.message,
-                                    serverMessage = lockedInfo.serverMessage,
-                                    severity = "locked"
-                                )
-                            )
-                        }
-                    } else {
-                        com.chathala.hala.core.review.AppRating.notePositiveEvent()
-                        _state.update { s ->
-                            s.copy(
-                                messages = s.messages.map { m ->
-                                    if (m.id == tempId) real!! else m
-                                },
-                                sending = false,
-                                externalPromoDialog = promoInfo
-                            )
-                        }
-                    }
-                }
-                is NetworkResult.Error -> {
-                    // رفض نهائي من الخادم → لا إعادة إرسال إطلاقاً، ونُعيد النص للمستخدم
-                    _state.update { s ->
-                        s.copy(
-                            messages = s.messages.filterNot { it.id == tempId },
-                            sending = false,
-                            // أعِد النص فقط إن لم يكن المستخدم قد كتب شيئاً جديداً
-                            input = if (s.input.isBlank()) content else s.input,
-                            replyingTo = replyTarget ?: s.replyingTo,
-                            // حدّث الحالة المحلية لتقفل الواجهة فوراً حسب سبب الرفض
-                            conversationStatus = when (r.code) {
-                                "CONVERSATION_CANCELLED" -> "cancelled"
-                                "CONVERSATION_INACTIVE" -> "expired"
-                                else -> s.conversationStatus
-                            },
-                            otherUserSuspended =
-                                if (r.code == "RECIPIENT_SUSPENDED") true else s.otherUserSuspended
-                        )
-                    }
-                    _message.tryEmit(ErrorMessages.friendly(r))
-                    // حظر بأي اتجاه → أعِد فحص الحالة لإظهار الشريط الصحيح
-                    if (r.code == "USER_BLOCKED") {
-                        _state.value.otherUserId?.let { refreshBlockStatus(it) }
-                    }
-                }
+            composerSessionId?.let { sendCoordinator.retry(it, conversationId, localId, confirmed) }
+        }
+    }
+
+    fun dismissRetryConfirmation() { _state.update { it.copy(retryConfirmationId = null) } }
+
+    fun discardFailedMessage(localId: String) {
+        val entry = _state.value.outgoing.firstOrNull { it.localId == localId } ?: return
+        if (entry.busy || entry.status == OutgoingStatus.SENT) return
+        viewModelScope.launch {
+            if (stagedOutgoing.remove(localId) != null) {
+                sendCoordinator.releaseLocal(entry)
+                _state.update { it.copy(outgoing = it.outgoing.filterNot { item -> item.localId == localId }, messages = it.messages.filterNot { item -> item.id == localId }) }
+            } else {
+                composerSessionId?.let { sendCoordinator.discard(it, conversationId, localId) }
             }
         }
     }
@@ -816,10 +913,12 @@ class ChatViewModel(
     fun startReply(message: Message) {
         if (message.id.startsWith("tmp-")) return
         _state.update { it.copy(replyingTo = message) }
+        persistDraft()
     }
 
     fun cancelReply() {
         _state.update { it.copy(replyingTo = null) }
+        persistDraft()
     }
 
     // ── Reactions ─────────────────────────────────────────────────
@@ -1039,54 +1138,12 @@ class ChatViewModel(
         }
     }
 
-    private fun sendDisappearingImage(
-        context: Context,
-        uri: android.net.Uri,
-        duration: Int,
-        imageSource: String
-    ) {
-        if (_state.value.uploadingMedia) return
-        val tempId = "tmp-${System.currentTimeMillis()}"
-        val selfId = _state.value.currentUserId
-        val selfName = _state.value.currentUserName
-        val optimistic = Message(
-            id = tempId,
-            conversation = conversationId,
-            sender = MessageSender(id = selfId, name = selfName),
-            type = "image",
-            mediaUrl = uri.toString(),
-            status = "sent",
-            isRead = false,
-            isDelivered = false,
-            createdAt = nowIsoUtc(),
+    private fun sendDisappearingImage(context: Context, uri: Uri, duration: Int, imageSource: String) {
+        if (!canSendNow()) return
+        enqueue(outgoingMessage("image", mediaUrl = uri.toString()).copy(
             imageSource = imageSource,
-            disappearing = com.chathala.hala.feature.chats.data.DisappearingInfo(
-                enabled = true,
-                duration = duration
-            )
-        )
-        _state.update {
-            it.copy(messages = it.messages + optimistic, uploadingMedia = true)
-        }
-        viewModelScope.launch {
-            when (val r = messagesRepo.sendDisappearingImage(context, conversationId, uri, duration, imageSource)) {
-                is NetworkResult.Success -> _state.update { s ->
-                    s.copy(
-                        messages = s.messages.map { if (it.id == tempId) r.data else it },
-                        uploadingMedia = false
-                    )
-                }
-                is NetworkResult.Error -> {
-                    _state.update { s ->
-                        s.copy(
-                            messages = s.messages.filterNot { it.id == tempId },
-                            uploadingMedia = false
-                        )
-                    }
-                    _message.tryEmit(ErrorMessages.friendly(r))
-                }
-            }
-        }
+            disappearing = com.chathala.hala.feature.chats.data.DisappearingInfo(enabled = true, duration = duration)
+        ))
     }
 
     /**
@@ -1098,30 +1155,47 @@ class ChatViewModel(
     fun viewDisappearingPhoto(message: Message) {
         val duration = message.disappearing?.duration ?: return
         val url = message.mediaUrl ?: return
-        if (message.id in _state.value.viewedDisappearing ||
+        if (message.id in _state.value.expiredDisappearing ||
+            message.id in _state.value.viewedDisappearing ||
             message.id in _state.value.loadingDisappearing
         ) return
 
         _state.update { it.copy(loadingDisappearing = it.loadingDisappearing + message.id) }
         viewModelScope.launch {
             // 1) نزّل الصورة قبل فتح العرض
-            val ready = preloadImage(url)
-            // 2) بلّغ الخادم (يبدأ expiresAt عنده) — بعد أن صارت جاهزة للعرض
-            messagesRepo.viewDisappearingPhoto(message.id)
-            if (!ready) {
-                _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
-                _message.tryEmit(S.get(R.string.img_load_failed_retry))
-                return@launch
+            try {
+                val ready = preloadImage(url)
+                if (!ready) {
+                    _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
+                    _message.tryEmit(S.get(R.string.img_load_failed_retry))
+                    return@launch
+                }
+                if (message.id in _state.value.expiredDisappearing) {
+                    evictImageCache(url)
+                    _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
+                    return@launch
+                }
+                // Start viewing only after both loading and server acceptance succeed.
+                val result = messagesRepo.viewDisappearingPhoto(message.id)
+                if (result is NetworkResult.Error || message.id in _state.value.expiredDisappearing) {
+                    evictImageCache(url)
+                    _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
+                    if (result is NetworkResult.Error) _message.tryEmit(ErrorMessages.friendly(result))
+                    return@launch
+                }
+                // The current endpoint returns no deadline, so use the configured duration.
+                val expiresAt = System.currentTimeMillis() + duration * 1000L
+                _state.update {
+                    it.copy(
+                        loadingDisappearing = it.loadingDisappearing - message.id,
+                        viewedDisappearing = it.viewedDisappearing + (message.id to expiresAt)
+                    )
+                }
+                scheduleDisappearingRemoval(message.id, expiresAt)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                evictImageCache(url)
+                throw e
             }
-            // 3) الآن فقط يبدأ العدّ التنازلي
-            val expiresAt = System.currentTimeMillis() + duration * 1000L
-            _state.update {
-                it.copy(
-                    loadingDisappearing = it.loadingDisappearing - message.id,
-                    viewedDisappearing = it.viewedDisappearing + (message.id to expiresAt)
-                )
-            }
-            scheduleDisappearingRemoval(message.id, duration)
         }
     }
 
@@ -1129,21 +1203,23 @@ class ChatViewModel(
     private suspend fun preloadImage(url: String): Boolean {
         val request = coil.request.ImageRequest.Builder(appContext)
             .data(url)
+            .diskCachePolicy(coil.request.CachePolicy.DISABLED)
+            .memoryCacheKey(url)
             .build()
         val result = coil.Coil.imageLoader(appContext).execute(request)
         return result is coil.request.SuccessResult
     }
 
     /**
-     * ينهي صلاحية الصورة المؤقتة بعد [durationSeconds] ثانية:
+     * ينهي صلاحية الصورة المؤقتة عند [expiresAtMs]:
      * تبقى الفقاعة بحالة «انتهت»، ويُمسح الرابط وكاش الصورة فوراً.
-     * يُضاف +600ms ليكتمل تأثير التلاشي قبل الإزالة الفعلية.
+     * يُمسح المحتوى عند الموعد المحدد دون تمديد مهلة العرض.
      * يُستخدم لكلا الطرفين (المستقبِل عند المشاهدة، والمرسِل عند وصول photo-viewed).
      */
-    private fun scheduleDisappearingRemoval(messageId: String, durationSeconds: Int) {
-        if (disappearingRemovalJobs.containsKey(messageId)) return
+    private fun scheduleDisappearingRemoval(messageId: String, expiresAtMs: Long) {
+        disappearingRemovalJobs.remove(messageId)?.cancel()
         disappearingRemovalJobs[messageId] = viewModelScope.launch {
-            delay(durationSeconds * 1000L + 600L)
+            delay((expiresAtMs - System.currentTimeMillis()).coerceAtLeast(0L))
             val url = _state.value.messages.firstOrNull { it.id == messageId }?.mediaUrl
             _state.update { s ->
                 s.copy(
@@ -1157,6 +1233,14 @@ class ChatViewModel(
             // امسح الصورة من الكاش فوراً — لا تبقى نسخة على الجهاز بعد الانتهاء
             url?.let { evictImageCache(it) }
             disappearingRemovalJobs.remove(messageId)
+        }
+    }
+
+    private fun restoreDisappearingDeadlines() {
+        _state.value.messages.filter { it.disappearing?.enabled == true }.forEach { message ->
+            val deadline = messageTimestamp(message.disappearing?.expiresAt) ?: return@forEach
+            _state.update { it.copy(viewedDisappearing = it.viewedDisappearing + (message.id to deadline)) }
+            scheduleDisappearingRemoval(message.id, deadline)
         }
     }
 
@@ -1275,50 +1359,13 @@ class ChatViewModel(
 
     // ── Image ─────────────────────────────────────────────────────
     fun sendImage(context: Context, uri: Uri, imageSource: String = "gallery") {
-        if (_state.value.uploadingMedia) return
-        val tempId = "tmp-${System.currentTimeMillis()}"
-        val selfId = _state.value.currentUserId
-        val selfName = _state.value.currentUserName
-        val optimistic = Message(
-            id = tempId,
-            conversation = conversationId,
-            sender = MessageSender(id = selfId, name = selfName),
-            type = "image",
-            mediaUrl = uri.toString(),   // محلي للعرض المؤقت
-            status = "sent",
-            isRead = false,
-            isDelivered = false,
-            createdAt = nowIsoUtc(),
-            imageSource = imageSource
-        )
-        _state.update {
-            it.copy(messages = it.messages + optimistic, uploadingMedia = true)
-        }
-        viewModelScope.launch {
-            when (val r = messagesRepo.sendImage(context, conversationId, uri, imageSource = imageSource)) {
-                is NetworkResult.Success -> _state.update { s ->
-                    s.copy(
-                        messages = s.messages.map { if (it.id == tempId) r.data else it },
-                        uploadingMedia = false
-                    )
-                }
-                is NetworkResult.Error -> {
-                    _state.update { s ->
-                        s.copy(
-                            messages = s.messages.filterNot { it.id == tempId },
-                            uploadingMedia = false
-                        )
-                    }
-                    _message.tryEmit(ErrorMessages.friendly(r))
-                }
-            }
-        }
+        if (!canSendNow()) return
+        enqueue(outgoingMessage("image", mediaUrl = uri.toString()).copy(imageSource = imageSource))
     }
 
     // ── Audio recording ───────────────────────────────────────────
     fun startRecording(context: Context) {
-        if (_state.value.recording) return
-        if (isMessagingLocked()) return
+        if (_state.value.recording || !canSendNow()) return
         val r = recorder.start(context)
         r.fold(
             onSuccess = {
@@ -1346,50 +1393,13 @@ class ChatViewModel(
         _state.update { it.copy(recording = false, recordingSeconds = 0) }
         res.fold(
             onSuccess = { rec ->
-                val tempId = "tmp-${System.currentTimeMillis()}"
-                val selfId = _state.value.currentUserId
-                val selfName = _state.value.currentUserName
-                val optimistic = Message(
-                    id = tempId,
-                    conversation = conversationId,
-                    sender = MessageSender(id = selfId, name = selfName),
-                    type = "audio",
-                    mediaUrl = rec.file.absolutePath,
-                    audioDuration = rec.durationSeconds.toDouble(),
-                    audioWaveform = rec.waveform.takeIf { it.isNotEmpty() },
-                    status = "sent",
-                    isRead = false,
-                    isDelivered = false,
-                    createdAt = nowIsoUtc()
-                )
-                _state.update {
-                    it.copy(messages = it.messages + optimistic, uploadingMedia = true)
+                if (!canSendNow()) {
+                    rec.file.delete()
+                    return@fold
                 }
-                viewModelScope.launch {
-                    when (val r = messagesRepo.sendAudio(
-                        conversationId,
-                        rec.file,
-                        rec.durationSeconds,
-                        rec.waveform
-                    )) {
-                        is NetworkResult.Success -> _state.update { s ->
-                            s.copy(
-                                messages = s.messages.map { if (it.id == tempId) r.data else it },
-                                uploadingMedia = false
-                            )
-                        }
-                        is NetworkResult.Error -> {
-                            _state.update { s ->
-                                s.copy(
-                                    messages = s.messages.filterNot { it.id == tempId },
-                                    uploadingMedia = false
-                                )
-                            }
-                            _message.tryEmit(ErrorMessages.friendly(r))
-                        }
-                    }
-                    runCatching { rec.file.delete() }
-                }
+                enqueue(outgoingMessage("audio", mediaUrl = rec.file.absolutePath).copy(
+                    audioDuration = rec.durationSeconds.toDouble(), audioWaveform = rec.waveform
+                ))
             },
             onFailure = { err ->
                 _message.tryEmit(S.serverOr(err.message, R.string.rec_failed))
@@ -1403,22 +1413,17 @@ class ChatViewModel(
         _state.update { it.copy(recording = false, recordingSeconds = 0) }
     }
 
-    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onCleared() {
         super.onCleared()
         com.chathala.hala.feature.push.InAppAlerts.setActiveConversation(null)
+        _state.value.messages.filter { it.disappearing?.enabled == true }
+            .mapNotNull { it.mediaUrl }.forEach(::evictImageCache)
         recordTimerJob?.cancel()
         recorder.cancel()
         audioPlayer.stop()
         stopTypingNow()
         socket.leaveConversation(conversationId)
-        // احفظ آخر نسخة من الرسائل في الكاش (استبعد الرسائل المؤقتة)
-        val snapshot = _state.value.messages.filterNot { it.id.startsWith("tmp-") }
-        if (snapshot.isNotEmpty()) {
-            kotlinx.coroutines.GlobalScope.launch {
-                runCatching { cache.saveMessages(conversationId, snapshot) }
-            }
-        }
+
     }
 
     // محوّل Moshi موحّد — يقرأ كامل حقول الرسالة (disappearing/imageSource/reactions/replyTo…)
@@ -1455,7 +1460,9 @@ class ChatViewModel(
                     reportRepo = app.reportRepository,
                     blockingRepo = app.blockingRepository,
                     appPreferences = AppPreferences(app),
-                    appContext = app.applicationContext
+                    appContext = app.applicationContext,
+                    composerStorage = app.chatComposerStorage,
+                    sendCoordinator = app.chatSendCoordinator
                 )
             }
         }

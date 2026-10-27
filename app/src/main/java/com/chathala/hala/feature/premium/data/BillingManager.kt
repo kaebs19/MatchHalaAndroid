@@ -20,6 +20,9 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.queryProductDetails
 import com.android.billingclient.api.queryPurchasesAsync
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -45,6 +48,7 @@ import kotlinx.coroutines.launch
  */
 class BillingManager(private val appContext: Context) {
 
+    private val connecting = AtomicBoolean(false)
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val _productDetails = MutableStateFlow<Map<String, ProductDetails>>(emptyMap())
@@ -90,8 +94,10 @@ class BillingManager(private val appContext: Context) {
             _connected.value = true
             return
         }
+        if (!connecting.compareAndSet(false, true)) return
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
+                connecting.set(false)
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     _connected.value = true
                     scope.launch {
@@ -107,7 +113,9 @@ class BillingManager(private val appContext: Context) {
             }
 
             override fun onBillingServiceDisconnected() {
+                connecting.set(false)
                 _connected.value = false
+                _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_play_connect_failed)))
             }
         })
     }
@@ -158,7 +166,14 @@ class BillingManager(private val appContext: Context) {
         val flowParams = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(listOf(productParams))
             .build()
-        billingClient.launchBillingFlow(activity, flowParams)
+        val result = billingClient.launchBillingFlow(activity, flowParams)
+        if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+            if (result.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
+                _events.tryEmit(BillingEvent.Cancelled)
+            } else {
+                _events.tryEmit(BillingEvent.Error(result.debugMessage.ifBlank { S.get(R.string.billing_purchase_failed) }))
+            }
+        }
     }
 
     /**
@@ -168,11 +183,21 @@ class BillingManager(private val appContext: Context) {
      * يستمع وقتها (زر الاستعادة)، أما الاسترجاع الصامت عند الإقلاع فلا مستمع له.
      */
     suspend fun restorePurchases() {
-        if (!billingClient.isReady) return
+        if (!billingClient.isReady) {
+            _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_play_connect_failed)))
+            return
+        }
         val params = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.SUBS)
             .build()
-        val result = billingClient.queryPurchasesAsync(params)
+        val result = try {
+            billingClient.queryPurchasesAsync(params)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_play_connect_failed)))
+            return
+        }
         if (result.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
             // نعدّ فقط ما سيُعالج فعلاً — شراء PENDING مثلاً يتجاهله handlePurchase،
             // فلولا هذا الفلتر لبقي زر الاستعادة يدور بلا حدث يُنهيه.
@@ -183,6 +208,8 @@ class BillingManager(private val appContext: Context) {
             } else {
                 restorable.forEach { handlePurchase(it) }
             }
+        } else {
+            _events.tryEmit(BillingEvent.Error(result.billingResult.debugMessage.ifBlank { S.get(R.string.billing_play_connect_failed) }))
         }
     }
 
@@ -190,7 +217,11 @@ class BillingManager(private val appContext: Context) {
     private fun handlePurchase(purchase: Purchase) {
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
         scope.launch {
-            val verified = runCatching { purchaseVerifier?.invoke(purchase) ?: false }.getOrDefault(false)
+            val verified = try {
+                purchaseVerifier?.invoke(purchase) ?: false
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) { false }
             if (!verified) {
                 _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_verify_failed)))
                 return@launch
@@ -199,7 +230,19 @@ class BillingManager(private val appContext: Context) {
                 val ackParams = AcknowledgePurchaseParams.newBuilder()
                     .setPurchaseToken(purchase.purchaseToken)
                     .build()
-                billingClient.acknowledgePurchase(ackParams)
+                var acknowledged = false
+                for (attempt in 0 until 3) {
+                    val result = billingClient.acknowledgePurchase(ackParams)
+                    if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                        acknowledged = true
+                        break
+                    }
+                    if (attempt < 2) delay(1_000L * (attempt + 1))
+                }
+                if (!acknowledged) {
+                    _events.tryEmit(BillingEvent.Error(S.get(R.string.billing_ack_failed)))
+                    return@launch
+                }
             }
             _events.tryEmit(BillingEvent.PurchaseVerified)
         }

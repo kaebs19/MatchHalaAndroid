@@ -12,7 +12,6 @@ import com.chathala.hala.core.network.safeApiCall
 import com.chathala.hala.core.storage.TokenStorage
 import com.chathala.hala.feature.chats.data.ExternalPromoBlockedInfo
 import com.chathala.hala.core.util.MediaUploadHelper
-import kotlinx.coroutines.flow.first
 import java.io.File
 
 class MessagesRepository(
@@ -32,10 +31,11 @@ class MessagesRepository(
     suspend fun sendText(
         conversationId: String,
         content: String,
-        replyTo: String? = null
+        replyTo: String? = null,
+        expectedSessionId: String? = null
     ): NetworkResult<Triple<Message?, ExternalPromoBlockedInfo?, MessagingLockedInfo?>> = safeApiCall {
         val resp = api.sendMessage(
-            bearer = bearer(),
+            bearer = bearer(expectedSessionId),
             body = SendMessageRequest(
                 conversationId = conversationId,
                 content = content,
@@ -56,12 +56,13 @@ class MessagesRepository(
         conversationId: String,
         uri: Uri,
         caption: String? = null,
-        imageSource: String = "gallery"
+        imageSource: String = "gallery",
+        expectedSessionId: String? = null
     ): NetworkResult<Message> = safeApiCall {
         val part = MediaUploadHelper.uriToImagePart(context, uri, fieldName = "image")
             ?: throw IllegalStateException(S.get(R.string.msg_image_read_failed))
         val resp = api.sendImageMessage(
-            bearer = bearer(),
+            bearer = bearer(expectedSessionId),
             image = part,
             conversationId = MediaUploadHelper.plainText(conversationId),
             caption = caption?.let(MediaUploadHelper::plainText),
@@ -74,7 +75,8 @@ class MessagesRepository(
         conversationId: String,
         file: File,
         durationSeconds: Int,
-        waveform: List<Double> = emptyList()
+        waveform: List<Double> = emptyList(),
+        expectedSessionId: String? = null
     ): NetworkResult<Message> = safeApiCall {
         val part = MediaUploadHelper.fileToAudioPart(file)
         // الخادم يتوقّع waveform كنصّ JSON (نفس ما يرسله iOS) — قيم 0..1
@@ -82,7 +84,7 @@ class MessagesRepository(
             .takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "[", postfix = "]") { "%.3f".format(java.util.Locale.US, it) }
         val resp = api.sendAudioMessage(
-            bearer = bearer(),
+            bearer = bearer(expectedSessionId),
             audio = part,
             conversationId = MediaUploadHelper.plainText(conversationId),
             duration = MediaUploadHelper.plainText(durationSeconds.toString()),
@@ -123,7 +125,8 @@ class MessagesRepository(
     }
 
     suspend fun viewDisappearingPhoto(messageId: String): NetworkResult<Unit> = safeApiCall {
-        api.viewDisappearingPhoto(bearer(), messageId)
+        val response = api.viewDisappearingPhoto(bearer(), messageId)
+        check(response.success) { S.serverOr(response.message, R.string.err_unexpected) }
         Unit
     }
 
@@ -137,12 +140,13 @@ class MessagesRepository(
         conversationId: String,
         uri: Uri,
         durationSeconds: Int,
-        imageSource: String = "gallery"
+        imageSource: String = "gallery",
+        expectedSessionId: String? = null
     ): NetworkResult<Message> = safeApiCall {
         val part = MediaUploadHelper.uriToImagePart(context, uri, fieldName = "image")
             ?: throw IllegalStateException(S.get(R.string.msg_image_read_failed))
         val resp = api.sendDisappearingImage(
-            bearer = bearer(),
+            bearer = bearer(expectedSessionId),
             image = part,
             conversationId = MediaUploadHelper.plainText(conversationId),
             caption = null,
@@ -178,9 +182,12 @@ class MessagesRepository(
         resp.data?.keywords ?: emptyList()
     }
 
-    private suspend fun bearer(): String {
-        val token = tokenStorage.token.first()
-            ?: throw IllegalStateException(S.get(R.string.auth_no_active_session))
-        return "Bearer $token"
+    private suspend fun bearer(expectedSessionId: String? = null): String {
+        val session = tokenStorage.snapshot()
+            ?: throw kotlinx.coroutines.CancellationException("Session ended")
+        if (expectedSessionId != null && session.sessionId != expectedSessionId) {
+            throw kotlinx.coroutines.CancellationException("Session changed")
+        }
+        return "Bearer ${session.accessToken}"
     }
 }

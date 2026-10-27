@@ -2,6 +2,7 @@ package com.chathala.hala.core.ads
 
 import android.util.Log
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.ResponseInfo
 
 /**
  * تسجيل نتائج طلبات AdMob — كانت الإخفاقات صامتة تماماً، فيستحيل معرفة سبب
@@ -28,8 +29,11 @@ internal object AdLog {
         Log.i(TAG, "خانة: $message")
     }
 
-    fun loaded(placement: String) {
-        Log.i(TAG, "$placement تم تحميل الإعلان")
+    fun loaded(placement: String, response: ResponseInfo? = null) {
+        Log.i(TAG, "$placement تم تحميل الإعلان network=${response?.mediationAdapterClassName}")
+        if (com.chathala.hala.BuildConfig.DEBUG) response?.adapterResponses?.forEach {
+            Log.d(TAG, "adapter=${it.adapterClassName} latency=${it.latencyMillis} error=${it.adError?.code}")
+        }
     }
 
     fun consent(message: String) {

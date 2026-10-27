@@ -93,6 +93,9 @@ class UserSearchViewModel(
     val state: StateFlow<UserSearchUiState> = _state.asStateFlow()
 
     private var searchJob: Job? = null
+    private var suggestionsJob: Job? = null
+    private var onlineJob: Job? = null
+    private var requestVersion = 0L
     private val pageSize = 20
 
     /** وقت آخر تحميل ناجح للاقتراحات — لكبح التحديث عند كل عودة للشاشة. */
@@ -121,7 +124,7 @@ class UserSearchViewModel(
     fun toggleLike(user: SearchUser) {
         val id = user.id
         if (id in _state.value.likeInFlight) return
-        val nowLiked = !(likedState(id) ?: false)
+        val nowLiked = !_state.value.isLiked(user)
 
         _state.update {
             it.copy(
@@ -142,10 +145,6 @@ class UserSearchViewModel(
         }
     }
 
-    /** الحالة المعروضة: التعديل المحلي إن وُجد، وإلا ما جاء من الخادم. */
-    private fun likedState(id: String): Boolean? =
-        _state.value.likedOverrides[id]
-
     fun toggleLayout() {
         viewModelScope.launch { prefs.setSearchGridLayout(!_state.value.gridLayout) }
     }
@@ -163,8 +162,10 @@ class UserSearchViewModel(
     }
 
     fun loadSuggestions() {
-        _state.update { it.copy(suggestionsLoading = true) }
-        viewModelScope.launch {
+        suggestionsJob?.cancel()
+        onlineJob?.cancel()
+        _state.update { it.copy(suggestionsLoading = true, onlineLoadingMore = false) }
+        suggestionsJob = viewModelScope.launch {
             val f = _state.value.filters
             // random=true → مستخدمون مختلفون في كل دخول/تحديث
             // القوائم الثلاث بالتوازي (أسرع استجابة)
@@ -236,12 +237,17 @@ class UserSearchViewModel(
         val s = _state.value
         if (s.onlineLoadingMore || s.suggestionsLoading || s.isSearchMode || !s.onlineCanLoadMore) return
         _state.update { it.copy(onlineLoadingMore = true) }
-        viewModelScope.launch {
+        onlineJob = viewModelScope.launch {
             val f = s.filters
             val res = repo.suggestedUsers(
                 online = true, gender = f.gender.api, country = f.country,
                 minAge = f.minAgeParam, maxAge = f.maxAgeParam, random = true, limit = 12
             )
+            if (res is NetworkResult.Error) {
+                _state.update { it.copy(onlineLoadingMore = false) }
+                _message.tryEmit(ErrorMessages.friendly(res))
+                return@launch
+            }
             val batch = (res as? NetworkResult.Success)?.data?.users ?: emptyList()
             val existing = _state.value.online.map { it.id }.toSet()
             val fresh = batch.filterNot { it.id in existing }
@@ -251,8 +257,8 @@ class UserSearchViewModel(
                 it.copy(
                     onlineLoadingMore = false,
                     online = merged,
-                    // لو لم تأتِ عناصر جديدة (نفدت العيّنة) أوقِف التحميل
-                    onlineTotal = if (fresh.isEmpty()) merged.size else it.onlineTotal,
+                    // A random duplicate sample is not evidence that the server has no more users.
+                    onlineTotal = (res as? NetworkResult.Success)?.data?.total ?: it.onlineTotal,
                     // مَن ظهر الآن ضمن المتصلين لا يُكرَّر في «نشطون مؤخراً»
                     recentlyActive = it.recentlyActive.filterNot { u -> u.id in freshIds }
                 )
@@ -261,6 +267,7 @@ class UserSearchViewModel(
     }
 
     fun onQueryChange(q: String) {
+        requestVersion++
         _state.update { it.copy(query = q) }
         searchJob?.cancel()
         if (q.trim().length < 2) {
@@ -276,6 +283,7 @@ class UserSearchViewModel(
     /** يُطبَّق من ورقة الفلاتر (ميزة مدفوعة — التحقق في الواجهة). */
     fun applyFilters(filters: SearchFilters) {
         if (_state.value.filters == filters) return
+        requestVersion++
         _state.update { it.copy(filters = filters) }
         if (_state.value.isSearchMode) {
             searchJob?.cancel()
@@ -306,6 +314,7 @@ class UserSearchViewModel(
     }
 
     private suspend fun runSearch(reset: Boolean) {
+        val version = ++requestVersion
         val s = _state.value
         val f = s.filters
         val nextPage = if (reset) 1 else s.page + 1
@@ -318,6 +327,7 @@ class UserSearchViewModel(
             gender = f.gender.api, country = f.country,
             minAge = f.minAgeParam, maxAge = f.maxAgeParam
         )
+        if (version != requestVersion) return
         when (r) {
             is NetworkResult.Success -> {
                 val incoming = r.data.users

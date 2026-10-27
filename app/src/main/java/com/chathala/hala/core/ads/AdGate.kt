@@ -19,19 +19,33 @@ object AdGate {
     private val _adsEnabled = MutableStateFlow(false)
     val adsEnabled: StateFlow<Boolean> = _adsEnabled.asStateFlow()
 
+    @Volatile private var userEligible = false
+    @Volatile private var consentAllowed = false
+    @Volatile private var sdkReady = false
+
+    internal fun updateConsent(allowed: Boolean) { consentAllowed = allowed; refresh() }
+    internal fun updateSdkReady(ready: Boolean) { sdkReady = ready; refresh() }
+
     /** يُستدعى مع كل تغيّر في المستخدم الحالي (دخول/خروج/تجديد اشتراك). */
     fun update(user: User?) {
-        val enabled = user != null && !user.isPremium
+        userEligible = adEligibleUser(user)
+        refresh()
+    }
+
+    @Synchronized private fun refresh() {
+        val enabled = canRequestAds(userEligible, consentAllowed, sdkReady)
         val was = _adsEnabled.value
         _adsEnabled.value = enabled
         // صار مشتركاً (أو خرج): تخلَّص من الإعلانات المخزّنة فوراً بدل إبقائها في الذاكرة.
         if (was && !enabled) {
             BannerAdPool.clearAll()
             NativeAdPool.clearAll()
+            InterstitialAdManager.clear()
         }
     }
 
     val enabled: Boolean get() = _adsEnabled.value
+    internal val sdkInitialized: Boolean get() = sdkReady
 
     @Composable
     fun rememberEnabled(): Boolean = adsEnabled.collectAsStateWithLifecycle().value

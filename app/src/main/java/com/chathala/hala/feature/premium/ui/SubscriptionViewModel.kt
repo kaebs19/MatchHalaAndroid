@@ -95,6 +95,7 @@ class SubscriptionViewModel(
     }
 
     fun purchase(activity: Activity) {
+        if (_state.value.purchasing) return
         _state.update { it.copy(purchasing = true) }
         billing.launchPurchase(activity, _state.value.selectedPlan)
     }
@@ -104,6 +105,8 @@ class SubscriptionViewModel(
      * الأحداث: [BillingEvent.PurchaseVerified] أو [BillingEvent.RestoreEmpty].
      */
     fun restore() {
+        if (_state.value.purchasing) return
+        _state.update { it.copy(purchasing = true) }
         if (!billing.connected.value) {
             billing.connect() // connect() يستدعي restorePurchases() بعد الاتصال
             return

@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 enum class ChatsFilter { ALL, UNREAD, PINNED, PREMIUM }
@@ -90,8 +92,11 @@ class ChatsViewModel(
     private val socket: HalaSocket,
     private val cache: ChatsCacheStorage,
     private val blocking: BlockingRepository,
-    private val reporting: ReportRepository
+    private val reporting: ReportRepository,
+    private val sendCoordinator: com.chathala.hala.feature.chats.data.ChatSendCoordinator
 ) : ViewModel() {
+
+    private val cacheSession = viewModelScope.async(start = CoroutineStart.UNDISPATCHED) { cache.sessionId() }
 
     private val _state = MutableStateFlow(ChatsUiState())
     val state: StateFlow<ChatsUiState> = _state.asStateFlow()
@@ -156,7 +161,7 @@ class ChatsViewModel(
 
     fun load() {
         viewModelScope.launch {
-            val cached = runCatching { cache.readConversations() }.getOrNull()
+            val cached = runCatching { cache.readConversations(cacheSession.await()) }.getOrNull()
             if (!cached.isNullOrEmpty()) {
                 _state.update {
                     it.copy(loading = false, all = cached, error = null, refreshing = true)
@@ -170,7 +175,7 @@ class ChatsViewModel(
 
     fun refresh(silent: Boolean = false) {
         if (_state.value.refreshing) return
-        if (!silent) _state.update { it.copy(refreshing = true, error = null) }
+        _state.update { it.copy(refreshing = true, error = if (silent) it.error else null) }
         viewModelScope.launch {
             fetch(silent = silent)
             refreshPendingBadge()
@@ -261,7 +266,7 @@ class ChatsViewModel(
     fun togglePin(conversationId: String) {
         val isPinned = conversationId in _state.value.pinnedIds
         viewModelScope.launch {
-            cache.setPinned(conversationId, !isPinned)
+            cache.setPinned(conversationId, !isPinned, cacheSession.await())
             _message.tryEmit(if (isPinned) S.get(R.string.chat_unpinned) else S.get(R.string.chat_pinned))
         }
         _state.update { it.copy(actionTarget = null) }
@@ -298,7 +303,9 @@ class ChatsViewModel(
                             processingIds = s.processingIds - conversationId
                         )
                     }
-                    runCatching { cache.setPinned(conversationId, false) }
+                    cacheSession.await()?.let { sendCoordinator.clearConversation(it, conversationId) }
+                    runCatching { cache.setPinned(conversationId, false, cacheSession.await()) }
+                    runCatching { cache.saveConversations(_state.value.all, cacheSession.await()) }
                     _message.tryEmit(r.data)
                 }
                 is NetworkResult.Error -> {
@@ -327,6 +334,7 @@ class ChatsViewModel(
                     _state.update { s ->
                         s.copy(all = s.all.filterNot { it.id == conversation.id })
                     }
+                    runCatching { cache.saveConversations(_state.value.all, cacheSession.await()) }
                     _message.tryEmit(r.data)
                 }
                 is NetworkResult.Error -> _message.tryEmit(ErrorMessages.friendly(r))
@@ -383,11 +391,11 @@ class ChatsViewModel(
                     )
                 }
                 joinConversationRooms(r.data.conversations)
-                runCatching { cache.saveConversations(r.data.conversations) }
+                runCatching { cache.saveConversations(r.data.conversations, cacheSession.await()) }
             }
             is NetworkResult.Error -> {
                 val msg = ErrorMessages.friendly(r)
-                if (!silent && _state.value.all.isEmpty()) {
+                if (_state.value.all.isEmpty()) {
                     _state.update { it.copy(loading = false, refreshing = false, error = msg) }
                 } else {
                     _state.update { it.copy(loading = false, refreshing = false) }
@@ -411,7 +419,8 @@ class ChatsViewModel(
                     socket = app.socket,
                     cache = app.chatsCacheStorage,
                     blocking = app.blockingRepository,
-                    reporting = app.reportRepository
+                    reporting = app.reportRepository,
+                    sendCoordinator = app.chatSendCoordinator
                 ) as T
             }
         }

@@ -38,7 +38,10 @@ object AdConsent {
     val privacyOptionsRequired: StateFlow<Boolean> = _privacyOptionsRequired.asStateFlow()
 
     fun gather(activity: Activity) {
-        if (requested) return
+        if (requested) {
+            syncState(activity, UserMessagingPlatform.getConsentInformation(activity))
+            return
+        }
         requested = true
 
         // في debug نتظاهر بأننا داخل المنطقة الاقتصادية الأوروبية، وإلا فالنموذج
@@ -48,6 +51,7 @@ object AdConsent {
                 setConsentDebugSettings(
                     ConsentDebugSettings.Builder(activity)
                         .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                        .apply { BuildConfig.AD_TEST_DEVICE_IDS.forEach { addTestDeviceHashedId(it) } }
                         .build()
                 )
             }
@@ -67,6 +71,7 @@ object AdConsent {
                 }
             },
             { requestError ->
+                requested = false
                 AdLog.consent("فشل تحديث حالة الموافقة: ${requestError.message}")
                 // فشل التحديث لا يُلغي موافقة محفوظة من جلسة سابقة.
                 syncState(activity, info)
@@ -79,6 +84,8 @@ object AdConsent {
 
     /** يُعيد فتح النموذج بطلب المستخدم من شاشة الخصوصية. */
     fun showPrivacyOptions(activity: Activity, onDone: (String?) -> Unit = {}) {
+        // Discard creatives obtained under the previous privacy choice before showing new ones.
+        AdGate.updateConsent(false)
         UserMessagingPlatform.showPrivacyOptionsForm(activity) { formError ->
             if (formError != null) {
                 AdLog.consent("تعذّر عرض خيارات الخصوصية: ${formError.message}")
@@ -93,6 +100,8 @@ object AdConsent {
         _privacyOptionsRequired.value =
             info.privacyOptionsRequirementStatus ==
                 ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
-        if (info.canRequestAds()) MobileAdsInitializer.start(activity)
+        val networkPrivacyReady = UnityPrivacy.applyContextualOnly(activity)
+        AdGate.updateConsent(info.canRequestAds() && networkPrivacyReady)
+        if (networkPrivacyReady && info.canRequestAds() && !activity.isFinishing && !activity.isDestroyed) MobileAdsInitializer.start(activity)
     }
 }

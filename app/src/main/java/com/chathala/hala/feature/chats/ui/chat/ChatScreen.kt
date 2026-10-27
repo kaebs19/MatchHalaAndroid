@@ -73,7 +73,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import com.chathala.hala.core.ads.findActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chathala.hala.core.storage.AppPreferences
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -133,16 +132,26 @@ fun ChatScreen(
     // حدود كل فقاعة في جذر الشاشة — تُثبَّت عندها قائمة الضغط المطوّل بنمط iOS
     val bubbleBounds = remember { androidx.compose.runtime.mutableStateMapOf<String, androidx.compose.ui.geometry.Rect>() }
 
-    LaunchedEffect(state.conversationDeleted) {
-        if (state.conversationDeleted) onBack()
+    state.retryConfirmationId?.let { localId ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = viewModel::dismissRetryConfirmation,
+            title = { Text(S.get(R.string.chat_retry_title)) },
+            text = { Text(S.get(R.string.chat_retry_uncertain)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { viewModel.retryMessage(localId, confirmed = true) }) {
+                    Text(S.get(R.string.chat_retry_send))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = viewModel::dismissRetryConfirmation) {
+                    Text(S.get(R.string.action_cancel))
+                }
+            }
+        )
     }
 
-    // إعلان بيني عند فتح المحادثة — مرة كل نصف ساعة كحدّ أقصى
-    LaunchedEffect(Unit) {
-        com.chathala.hala.core.ads.InterstitialAdManager.preload(context)
-        context.findActivity()?.let {
-            com.chathala.hala.core.ads.InterstitialAdManager.maybeShowOnChatOpen(it)
-        }
+    LaunchedEffect(state.conversationDeleted) {
+        if (state.conversationDeleted) onBack()
     }
 
     // إعادة توجيه: لو المحادثة pending وأنا المستلِم → افتح شاشة معاينة الطلب بدل الشات
@@ -375,7 +384,8 @@ fun ChatScreen(
                                 is ChatListItem.MessageItem -> {
                                     val msg = item.message
                                     val isMine = msg.sender?.id == state.currentUserId
-                                    val isPending = msg.id.startsWith("tmp-")
+                                    val outgoing = state.outgoing.firstOrNull { it.localId == msg.id }
+                                    val isPending = outgoing?.busy == true
                                     // تجميع: مسافة أكبر فوق أول رسالة في المجموعة، أضيق داخلها
                                     val topPad = if (item.isFirstInGroup) 6.dp else 0.dp
                                     Box(
@@ -388,13 +398,18 @@ fun ChatScreen(
                                     ) {
                                     com.chathala.hala.feature.chats.ui.chat.components.SwipeToReply(
                                         onReply = { viewModel.startReply(msg) },
-                                        enabled = !isPending,
+                                        enabled = !msg.id.startsWith("tmp-"),
                                         content = {
                                             MessageBubble(
                                                 message = msg,
                                                 isMine = isMine,
                                                 currentUserId = state.currentUserId,
                                                 isPending = isPending,
+                                                deliveryFailure = outgoing?.failure?.let { S.serverOr(it, R.string.chat_send_failed) },
+                                                retryAllowed = outgoing?.retryAllowed == true && outgoing.status == com.chathala.hala.feature.chats.data.OutgoingStatus.FAILED,
+                                                retryEnabled = !state.sending && !state.uploadingMedia && !state.recording && state.canSend && !state.otherUserSuspended && state.messagingRestriction == null,
+                                                onRetry = { viewModel.retryMessage(msg.id) },
+                                                onDiscardFailed = { viewModel.discardFailedMessage(msg.id) },
                                                 audioPlayingId = playback.playingId,
                                                 audioPositionMs = playback.positionMs,
                                                 audioDurationMs = playback.durationMs,
@@ -547,7 +562,7 @@ fun ChatScreen(
                         onCancelRecord = viewModel::cancelRecording,
                         isRecording = state.recording,
                         recordingSeconds = state.recordingSeconds,
-                        enabled = !state.sending && !state.uploadingMedia
+                        enabled = state.composerReady && !state.deleting && !state.sending && !state.uploadingMedia
                     )
                 }
                 else -> {

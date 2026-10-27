@@ -3,106 +3,88 @@ package com.chathala.hala.core.ads
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.*
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import java.lang.ref.WeakReference
 
-/**
- * يدير الإعلان البيني (Interstitial): يحمّله مسبقاً ويعرضه **فقط إذا كان جاهزاً** —
- * لا ننتظر التحميل أبداً حتى لا نُعطّل المستخدم (يحقّق شرط ألّا يتجاوز التأخير 5 ثوانٍ).
- *
- * مَواضع العرض:
- *  - فتح محادثة ([maybeShowOnChatOpen]).
- *  - الاكتشاف: بعد كل [AdConfig.DISCOVER_INTERSTITIAL_EVERY_CARDS] بطاقة ([showNow]).
- *
- * الموضعان يخضعان لسقف واحد: إعلان بيني واحد على الأكثر كل
- * [AdConfig.INTERSTITIAL_MIN_INTERVAL_MS]، محفوظ على القرص.
- */
+/** Ready-only fullscreen ads at discovery breaks, with a shared durable frequency cap. */
 object InterstitialAdManager {
-
     private var ad: InterstitialAd? = null
+    private var owner = WeakReference<Activity>(null)
     private var loading = false
+    private var showing = false
+    private var generation = 0
+    private var loadedAt = 0L
+    private var lastFailure = 0L
+    private var foregroundStartedAt = System.currentTimeMillis()
     private const val PREFS = "hala_ads"
-    private const val KEY_LAST_SHOWN_AT = "interstitial_last_shown_at"
+    private const val LAST_SHOWN = "interstitial_last_shown_at"
 
-    /** يبدأ تحميل إعلان جاهز للعرض لاحقاً (آمن للاستدعاء المتكرر). */
+    fun onForegroundStarted() { foregroundStartedAt = System.currentTimeMillis() }
+
     fun preload(context: Context) {
-        if (!AdGate.enabled) return          // لا إعلانات للمشتركين
-        if (ad != null || loading) return
-        loading = true
-        val appCtx = context.applicationContext
-        InterstitialAd.load(
-            appCtx,
-            AdConfig.interstitialUnitId,
-            AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(loaded: InterstitialAd) {
-                    ad = loaded
-                    loading = false
-                    AdLog.loaded("بيني")
-                }
-
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    ad = null
-                    loading = false
-                    AdLog.failure("بيني", error)
-                }
-            }
-        )
-    }
-
-    /** يعرض البيني في الاكتشاف إن كان جاهزاً ومرّ الفاصل الأدنى. يرجّع true لو عُرض. */
-    fun showNow(activity: Activity): Boolean = showIfReady(activity)
-
-    /** يعرض البيني عند فتح محادثة إن كان جاهزاً ومرّ الفاصل الأدنى. */
-    fun maybeShowOnChatOpen(activity: Activity) {
-        showIfReady(activity)
-    }
-
-    private fun prefs(context: Context) =
-        context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-
-    private fun showIfReady(activity: Activity): Boolean {
-        if (!AdGate.enabled) return false    // لا إعلانات للمشتركين
+        val activity = context.findActivity() ?: return
+        if (!AdGate.enabled || !activity.canLoadAds() || showing || loading) return
         val now = System.currentTimeMillis()
-        val lastShownAt = prefs(activity).getLong(KEY_LAST_SHOWN_AT, 0L)
-        // `now < lastShownAt` = ساعة الجهاز رجعت للخلف؛ لا نحبس الإعلان للأبد بسببها
-        if (now >= lastShownAt && now - lastShownAt < AdConfig.INTERSTITIAL_MIN_INTERVAL_MS) {
-            preload(activity.applicationContext)
-            return false
-        }
-        val current = ad
-        if (current == null) {
-            preload(activity.applicationContext)
-            return false
-        }
-        current.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdDismissedFullScreenContent() {
-                ad = null
-                preload(activity.applicationContext)
-            }
-
-            override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                ad = null
-                preload(activity.applicationContext)
-            }
-        }
+        if (ad != null && owner.get() === activity && isFreshAd(loadedAt, now, AdConfig.INTERSTITIAL_TTL_MS)) return
         ad = null
-        prefs(activity).edit().putLong(KEY_LAST_SHOWN_AT, now).apply()
-        current.show(activity)
-        return true
+        if (now - lastFailure < 30_000L) return
+        owner = WeakReference(activity)
+        loading = true
+        val request = ++generation
+        InterstitialAd.load(activity, AdConfig.interstitialUnitId, AdRequest.Builder().build(), object : InterstitialAdLoadCallback() {
+            override fun onAdLoaded(loaded: InterstitialAd) {
+                if (generation != request || !AdGate.enabled || owner.get()?.isDestroyed != false) return
+                ad = loaded; loading = false; loadedAt = System.currentTimeMillis()
+                AdLog.loaded("بيني", loaded.responseInfo)
+            }
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                if (generation != request) return
+                ad = null; loading = false; lastFailure = System.currentTimeMillis()
+                AdLog.failure("بيني", error)
+            }
+        })
     }
+
+    fun showNow(activity: Activity): Boolean {
+        if (!AdGate.enabled || !activity.canLoadAds() || showing) return false
+        val now = System.currentTimeMillis()
+        val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        if (!canShowInterstitial(now, foregroundStartedAt, prefs.getLong(LAST_SHOWN, 0L))) return false
+        val current = ad
+        if (current == null || owner.get() !== activity || !isFreshAd(loadedAt, now, AdConfig.INTERSTITIAL_TTL_MS)) {
+            preload(activity)
+            return false
+        }
+        ad = null; showing = true
+        current.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                prefs.edit().putLong(LAST_SHOWN, System.currentTimeMillis()).apply()
+            }
+            override fun onAdDismissedFullScreenContent() { showing = false; preload(activity) }
+            override fun onAdFailedToShowFullScreenContent(error: AdError) { showing = false; lastFailure = System.currentTimeMillis() }
+        }
+        return try {
+            current.show(activity)
+            true
+        } catch (error: RuntimeException) {
+            showing = false
+            lastFailure = System.currentTimeMillis()
+            false
+        }
+    }
+
+    fun clear() { adMainHandler.post { reset() } }
+    internal fun clearForActivity(activity: Activity) { if (owner.get() === activity) reset() }
+    private fun reset() { generation++; ad = null; loading = false; owner.clear() }
 }
 
-/** يستخرج Activity من Context (يفكّ ContextWrapper) — لعرض الإعلانات من Compose. */
 fun Context.findActivity(): Activity? {
-    var ctx: Context? = this
-    while (ctx is ContextWrapper) {
-        if (ctx is Activity) return ctx
-        ctx = ctx.baseContext
+    var current: Context? = this
+    while (current is ContextWrapper) {
+        if (current is Activity) return current
+        current = current.baseContext
     }
     return null
 }

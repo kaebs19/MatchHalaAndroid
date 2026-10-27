@@ -6,6 +6,7 @@ import com.chathala.hala.R
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,7 +86,14 @@ fun DiscoverScreen(
     var showFilters by remember { mutableStateOf(false) }
     var premiumGate by remember { mutableStateOf<PremiumGateReason?>(null) }
     var reportCard by remember { mutableStateOf<DiscoverCard?>(null) }
-    var showNativeOverlay by remember { mutableStateOf(false) }
+    var showSponsoredCard by remember { mutableStateOf(false) }
+    val adsEnabled = com.chathala.hala.core.ads.AdGate.rememberEnabled()
+    val sponsoredAd = com.chathala.hala.core.ads.rememberNativeAd(DISCOVER_NATIVE_SLOT)
+    val currentSponsoredAd by androidx.compose.runtime.rememberUpdatedState(sponsoredAd)
+
+    LaunchedEffect(adsEnabled, sponsoredAd) {
+        if (!adsEnabled || sponsoredAd == null) showSponsoredCard = false
+    }
 
     val context = LocalContext.current
     val locationLauncher = rememberLauncherForActivityResult(
@@ -118,12 +126,15 @@ fun DiscoverScreen(
         }
     }
 
-    // إعلان بيني بعد كل AdConfig.DISCOVER_INTERSTITIAL_EVERY_CARDS بطاقة
+    // Ready-only fullscreen ad at a natural discovery break.
+    androidx.lifecycle.compose.LifecycleResumeEffect(adsEnabled) {
+        if (adsEnabled) com.chathala.hala.core.ads.InterstitialAdManager.preload(context)
+        onPauseOrDispose { }
+    }
     LaunchedEffect(Unit) {
-        com.chathala.hala.core.ads.InterstitialAdManager.preload(context)
         viewModel.showInterstitial.collect {
-            context.findActivity()?.let {
-                com.chathala.hala.core.ads.InterstitialAdManager.showNow(it)
+            if (!showSponsoredCard && detailCard == null && matched == null && !showFilters && premiumGate == null && reportCard == null) {
+                context.findActivity()?.let { com.chathala.hala.core.ads.InterstitialAdManager.showNow(it) }
             }
         }
     }
@@ -131,7 +142,10 @@ fun DiscoverScreen(
     LaunchedEffect(Unit) {
         // لا إعلانات للمشتركين — وإلا بقيت النافذة تدور بلا إعلان
         viewModel.showNativeAd.collect {
-            if (com.chathala.hala.core.ads.AdGate.enabled) showNativeOverlay = true
+            // Never block discovery while an ad is loading or unavailable.
+            if (com.chathala.hala.core.ads.AdGate.enabled && currentSponsoredAd != null && matched == null && detailCard == null) {
+                showSponsoredCard = true
+            }
         }
     }
 
@@ -162,6 +176,10 @@ fun DiscoverScreen(
                 modifier = Modifier.fillMaxSize().weight(1f)
             ) {
                 when {
+                    showSponsoredCard && sponsoredAd != null && adsEnabled -> SponsoredDiscoverCard(sponsoredAd) {
+                        showSponsoredCard = false
+                        com.chathala.hala.core.ads.refreshNativeAd(DISCOVER_NATIVE_SLOT)
+                    }
                     state.initialLoading -> Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -224,13 +242,7 @@ fun DiscoverScreen(
             )
         }
 
-        if (showNativeOverlay) {
-            NativeAdOverlay(onDismiss = {
-                showNativeOverlay = false
-                // نافذة تتكرّر كل 8 بطاقات — أسقِط الإعلان المعروض ليأتي غيره في المرة القادمة.
-                com.chathala.hala.core.ads.refreshNativeAd(DISCOVER_NATIVE_SLOT)
-            })
-        }
+
     }
 
     detailCard?.let { card ->
@@ -486,66 +498,20 @@ private fun CardStack(
     }
 }
 
-/** خانة الإعلان المدمج في نافذة الاكتشاف — تُعرض مراراً، فتُجدَّد بعد كل إغلاق. */
-private const val DISCOVER_NATIVE_SLOT = "discover_overlay"
+private const val DISCOVER_NATIVE_SLOT = "discover_sponsored_card"
 
 @Composable
-private fun NativeAdOverlay(onDismiss: () -> Unit) {
-    val ad = com.chathala.hala.core.ads.rememberNativeAd(DISCOVER_NATIVE_SLOT)
-    // «متابعة» مقفل لثوانٍ معدودة. العدّ يبدأ من جديد لحظة وصول الإعلان، ليبقى
-    // الإعلان المعروض على الشاشة المدة كاملة. وإن لم يصل إعلان أصلاً، يُفتح الزر
-    // بعد المدة نفسها فلا يعلق المستخدم.
-    var secondsLeft by remember { mutableStateOf(com.chathala.hala.core.ads.AdConfig.DISCOVER_NATIVE_MIN_SECONDS) }
-    LaunchedEffect(ad) {
-        secondsLeft = com.chathala.hala.core.ads.AdConfig.DISCOVER_NATIVE_MIN_SECONDS
-        while (secondsLeft > 0) {
-            kotlinx.coroutines.delay(1_000)
-            secondsLeft--
+private fun SponsoredDiscoverCard(ad: com.google.android.gms.ads.nativead.NativeAd, onContinue: () -> Unit) {
+    androidx.activity.compose.BackHandler(onBack = onContinue)
+    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+            com.chathala.hala.core.ads.NativeAdCard(ad)
         }
-    }
-    val canContinue = secondsLeft == 0
-    // زر الرجوع يتبع الزر نفسه: يُغلق بعد انتهاء العدّ فقط
-    androidx.activity.compose.BackHandler { if (canContinue) onDismiss() }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.55f))
-            .clickable(
-                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                indication = null
-            ) { /* يبتلع النقرات حتى لا تصل للمكدّس */ },
-        contentAlignment = Alignment.Center
-    ) {
-        androidx.compose.material3.Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 4.dp
-        ) {
-            Column(modifier = Modifier.padding(8.dp)) {
-                if (ad != null) {
-                    com.chathala.hala.core.ads.NativeAdCard(ad)
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(180.dp),
-                        contentAlignment = Alignment.Center
-                    ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
-                }
-                androidx.compose.material3.TextButton(
-                    onClick = onDismiss,
-                    enabled = canContinue,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text(
-                        text = if (canContinue) S.get(R.string.action_continue)
-                        else S.get(R.string.ad_continue_in, secondsLeft),
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
-                    )
-                }
-            }
-        }
+        // Navigation stays outside the NativeAdView and is always available.
+        androidx.compose.material3.OutlinedButton(
+            onClick = onContinue,
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp)
+        ) { Text(S.get(R.string.ad_continue_discovery)) }
     }
 }
 
