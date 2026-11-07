@@ -200,7 +200,8 @@ fun NotificationsScreen(
                             }
                         },
                         onDelete = viewModel::delete,
-                        onLoadMore = viewModel::loadMore
+                        onLoadMore = viewModel::loadMore,
+                        onFriendRespond = viewModel::respondFriend
                     )
                 }
             }
@@ -348,7 +349,8 @@ private fun NotificationsList(
     state: NotificationsUiState,
     onItemClick: (com.chathala.hala.feature.notifications.data.NotificationItem) -> Unit,
     onDelete: (String) -> Unit,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    onFriendRespond: (com.chathala.hala.feature.notifications.data.NotificationItem, Boolean) -> Unit = { _, _ -> }
 ) {
     val listState = rememberLazyListState()
     val shouldLoadMore by remember {
@@ -391,7 +393,10 @@ private fun NotificationsList(
                     NotificationRow(
                         item = item,
                         currentUserId = state.currentUserId,
-                        onClick = { onItemClick(item) }
+                        onClick = { onItemClick(item) },
+                        friendResult = state.friendResults[item.id],
+                        friendBusy = item.id in state.friendBusy,
+                        onFriendRespond = { accept -> onFriendRespond(item, accept) }
                     )
                 }
             }

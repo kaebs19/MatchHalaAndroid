@@ -60,7 +60,10 @@ fun NotificationRow(
     item: NotificationItem,
     currentUserId: String?,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    friendResult: Boolean? = null,
+    friendBusy: Boolean = false,
+    onFriendRespond: ((accept: Boolean) -> Unit)? = null
 ) {
     val isRead = NotificationFormat.isReadByCurrentUser(item, currentUserId)
     val haptics = LocalHapticFeedback.current
@@ -141,6 +144,11 @@ fun NotificationRow(
                                 .height(140.dp)
                                 .clip(RoundedCornerShape(12.dp))
                         )
+                    }
+                    // طلب صداقة: قبول/رفض في الصفّ — الزرّان يستهلكان الضغطة فلا تفتح الملف
+                    if (item.type == "friend_request" && item.data?.get("friendshipId") is String && onFriendRespond != null) {
+                        Spacer(Modifier.height(10.dp))
+                        FriendRequestActions(friendResult, friendBusy, onFriendRespond)
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -357,4 +365,32 @@ private fun typeTitle(type: String?): String = when (type) {
     "security_alert" -> S.get(R.string.notif_security_alert)
     "announcement", "broadcast" -> S.get(R.string.notif_announcement)
     else -> S.get(R.string.notif_generic)
+}
+
+@Composable
+private fun FriendRequestActions(result: Boolean?, busy: Boolean, onRespond: (Boolean) -> Unit) {
+    if (result != null) {
+        Text(
+            text = S.get(if (result) R.string.notif_friend_accepted_done else R.string.notif_friend_declined_done),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = if (result) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        return
+    }
+    Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+        androidx.compose.material3.Button(
+            onClick = { onRespond(true) },
+            enabled = !busy,
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp, vertical = 6.dp),
+            modifier = Modifier.height(34.dp)
+        ) { Text(S.get(R.string.notif_action_accept), style = MaterialTheme.typography.labelLarge) }
+        androidx.compose.material3.OutlinedButton(
+            onClick = { onRespond(false) },
+            enabled = !busy,
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp, vertical = 6.dp),
+            modifier = Modifier.height(34.dp)
+        ) { Text(S.get(R.string.notif_action_decline), style = MaterialTheme.typography.labelLarge) }
+    }
 }

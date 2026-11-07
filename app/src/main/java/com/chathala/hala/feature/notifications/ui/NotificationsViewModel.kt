@@ -43,13 +43,36 @@ data class NotificationsUiState(
     val page: Int = 1,
     val totalPages: Int = 1,
     val currentUserId: String? = null,
-    val bulkWorking: Boolean = false
+    val bulkWorking: Boolean = false,
+    /** نتيجة زرّي الصداقة في الصفّ: معرّف الإشعار → true قُبل / false رُفض. */
+    val friendResults: Map<String, Boolean> = emptyMap(),
+    val friendBusy: Set<String> = emptySet()
 )
 
 class NotificationsViewModel(
     private val repo: NotificationsRepository,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val friends: com.chathala.hala.feature.friends.data.FriendsRepository? = null
 ) : ViewModel() {
+
+    /** قبول/رفض طلب صداقة من صفّ الإشعار — لا يفتح الملف، ويبقى مكان الزرّين النتيجة. */
+    fun respondFriend(item: NotificationItem, accept: Boolean) {
+        val friendshipId = item.data?.get("friendshipId") as? String ?: return
+        val repo = friends ?: return
+        if (item.id in _state.value.friendBusy) return
+        _state.update { it.copy(friendBusy = it.friendBusy + item.id) }
+        markRead(item.id)
+        viewModelScope.launch {
+            val r = if (accept) repo.accept(friendshipId) else repo.decline(friendshipId)
+            _state.update { s ->
+                s.copy(
+                    friendBusy = s.friendBusy - item.id,
+                    friendResults = if (r is NetworkResult.Success) s.friendResults + (item.id to accept) else s.friendResults
+                )
+            }
+            if (r is NetworkResult.Error) _message.tryEmit(ErrorMessages.friendly(r))
+        }
+    }
 
     private val _state = MutableStateFlow(NotificationsUiState())
     val state: StateFlow<NotificationsUiState> = _state.asStateFlow()
@@ -248,7 +271,8 @@ class NotificationsViewModel(
                 val app = extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HalaApp
                 return NotificationsViewModel(
                     repo = app.notificationsRepository,
-                    userRepo = app.userRepository
+                    userRepo = app.userRepository,
+                    friends = com.chathala.hala.feature.friends.data.FriendsRepository(tokenStorage = app.tokenStorage)
                 ) as T
             }
         }
