@@ -30,11 +30,11 @@ object AdConfig {
     /** بانر بعد كل N محادثة في قائمة المحادثات. */
     const val CHAT_LIST_BANNER_EVERY = 5
 
-    /** إعلان بيني بعد كل N بطاقة في الاكتشاف. */
-    const val DISCOVER_INTERSTITIAL_EVERY_CARDS = 20
-
-    /** بطاقة إعلان مدمج بعد كل N بطاقة في مكدّس الاكتشاف. */
-    const val NATIVE_EVERY_CARDS = 8
+    /**
+     * محطة إعلان كل N بطاقة في الاكتشاف، بالتناوب: مدمج ← ملء الشاشة ← مدمج…
+     * (مطابق لـ iOS 11.6). إن تعذّر ملء الشاشة يظهر المدمج بدله.
+     */
+    const val DISCOVER_AD_BREAK_EVERY = 6
 
     /** إعلان مدمج بعد كل N نتيجة في قائمة البحث عن المستخدمين. */
     const val SEARCH_NATIVE_EVERY = 6

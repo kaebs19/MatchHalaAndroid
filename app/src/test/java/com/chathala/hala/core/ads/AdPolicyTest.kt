@@ -11,15 +11,17 @@ class AdPolicyTest {
     }
 
     @Test fun `first discovery cards never trigger an ad`() {
-        (0 until AdConfig.NATIVE_EVERY_CARDS).forEach {
+        (0 until AdConfig.DISCOVER_AD_BREAK_EVERY).forEach {
             assertEquals(DiscoveryAdOpportunity.NONE, discoveryAdOpportunity(it))
         }
     }
 
     @Test fun `sponsored and fullscreen opportunities never compete on the same swipe`() {
-        assertEquals(DiscoveryAdOpportunity.NATIVE, discoveryAdOpportunity(8))
-        assertEquals(DiscoveryAdOpportunity.INTERSTITIAL, discoveryAdOpportunity(20))
-        assertEquals(DiscoveryAdOpportunity.NATIVE, discoveryAdOpportunity(40))
+        // كل 6 بطاقات بالتناوب: مدمج، ملء الشاشة، مدمج…
+        assertEquals(DiscoveryAdOpportunity.NATIVE, discoveryAdOpportunity(6))
+        assertEquals(DiscoveryAdOpportunity.INTERSTITIAL, discoveryAdOpportunity(12))
+        assertEquals(DiscoveryAdOpportunity.NATIVE, discoveryAdOpportunity(18))
+        assertEquals(DiscoveryAdOpportunity.NONE, discoveryAdOpportunity(7))
         assertEquals(DiscoveryAdOpportunity.NONE, discoveryAdOpportunity(-1))
     }
 

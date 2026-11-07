@@ -7,10 +7,9 @@ internal enum class DiscoveryAdOpportunity { NONE, NATIVE, INTERSTITIAL }
 
 /** One opportunity per swipe: a sponsored card and a fullscreen ad must never compete. */
 internal fun discoveryAdOpportunity(swipes: Int): DiscoveryAdOpportunity = when {
-    swipes <= 0 -> DiscoveryAdOpportunity.NONE
-    swipes % AdConfig.NATIVE_EVERY_CARDS == 0 -> DiscoveryAdOpportunity.NATIVE
-    swipes % AdConfig.DISCOVER_INTERSTITIAL_EVERY_CARDS == 0 -> DiscoveryAdOpportunity.INTERSTITIAL
-    else -> DiscoveryAdOpportunity.NONE
+    swipes <= 0 || swipes % AdConfig.DISCOVER_AD_BREAK_EVERY != 0 -> DiscoveryAdOpportunity.NONE
+    (swipes / AdConfig.DISCOVER_AD_BREAK_EVERY) % 2 == 1 -> DiscoveryAdOpportunity.NATIVE
+    else -> DiscoveryAdOpportunity.INTERSTITIAL
 }
 
 internal fun canRequestAds(userEligible: Boolean, consentAllowsRequests: Boolean, sdkReady: Boolean): Boolean =

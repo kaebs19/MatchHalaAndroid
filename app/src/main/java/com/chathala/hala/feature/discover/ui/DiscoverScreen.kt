@@ -146,11 +146,15 @@ fun DiscoverScreen(
     LaunchedEffect(Unit) {
         viewModel.showInterstitial.collect {
             if (!showSponsoredCard && detailCard == null && matched == null && !showFilters && premiumGate == null && reportCard == null) {
-                context.findActivity()?.let { com.chathala.hala.core.ads.InterstitialAdManager.showNow(it) }
+                val shown = context.findActivity()?.let { com.chathala.hala.core.ads.InterstitialAdManager.showNow(it) } == true
+                // تعذّر ملء الشاشة (غير محمّل/سقف/مهلة) ← المدمج بدله
+                if (!shown && com.chathala.hala.core.ads.AdGate.enabled && currentSponsoredAd != null) {
+                    showSponsoredCard = true
+                }
             }
         }
     }
-    // إعلان مدمج بين البطاقات (كل 8)
+    // إعلان مدمج بين البطاقات (محطة كل 6 بالتناوب مع ملء الشاشة)
     LaunchedEffect(Unit) {
         // لا إعلانات للمشتركين — وإلا بقيت النافذة تدور بلا إعلان
         viewModel.showNativeAd.collect {
