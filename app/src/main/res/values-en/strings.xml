@@ -1552,4 +1552,6 @@
     <string name="reply_to_their_message">Replied to their message</string>
     <string name="reply_type_video">Video</string>
     <string name="reply_type_location">Location</string>
+    <string name="friends_menu_view_profile">View profile</string>
+    <string name="friends_menu_remove">Remove friend</string>
 </resources>

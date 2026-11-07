@@ -1630,4 +1630,6 @@
     <string name="reply_to_their_message">ردّ على رسالته</string>
     <string name="reply_type_video">فيديو</string>
     <string name="reply_type_location">موقع</string>
+    <string name="friends_menu_view_profile">عرض البروفايل</string>
+    <string name="friends_menu_remove">إزالة من الأصدقاء</string>
 </resources>

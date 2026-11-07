@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.friends.ui
 
+import androidx.compose.material.icons.filled.PersonRemove
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MoreHoriz
 import com.chathala.hala.feature.stories.ui.ringState
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
@@ -277,8 +280,23 @@ private fun FriendRow(
             CircleBtn(Icons.AutoMirrored.Filled.Chat, MaterialTheme.colorScheme.primary, enabled = !processing, onClick = onChat)
             Spacer(Modifier.width(8.dp))
         }
-        // إزالة
-        CircleBtn(Icons.Filled.Close, MaterialTheme.colorScheme.error, enabled = !processing, onClick = onRemove)
+        // ••• ظاهر في كل صفّ: عرض البروفايل، و«إزالة من الأصدقاء» (بتأكيد)
+        Box {
+            var menuOpen by remember { mutableStateOf(false) }
+            CircleBtn(Icons.Filled.MoreHoriz, MaterialTheme.colorScheme.onSurfaceVariant, enabled = !processing) { menuOpen = true }
+            androidx.compose.material3.DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(S.get(R.string.friends_menu_view_profile)) },
+                    leadingIcon = { Icon(Icons.Filled.AccountCircle, null) },
+                    onClick = { menuOpen = false; onOpenProfile() }
+                )
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(S.get(R.string.friends_menu_remove), color = MaterialTheme.colorScheme.error) },
+                    leadingIcon = { Icon(Icons.Filled.PersonRemove, null, tint = MaterialTheme.colorScheme.error) },
+                    onClick = { menuOpen = false; onRemove() }
+                )
+            }
+        }
     }
 }
 
