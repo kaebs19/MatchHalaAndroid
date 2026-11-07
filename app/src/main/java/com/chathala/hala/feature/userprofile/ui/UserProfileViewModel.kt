@@ -177,7 +177,7 @@ class UserProfileViewModel(
         viewModelScope.launch {
             when (val r = repo.fetch(userId)) {
                 is NetworkResult.Success -> _state.update {
-                    it.copy(loading = false, user = r.data, error = null)
+                    it.copy(loading = false, user = r.data, error = null, liked = it.liked || r.data.isLiked == true)
                 }
                 // 404 = الوثيقة غير موجودة → الحساب محذوف نهائياً (لا فائدة من إعادة المحاولة)
                 is NetworkResult.Error -> _state.update {

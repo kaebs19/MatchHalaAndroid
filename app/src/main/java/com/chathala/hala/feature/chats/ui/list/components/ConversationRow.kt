@@ -63,8 +63,9 @@ fun ConversationRow(
     val isDeletedAccount = conversation.isOtherAccountDeleted(currentUserId)
     val lastMessage = conversation.lastMessage
     val unread = conversation.unreadCount
-    val isOnline = !isDeletedAccount && other?.isOnline == true
-    val isRecentlyActive = !isOnline && !isDeletedAccount && isRecentLogin(other?.lastLogin)
+    // نقطة خضراء لمن تواجد خلال آخر ساعة (مطابق لـ iOS 11.5) — بلا نصّ «متصل» في القائمة
+    val isOnline = !isDeletedAccount && (other?.isOnline == true || isRecentLogin(other?.lastLogin))
+    val isRecentlyActive = false
     val isPremium = !isDeletedAccount && other?.isPremium == true
     val isVerified = !isDeletedAccount && other?.verification?.isVerified == true
 
@@ -157,7 +158,6 @@ fun ConversationRow(
                     Spacer(Modifier.size(4.dp))
                 }
                 val time = lastMessage?.createdAt?.let(NotificationFormat::timeAgo)
-                    ?: presenceLabel(isOnline, isRecentlyActive)
                 if (!time.isNullOrBlank()) {
                     Text(
                         text = time,
@@ -333,13 +333,7 @@ private fun previewText(
         ?: S.get(R.string.chat_start)
 }
 
-private fun presenceLabel(isOnline: Boolean, recent: Boolean): String? = when {
-    isOnline -> S.get(R.string.status_online)
-    recent -> S.get(R.string.status_active_recently)
-    else -> null
-}
-
-/** اعتبار "نشط مؤخراً" خلال آخر 24 ساعة. */
+/** تواجد خلال آخر ساعة. */
 private fun isRecentLogin(lastLoginIso: String?): Boolean {
     if (lastLoginIso.isNullOrBlank()) return false
     return try {
@@ -348,7 +342,7 @@ private fun isRecentLogin(lastLoginIso: String?): Boolean {
         }
         val cleaned = lastLoginIso.substringBefore(".").substringBefore("Z")
         val d = fmt.parse(cleaned) ?: return false
-        (System.currentTimeMillis() - d.time) < 24L * 60 * 60 * 1000
+        (System.currentTimeMillis() - d.time) < 60L * 60 * 1000
     } catch (_: Throwable) {
         false
     }

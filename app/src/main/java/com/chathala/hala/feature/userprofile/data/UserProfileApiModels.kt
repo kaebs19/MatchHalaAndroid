@@ -39,6 +39,8 @@ data class UserProfile(
     val acceptingRequests: Boolean? = null,
     val premiumOnlyRequests: Boolean? = null,
     val likedYou: Boolean? = null,
+    /** هل أعجبتُ به سابقاً — ليبدأ القلب بحالته الصحيحة. */
+    val isLiked: Boolean? = null,
     /** يصل للمشرفين وحدهم — منه شارة الحساب الرسمي. */
     val role: String? = null
 ) {
