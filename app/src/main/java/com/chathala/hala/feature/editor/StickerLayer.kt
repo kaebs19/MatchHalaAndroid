@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -92,18 +93,29 @@ private fun StickerItem(
 ) {
     val current by rememberUpdatedState(sticker)
     val sizePx = sticker.size * frameW
+    val image = StickerImageStore.get(sticker.imageKey)
+    // ملصق الصورة بارتفاع حسب نسبته (الشارات أعرض من طولها)
+    val heightPx = if (image != null) sizePx * image.height / image.width.coerceAtLeast(1) else sizePx
     val sizeDp = (sizePx / density).dp
+    val heightDp = (heightPx / density).dp
     val left = (sticker.x * frameW - sizePx / 2f).roundToInt()
-    val top = (sticker.y * frameH - sizePx / 2f).roundToInt()
+    val top = (sticker.y * frameH - heightPx / 2f).roundToInt()
 
     Box(
         Modifier
             .absoluteOffset { IntOffset(left, top) }
-            .size(sizeDp)
+            .size(sizeDp, heightDp)
             .rotate(sticker.rotation)
             .then(if (selected) Modifier.border(1.5.dp, Color.White, RoundedCornerShape(6.dp)) else Modifier)
-            .pointerInput(sticker.id) {
-                detectTapGestures(onTap = { onSelect() })
+            .pointerInput(sticker.id, selected) {
+                detectTapGestures(onTap = {
+                    // الضغط على الشارة المحدَّدة ينتقل بين أشكالها
+                    val s = current
+                    if (selected && s.variants.size > 1) {
+                        val i = s.variants.indexOf(s.imageKey)
+                        onChange(s.copy(imageKey = s.variants[(i + 1) % s.variants.size]))
+                    } else onSelect()
+                })
             }
             .pointerInput(sticker.id) {
                 // سحب بإصبع + قرص/تدوير بإصبعين
@@ -126,7 +138,15 @@ private fun StickerItem(
             },
         contentAlignment = Alignment.Center
     ) {
-        Text(sticker.emoji, fontSize = with(androidx.compose.ui.unit.Density(density)) { (sizePx * 0.72f).toSp() })
+        if (image != null) {
+            androidx.compose.foundation.Image(
+                bitmap = image.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else if (sticker.imageKey == null) {
+            Text(sticker.emoji, fontSize = with(androidx.compose.ui.unit.Density(density)) { (sizePx * 0.72f).toSp() })
+        }
         if (selected) {
             // ✕ أعلى-يسار
             Box(

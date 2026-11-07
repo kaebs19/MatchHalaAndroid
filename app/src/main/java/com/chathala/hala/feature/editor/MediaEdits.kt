@@ -34,7 +34,15 @@ data class Sticker(
     val y: Float = 0.5f,
     /** عرض الملصق نسبةً من عرض الإطار. */
     val size: Float = 0.22f,
-    val rotation: Float = 0f
+    val rotation: Float = 0f,
+    /** ملصق صورة: رابط ملصق اللوحة أو مفتاح `local:` لشارة مرسومة على الجهاز (StickerImageStore) */
+    val imageKey: String? = null,
+    /** أشكال الشارة — الضغط على الملصق المحدَّد ينتقل بينها */
+    val variants: List<String> = emptyList(),
+    /** ملصق المدينة: الاسم فقط (لا إحداثيات) — يُرسل locationTag مع القصة */
+    val locationPlace: String? = null,
+    /** العرض ÷ الارتفاع لملصق الصورة (الشارات أعرض من طولها) */
+    val aspect: Float = 1f
 )
 
 /** تعديلات صورة واحدة (لكل صورة تعديلاتها في وضع تعدّد الصور). */
@@ -125,8 +133,22 @@ object PhotoRenderer {
     fun drawStickers(canvas: Canvas, width: Int, height: Int, stickers: List<Sticker>) {
         if (stickers.isEmpty()) return
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+        val bmpPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         stickers.forEach { s ->
             val px = s.size * width
+            // ملصق صورة (لوحة التحكم / شارة المدينة والحالة): بعرض size وارتفاع حسب نسبته
+            val image = StickerImageStore.get(s.imageKey)
+            if (s.imageKey != null) {
+                if (image != null) {
+                    val h = px * image.height / image.width.coerceAtLeast(1)
+                    canvas.save()
+                    canvas.translate(s.x * width, s.y * height)
+                    canvas.rotate(s.rotation)
+                    canvas.drawBitmap(image, null, android.graphics.RectF(-px / 2, -h / 2, px / 2, h / 2), bmpPaint)
+                    canvas.restore()
+                }
+                return@forEach
+            }
             paint.textSize = px * 0.86f
             val bounds = Rect()
             paint.getTextBounds(s.emoji, 0, s.emoji.length, bounds)

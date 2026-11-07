@@ -1642,4 +1642,25 @@
     <string name="sticker_remove_favorite">إزالة من المفضلة</string>
     <string name="sticker_unavailable">هذا الملصق لم يعد متاحاً</string>
     <string name="sticker_button">ملصقات وإيموجي</string>
+    <string name="sticker_tab_info">📍 موقع وحالة</string>
+    <string name="sticker_my_city">مدينتي</string>
+    <string name="sticker_city_failed">تعذّر معرفة مدينتك</string>
+    <string name="sticker_location_denied">فعّل إذن الموقع لإضافة مدينتك إلى القصة</string>
+    <string name="sticker_tap_to_restyle">اضغط الملصق لتغيير شكله</string>
+    <string name="mood_title">حالتي</string>
+    <string name="mood_happy">سعادة</string>
+    <string name="mood_excited">حماس</string>
+    <string name="mood_in_love">حب</string>
+    <string name="mood_missing">اشتياق</string>
+    <string name="mood_relaxed">راحة بال</string>
+    <string name="mood_sleepy">نعاس</string>
+    <string name="mood_sad">حزن</string>
+    <string name="mood_annoyed">عصبية</string>
+    <string name="mood_tired">تعب</string>
+    <string name="mood_coffee">قهوة</string>
+    <string name="mood_work">شغل</string>
+    <string name="mood_travel">سفر</string>
+    <string name="mood_workout">رياضة</string>
+    <string name="mood_gaming">ألعاب</string>
+    <string name="mood_music">موسيقى</string>
 </resources>

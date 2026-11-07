@@ -18,7 +18,9 @@ interface StoryApiService {
     @POST("api/mobile/stories")
     suspend fun publishImage(
         @Header("Authorization") bearer: String,
-        @Part image: MultipartBody.Part
+        @Part image: MultipartBody.Part,
+        /** JSON `{place,x,y,size}` — ملصق المدينة، بلا إحداثيات */
+        @Part("locationTag") locationTag: okhttp3.RequestBody? = null
     ): StoryEnvelope<StoryPublishData>
 
     @POST("api/mobile/stories/text")

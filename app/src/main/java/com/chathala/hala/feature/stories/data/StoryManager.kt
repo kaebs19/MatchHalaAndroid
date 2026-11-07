@@ -112,7 +112,7 @@ class StoryManager(
 
     val remainingSlots: Int get() = (_limits.value.max - _myStories.value.size).coerceAtLeast(0)
 
-    suspend fun publishImage(jpeg: ByteArray): NetworkResult<StoryPublishData> {
+    suspend fun publishImage(jpeg: ByteArray, locationTag: StoryLocationTag? = null): NetworkResult<StoryPublishData> {
         val uploadId = System.nanoTime()
         _uploads.update { it + Upload(uploadId, 0f) }
         // الرفع صغير (≤1MB) — تقدّم تقريبي يكفي للحلقة
@@ -123,7 +123,7 @@ class StoryManager(
                 _uploads.update { list -> list.map { if (it.id == uploadId) it.copy(progress = p) else it } }
             }
         }
-        val r = repo.publishImage(jpeg)
+        val r = repo.publishImage(jpeg, locationTag)
         ticker.cancel()
         _uploads.update { list -> list.filterNot { it.id == uploadId } }
         if (r is NetworkResult.Success) onPublished(r.data)

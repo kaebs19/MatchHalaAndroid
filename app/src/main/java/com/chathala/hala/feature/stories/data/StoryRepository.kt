@@ -23,10 +23,14 @@ class StoryRepository(
     private val api: StoryApiService = ApiClient.storyService
 ) {
 
-    suspend fun publishImage(jpeg: ByteArray): NetworkResult<StoryPublishData> = call {
+    suspend fun publishImage(jpeg: ByteArray, locationTag: StoryLocationTag? = null): NetworkResult<StoryPublishData> = call {
         val body = jpeg.toRequestBody("image/jpeg".toMediaTypeOrNull())
         val part = MultipartBody.Part.createFormData("image", "story_${System.currentTimeMillis()}.jpg", body)
-        api.publishImage(bearer(), part).requireData()
+        val tag = locationTag?.let {
+            ApiClient.moshi.adapter(StoryLocationTag::class.java).toJson(it)
+                .toRequestBody("text/plain".toMediaTypeOrNull())
+        }
+        api.publishImage(bearer(), part, tag).requireData()
     }
 
     suspend fun publishText(text: String, background: Int): NetworkResult<StoryPublishData> = call {

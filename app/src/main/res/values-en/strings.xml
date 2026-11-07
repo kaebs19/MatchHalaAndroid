@@ -1564,4 +1564,25 @@
     <string name="sticker_remove_favorite">Remove from favorites</string>
     <string name="sticker_unavailable">This sticker is no longer available</string>
     <string name="sticker_button">Stickers and emoji</string>
+    <string name="sticker_tab_info">📍 Place &amp; mood</string>
+    <string name="sticker_my_city">My city</string>
+    <string name="sticker_city_failed">Couldn\'t find your city</string>
+    <string name="sticker_location_denied">Allow location to add your city to the story</string>
+    <string name="sticker_tap_to_restyle">Tap the sticker to change its style</string>
+    <string name="mood_title">My mood</string>
+    <string name="mood_happy">Happy</string>
+    <string name="mood_excited">Excited</string>
+    <string name="mood_in_love">In love</string>
+    <string name="mood_missing">Missing someone</string>
+    <string name="mood_relaxed">Relaxed</string>
+    <string name="mood_sleepy">Sleepy</string>
+    <string name="mood_sad">Sad</string>
+    <string name="mood_annoyed">Annoyed</string>
+    <string name="mood_tired">Tired</string>
+    <string name="mood_coffee">Coffee time</string>
+    <string name="mood_work">At work</string>
+    <string name="mood_travel">Traveling</string>
+    <string name="mood_workout">Working out</string>
+    <string name="mood_gaming">Gaming</string>
+    <string name="mood_music">Listening to music</string>
 </resources>

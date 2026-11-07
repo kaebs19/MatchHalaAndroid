@@ -116,7 +116,12 @@ import java.io.File
 enum class EditorMode { CHAT, STORY }
 
 /** صورة جاهزة للإرسال/النشر: JPEG ≤1MB مرسوم على الأصل. */
-class EditedPhoto(val jpeg: ByteArray, val timerSec: Int?)
+class EditedPhoto(
+    val jpeg: ByteArray,
+    val timerSec: Int?,
+    /** ملصق المدينة في القصة — موضعه نسبي من الصورة المُرسلة */
+    val locationTag: com.chathala.hala.feature.stories.data.StoryLocationTag? = null
+)
 
 private enum class Tool { CROP, TIMER, STICKERS, BLUR, COLORS, TRIM }
 
@@ -229,8 +234,7 @@ fun PhotoEditorDialog(
                     when (tool) {
                         Tool.CROP -> CropPanel(current, { a -> update { it.copy(aspect = a) } }, { update { it.copy(rotation = (it.rotation + 90) % 360) } })
                         Tool.TIMER -> TimerPanel(current.timerSec) { v -> update { it.copy(timerSec = v) } }
-                        Tool.STICKERS -> EmojiPanel { e ->
-                            val st = Sticker(System.nanoTime(), e)
+                        Tool.STICKERS -> EditorStickerPanel(mode, EMOJIS) { st ->
                             update { it.copy(stickers = it.stickers + st) }
                             selectedSticker = st.id
                             tool = null
@@ -277,7 +281,12 @@ fun PhotoEditorDialog(
                                     // التعديلات تُرسم على الأصل (≤2048) لا على المعاينة
                                     val original = ImageCompressor.decode(context, uris[i]) ?: return@mapNotNull null
                                     val rendered = PhotoRenderer.render(original, edits[i])
-                                    EditedPhoto(ImageCompressor.compress(rendered), edits[i].timerSec)
+                                    val tag = edits[i].stickers.firstOrNull { it.locationPlace != null }?.let {
+                                        com.chathala.hala.feature.stories.data.StoryLocationTag(
+                                            place = it.locationPlace!!, x = it.x.toDouble(), y = it.y.toDouble(), size = it.size.toDouble()
+                                        )
+                                    }
+                                    EditedPhoto(ImageCompressor.compress(rendered), edits[i].timerSec, tag)
                                 }
                                 busy = false
                                 if (out.isEmpty()) context.showToast(S.get(R.string.profile_photo_read_failed)) else onDone(out)
@@ -450,8 +459,7 @@ fun VideoEditorDialog(
                 ToolPanel(visible = tool != null && chrome, onDismiss = { tool = null }) {
                     when (tool) {
                         Tool.TRIM -> if (m != null) TrimPanel(m.durationMs, edits.startMs, edits.endMs) { s, e -> edits = edits.copy(startMs = s, endMs = e) }
-                        Tool.STICKERS -> EmojiPanel { e ->
-                            val st = Sticker(System.nanoTime(), e)
+                        Tool.STICKERS -> EditorStickerPanel(EditorMode.CHAT, EMOJIS) { st ->
                             edits = edits.copy(stickers = edits.stickers + st)
                             selectedSticker = st.id
                             tool = null
