@@ -36,6 +36,12 @@ interface StoryApiService {
         @Path("userId") userId: String
     ): StoryEnvelope<UserStoriesData>
 
+    @retrofit2.http.GET("api/mobile/stories/feed")
+    suspend fun feed(
+        @Header("Authorization") bearer: String,
+        @retrofit2.http.Query("limit") limit: Int = 30
+    ): StoryEnvelope<StoryFeedData>
+
     @POST("api/mobile/stories/status")
     suspend fun statuses(
         @Header("Authorization") bearer: String,

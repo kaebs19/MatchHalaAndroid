@@ -1621,4 +1621,6 @@
     <string name="story_location_near">قريبة منك</string>
     <string name="story_location_km">على بُعد نحو %1$d كم منك</string>
     <string name="story_location_open_maps">فتح في الخرائط</string>
+    <string name="stories_feed_button">القصص</string>
+    <string name="stories_feed_empty">لا قصص الآن — شارك قصتك من زرّ صورتك</string>
 </resources>

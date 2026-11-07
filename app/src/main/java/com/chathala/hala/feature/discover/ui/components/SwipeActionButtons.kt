@@ -6,6 +6,8 @@ import com.chathala.hala.R
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -138,6 +140,8 @@ private fun ActionButton(
         label = "actionButtonScale"
     )
     val interactionSource = remember { MutableInteractionSource() }
+    // الوضع الفاتح: دائرة بيضاء صلبة وإطار ملوّن خفيف — الشفّاف الملوّن كان باهتاً على الأبيض
+    val isLight = androidx.compose.material3.MaterialTheme.colorScheme.background.luminance() > 0.5f
 
     Box(
         contentAlignment = Alignment.Center,
@@ -149,17 +153,21 @@ private fun ActionButton(
         Box(
             modifier = Modifier
                 .size(size)
+                .then(
+                    if (isLight && !isFilled) Modifier.shadow(3.dp, CircleShape, ambientColor = color.copy(alpha = 0.3f), spotColor = color.copy(alpha = 0.3f))
+                    else Modifier
+                )
                 .clip(CircleShape)
                 .background(
-                    brush = if (isFilled) Brush.linearGradient(
-                        listOf(color, color.copy(alpha = 0.7f))
-                    ) else Brush.linearGradient(
-                        listOf(color.copy(alpha = 0.18f), color.copy(alpha = 0.08f))
-                    )
+                    brush = when {
+                        isFilled -> Brush.linearGradient(listOf(color, color.copy(alpha = 0.7f)))
+                        isLight -> androidx.compose.ui.graphics.SolidColor(Color.White)
+                        else -> Brush.linearGradient(listOf(color.copy(alpha = 0.18f), color.copy(alpha = 0.08f)))
+                    }
                 )
                 .border(
-                    width = if (isFilled) 0.dp else 1.5.dp,
-                    color = color.copy(alpha = 0.55f),
+                    width = if (isFilled) 0.dp else if (isLight) 1.dp else 1.5.dp,
+                    color = color.copy(alpha = if (isLight) 0.35f else 0.55f),
                     shape = CircleShape
                 )
                 .alpha(if (enabled) 1f else 0.35f)

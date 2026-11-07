@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.discover.ui
 
+import kotlinx.coroutines.launch
+import com.chathala.hala.core.util.showToast
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -163,6 +165,37 @@ fun DiscoverScreen(
     val storyComposer = com.chathala.hala.feature.stories.ui.rememberStoryComposerState()
     // قصص صاحب البطاقة الحالية
     var storyCard by remember { mutableStateOf<com.chathala.hala.feature.discover.data.DiscoverCard?>(null) }
+
+    // ── خلاصة «القصص»: العارض بترتيب الخادم، مالك بعد مالك ──
+    val feedScope = androidx.compose.runtime.rememberCoroutineScope()
+    val feedContext = androidx.compose.ui.platform.LocalContext.current
+    var feedOwners by remember { mutableStateOf<List<com.chathala.hala.feature.stories.data.StoryFeedOwner>>(emptyList()) }
+    var feedIndex by remember { mutableStateOf(0) }
+    var feedLoading by remember { mutableStateOf(false) }
+    fun openStoriesFeed() {
+        if (feedLoading) return
+        feedLoading = true
+        feedScope.launch {
+            val r = storyManagerForCards.feed()
+            feedLoading = false
+            val owners = (r as? com.chathala.hala.core.network.NetworkResult.Success)?.data.orEmpty()
+            if (owners.isEmpty()) {
+                feedContext.showToast(S.get(R.string.stories_feed_empty))
+            } else {
+                feedIndex = 0
+                feedOwners = owners
+            }
+        }
+    }
+    feedOwners.getOrNull(feedIndex)?.let { o ->
+        com.chathala.hala.feature.stories.ui.StoryViewer(
+            owner = com.chathala.hala.feature.stories.ui.StoryOwner(o.id, o.name.orEmpty(), o.profileImage),
+            isMine = false,
+            onDismiss = { feedOwners = emptyList() },
+            onFinished = { if (feedIndex + 1 < feedOwners.size) feedIndex++ else feedOwners = emptyList() },
+            onMessage = null
+        )
+    }
     storyCard?.let { c ->
         com.chathala.hala.feature.stories.ui.StoryViewer(
             owner = com.chathala.hala.feature.stories.ui.StoryOwner(c.id, c.name.orEmpty(), c.galleryPhotos.firstOrNull()),
@@ -192,7 +225,9 @@ fun DiscoverScreen(
                 // شاشة الزوّار تعرض التمويه وبانر الترقية للمجاني بنفسها،
                 // فنفتحها للجميع بدل حجبها خلف حوار (المجاني يرى العدد ويُغرى بالترقية).
                 onVisitorsClick = onOpenVisitors,
-                onAddStory = { storyComposer.open() }
+                onAddStory = { storyComposer.open() },
+                onOpenStoriesFeed = ::openStoriesFeed,
+                storiesFeedLoading = feedLoading
             )
 
             // بانر التقييد العام (يظهر فقط عند تقييد/تعليق الحساب)
@@ -352,7 +387,9 @@ private fun TopBar(
     onSearchClick: () -> Unit,
     onFiltersClick: () -> Unit,
     onVisitorsClick: () -> Unit,
-    onAddStory: () -> Unit
+    onAddStory: () -> Unit,
+    onOpenStoriesFeed: () -> Unit = {},
+    storiesFeedLoading: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -363,6 +400,8 @@ private fun TopBar(
         VisitorsPill(isPremium = isPremium, onClick = onVisitorsClick)
         Spacer(Modifier.width(8.dp))
         com.chathala.hala.feature.stories.ui.AddStoryButton(onClick = onAddStory)
+        Spacer(Modifier.width(8.dp))
+        com.chathala.hala.feature.stories.ui.StoriesFeedButton(loading = storiesFeedLoading, onClick = onOpenStoriesFeed)
         Column(
             modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally

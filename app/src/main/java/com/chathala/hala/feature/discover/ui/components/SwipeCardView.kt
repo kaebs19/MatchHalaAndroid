@@ -304,19 +304,19 @@ fun SwipeCardView(
 
         if (showOverlay) {
             // Readability gradient
-            // شريط القراءة في الـ 42% السفلية فقط (iOS readabilityLayer) — الصورة تبقى نقيّة أعلاه
+            // شريط القراءة في الـ 45% السفلية فقط (iOS readabilityLayer) — الصورة تبقى نقيّة أعلاه
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .fillMaxHeight(0.42f)
+                    .fillMaxHeight(0.45f)
                     .background(
+                        // تدرّج داكن ناعم بلا حافة صلبة (مطابق لـ iOS 11.6)
                         brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.35f),
-                                Color.Black.copy(alpha = 0.78f)
-                            )
+                            0f to Color.Transparent,
+                            0.35f to Color.Black.copy(alpha = 0.25f),
+                            0.7f to Color.Black.copy(alpha = 0.6f),
+                            1f to Color.Black.copy(alpha = 0.8f)
                         )
                     )
             )

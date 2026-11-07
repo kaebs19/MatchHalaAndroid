@@ -10,6 +10,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.unit.sp
@@ -270,4 +273,70 @@ fun AddStoryButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+/**
+ * زرّ «القصص» في شريط الاكتشاف: بارتفاع الشريط كاملاً، وحلقة فيها نقطة «جديد» في قلبها
+ * تنبض بهدوء ما دامت هناك قصص لم تُشاهد — وتثبت مع «تقليل الحركة» (مقياس الحركة = 0).
+ */
+@Composable
+fun StoriesFeedButton(loading: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val app = LocalContext.current.applicationContext as HalaApp
+    val statuses by app.storyManager.statuses.collectAsState()
+    val hasUnseen = statuses.values.any { it.count > 0 && it.hasUnseen }
+    androidx.compose.foundation.layout.Row(
+        modifier
+            .height(40.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.08f))
+            .clickable(enabled = !loading, onClick = onClick)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+            if (loading) {
+                androidx.compose.material3.CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+            } else {
+                StoryRingBox(
+                    state = if (hasUnseen) StoryRingState.Unseen else StoryRingState.Seen,
+                    modifier = Modifier.fillMaxSize(),
+                    ringWidth = 2.5.dp,
+                    gap = 1.5.dp
+                ) {
+                    if (hasUnseen) StoriesPulseDot(Modifier.align(Alignment.Center))
+                }
+            }
+        }
+        androidx.compose.foundation.layout.Spacer(Modifier.width(6.dp))
+        androidx.compose.material3.Text(
+            com.chathala.hala.core.i18n.S.get(com.chathala.hala.R.string.stories_feed_button),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
+@Composable
+private fun StoriesPulseDot(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val reduceMotion = remember {
+        android.provider.Settings.Global.getFloat(
+            context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+        ) == 0f
+    }
+    val pulse = if (reduceMotion) null else androidx.compose.animation.core.rememberInfiniteTransition(label = "storiesPulse")
+    val scale = pulse?.animateFloat(
+        initialValue = 0.8f, targetValue = 1.25f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            androidx.compose.animation.core.tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+            androidx.compose.animation.core.RepeatMode.Reverse
+        ), label = "storiesPulseScale"
+    )?.value ?: 1f
+    Box(
+        modifier
+            .size(8.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale; alpha = if (reduceMotion) 1f else 0.75f + (scale - 0.8f) / 0.45f * 0.25f }
+            .clip(CircleShape)
+            .background(StoryRingBrush)
+    )
 }

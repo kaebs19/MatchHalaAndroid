@@ -129,14 +129,18 @@ fun StoryViewer(
     startStoryId: String? = null,
     onMessage: (() -> Unit)? = null,
     onAddStory: (() -> Unit)? = null,
-    onOpenPremium: () -> Unit = {}
+    onOpenPremium: () -> Unit = {},
+    /** انتهت قصص هذا المالك (لا إغلاق المستخدم) — للخلاصة: يفتح المالك التالي. */
+    onFinished: (() -> Unit)? = null
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
         FullScreenDialogWindow()
-        StoryViewerContent(owner, isMine, onDismiss, startStoryId, onMessage, onAddStory, onOpenPremium)
+        androidx.compose.runtime.key(owner.id) {
+            StoryViewerContent(owner, isMine, onDismiss, startStoryId, onMessage, onAddStory, onOpenPremium, onFinished)
+        }
     }
 }
 
@@ -148,7 +152,8 @@ private fun StoryViewerContent(
     startStoryId: String?,
     onMessage: (() -> Unit)?,
     onAddStory: (() -> Unit)?,
-    onOpenPremium: () -> Unit
+    onOpenPremium: () -> Unit,
+    onFinished: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as HalaApp
@@ -194,7 +199,7 @@ private fun StoryViewerContent(
     LaunchedEffect(loading, stories.size, currentId) {
         if (!loading && current == null) {
             val replacement = stories.getOrNull(lastIndex) ?: stories.lastOrNull()
-            if (replacement != null) currentId = replacement.id else onDismiss()
+            if (replacement != null) currentId = replacement.id else (onFinished ?: onDismiss)()
         }
     }
 
@@ -229,7 +234,7 @@ private fun StoryViewerContent(
     fun goNext() = proceed {
         val i = stories.indexOfFirst { it.id == currentId }
         val next = stories.getOrNull(i + 1)
-        if (next != null) currentId = next.id else onDismiss()
+        if (next != null) currentId = next.id else (onFinished ?: onDismiss)()
     }
 
     fun close() = proceed(onDismiss)

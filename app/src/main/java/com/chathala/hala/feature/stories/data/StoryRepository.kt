@@ -51,6 +51,9 @@ class StoryRepository(
     suspend fun react(storyId: String, emoji: String?): NetworkResult<String?> =
         call { api.react(bearer(), storyId, StoryReactRequest(emoji)).data?.reaction }
 
+    suspend fun feed(): NetworkResult<List<StoryFeedOwner>> =
+        call { api.feed(bearer()).data?.owners.orEmpty() }
+
     suspend fun viewers(storyId: String): NetworkResult<StoryViewersData> =
         call { api.viewers(bearer(), storyId).data ?: StoryViewersData() }
 

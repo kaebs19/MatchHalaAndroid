@@ -169,3 +169,18 @@ data class StoryLocationTag(
     val y: Double = 0.5,
     val size: Double = 0.3
 )
+
+/** صاحب قصص في خلاصة «القصص» — مرتّب من الخادم. */
+@JsonClass(generateAdapter = true)
+data class StoryFeedOwner(
+    @Json(name = "_id") val id: String,
+    val name: String? = null,
+    val profileImage: String? = null,
+    val isPremium: Boolean? = null,
+    val isVerified: Boolean? = null,
+    val count: Int = 0,
+    val hasUnseen: Boolean = false
+)
+
+@JsonClass(generateAdapter = true)
+data class StoryFeedData(val owners: List<StoryFeedOwner> = emptyList())

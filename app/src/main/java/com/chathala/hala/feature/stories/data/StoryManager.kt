@@ -250,6 +250,9 @@ class StoryManager(
 
     suspend fun viewers(storyId: String) = repo.viewers(storyId)
 
+    /** خلاصة «القصص»: كل من له قصة ممن تعرفهم، بترتيب الخادم. */
+    suspend fun feed() = repo.feed()
+
     suspend fun react(storyId: String, emoji: String?) = repo.react(storyId, emoji)
 
     // ── الإعلان بين القصص ────────────────────────────────────────
