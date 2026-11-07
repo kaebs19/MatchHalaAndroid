@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
@@ -205,6 +206,7 @@ private fun StoryViewerContent(
     var reportOpen by remember { mutableStateOf(false) }
     // صفّ التفاعلات مفتوح (يوقف العدّ) + إيموجي يطفو عند التفاعل
     var reactionsOpen by remember { mutableStateOf(false) }
+    var locationOpen by remember { mutableStateOf<com.chathala.hala.feature.stories.data.StoryLocationTag?>(null) }
     var burst by remember { mutableStateOf<Pair<String, Long>?>(null) }
     var imageReady by remember(currentId) { mutableStateOf(current?.isText == true) }
 
@@ -214,7 +216,7 @@ private fun StoryViewerContent(
     var adDue by remember { mutableStateOf(false) }
     var adThen by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-    val paused = holding || menuOpen || viewersOpen || confirmDelete || reportOpen || reactionsOpen || !imageReady || adThen != null
+    val paused = holding || menuOpen || viewersOpen || confirmDelete || reportOpen || reactionsOpen || locationOpen != null || !imageReady || adThen != null
 
     fun proceed(action: () -> Unit) {
         if (adDue && nativeAd != null) {
@@ -340,6 +342,33 @@ private fun StoryViewerContent(
                     TapZone(Modifier.weight(2f), onTap = ::goNext, onHold = { holding = it })
                 }
 
+                // ملصق المدينة: منطقة ضغط فوق موضعه على الصورة المعروضة بـ Fit
+                val tag = current.locationTag
+                val iw = current.width ?: 0
+                val ih = current.height ?: 0
+                if (!current.isText && tag != null && iw > 0 && ih > 0 && imageReady) {
+                    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+                        val cw = constraints.maxWidth.toFloat()
+                        val ch = constraints.maxHeight.toFloat()
+                        val scale = minOf(cw / iw, ch / ih)
+                        val fw = iw * scale
+                        val fh = ih * scale
+                        val left = (cw - fw) / 2f
+                        val top = (ch - fh) / 2f
+                        val side = (tag.size * fw).toFloat().coerceAtLeast(with(density) { 44.dp.toPx() })
+                        val cx = left + tag.x.toFloat() * fw
+                        val cy = top + tag.y.toFloat() * fh
+                        Box(
+                            Modifier
+                                // ⚠️ absoluteOffset: الموضع من صورة الناشر — لا ينعكس في RTL
+                                .absoluteOffset { androidx.compose.ui.unit.IntOffset((cx - side / 2).toInt(), (cy - side / 2).toInt()) }
+                                .size(with(density) { side.toDp() })
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { locationOpen = tag }
+                        )
+                    }
+                }
+
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -433,6 +462,12 @@ private fun StoryViewerContent(
                     }
                 }
                 if (!isMine && reactionsOpen) {
+                    // الضغط خارج صفّ التفاعلات يغلقه فقط — لا انتقال للقصة التالية
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) { detectTapGestures { reactionsOpen = false } }
+                    )
                     ReactionsRow(
                         selected = current.myReaction,
                         onPick = ::react,
@@ -495,6 +530,8 @@ private fun StoryViewerContent(
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(S.get(R.string.action_cancel)) } }
         )
     }
+    locationOpen?.let { tag -> StoryLocationSheet(tag) { locationOpen = null } }
+
     if (reportOpen && story != null) {
         StoryReportDialog(
             onDismiss = { reportOpen = false },

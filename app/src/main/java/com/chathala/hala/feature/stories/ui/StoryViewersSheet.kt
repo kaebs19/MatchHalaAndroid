@@ -58,6 +58,10 @@ import com.chathala.hala.ui.components.HalaAsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Request
+import com.chathala.hala.feature.stories.data.StoryViewerItem
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 
 /**
  * ورقة مشاهدي قصتي: العدد دائماً، والأسماء لمشترك هلا+ فقط (📸 بجانب من التقط لقطة).
@@ -74,6 +78,7 @@ fun StoryViewersSheet(
     val manager = (LocalContext.current.applicationContext as HalaApp).storyManager
     var data by remember { mutableStateOf<StoryViewersData?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var showShots by remember { mutableStateOf(false) }
     LaunchedEffect(story.id, story.viewCount, story.screenshotCount, story.reactionCount) {
         when (val r = manager.viewers(story.id)) {
             is NetworkResult.Success -> data = r.data
@@ -97,14 +102,48 @@ fun StoryViewersSheet(
                     Text(S.plural(R.plurals.story_reactions_count, likes), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (shots > 0) {
-                    Spacer(Modifier.width(14.dp))
-                    Icon(Icons.Filled.PhotoCamera, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(S.plural(R.plurals.story_screenshots_count, shots), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(10.dp))
+                    // عدد اللقطات زرّ للجميع يفتح قائمة الملتقطين
+                    val active = showShots
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(
+                                if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
+                            )
+                            .clickable(enabled = d != null) { showShots = !showShots }
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.PhotoCamera, null,
+                            tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(S.plural(R.plurals.story_screenshots_count, shots),
+                            color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp)
+                    }
                 }
             }
             Spacer(Modifier.height(16.dp))
             when {
+                showShots && d != null -> {
+                    Text(S.get(R.string.story_screenshotters_title), fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(10.dp))
+                    if (d.screenshotters.isEmpty()) {
+                        Text(
+                            S.get(R.string.story_screenshotters_hidden),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    } else LazyColumn(Modifier.heightIn(max = 460.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(d.screenshotters, key = { "s" + (it.viewer?.id ?: it.screenshotAt.orEmpty()) }) { item ->
+                            ViewerRow(item, item.screenshotAt ?: item.viewedAt, showShot = false)
+                        }
+                    }
+                }
                 d == null && error == null -> Box(Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
@@ -133,6 +172,16 @@ fun StoryViewersSheet(
                 )
                 d != null -> LazyColumn(Modifier.heightIn(max = 460.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(d.viewers, key = { it.viewer?.id ?: it.viewedAt.orEmpty() }) { item ->
+                        ViewerRow(item, item.viewedAt, showShot = true)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ViewerRow(item: StoryViewerItem, time: String?, showShot: Boolean) {
                         val v = item.viewer
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             HalaAsyncImage(
@@ -151,22 +200,17 @@ fun StoryViewersSheet(
                                     }
                                 }
                                 Text(
-                                    NotificationFormat.timeAgo(item.viewedAt),
+                                    NotificationFormat.timeAgo(time),
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            item.reaction?.let { Text(it, fontSize = 20.sp) }
+                            if (showShot) item.reaction?.let { Text(it, fontSize = 20.sp) }
                             if (item.screenshotAt != null) {
                                 Spacer(Modifier.width(6.dp))
                                 Text("📸", fontSize = 18.sp)
                             }
                         }
-                    }
-                }
-            }
-        }
-    }
 }
 
 /** «حفظ في الصور» لقصتي المصوّرة — MediaStore بلا صلاحية (API 29+). */

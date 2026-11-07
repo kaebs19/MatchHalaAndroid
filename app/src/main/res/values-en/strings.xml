@@ -1538,4 +1538,9 @@
     <string name="notif_action_failed">Couldn\'t complete that. Open the app and try again</string>
     <string name="notif_card_locked">Subscribe to Hala+ to see who liked you</string>
     <string name="notif_new_admirer">New admirer</string>
+    <string name="story_screenshotters_title">Took a screenshot</string>
+    <string name="story_screenshotters_hidden">Names aren\'t available for this story</string>
+    <string name="story_location_near">Near you</string>
+    <string name="story_location_km">About %1$d km from you</string>
+    <string name="story_location_open_maps">Open in Maps</string>
 </resources>

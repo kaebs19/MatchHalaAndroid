@@ -1616,4 +1616,9 @@
     <string name="notif_action_failed">تعذّر تنفيذ الإجراء، افتح التطبيق وحاول مجدداً</string>
     <string name="notif_card_locked">اشترك في هلا+ لترى من أعجب بك</string>
     <string name="notif_new_admirer">معجب جديد</string>
+    <string name="story_screenshotters_title">التقطوا لقطة شاشة</string>
+    <string name="story_screenshotters_hidden">لا تتوفّر أسماء الملتقطين لهذه القصة</string>
+    <string name="story_location_near">قريبة منك</string>
+    <string name="story_location_km">على بُعد نحو %1$d كم منك</string>
+    <string name="story_location_open_maps">فتح في الخرائط</string>
 </resources>

@@ -27,7 +27,9 @@ data class Story(
     // للمشاهد فقط
     val viewed: Boolean? = null,
     /** تفاعلي مع القصة (إيموجي) أو null. */
-    val myReaction: String? = null
+    val myReaction: String? = null,
+    /** ملصق المدينة: الاسم فقط بلا إحداثيات، وموضعه نسبي 0…1 من الصورة. */
+    val locationTag: StoryLocationTag? = null
 ) {
     val isText: Boolean get() = kind == KIND_TEXT
     val isHeld: Boolean get() = held == true
@@ -129,6 +131,8 @@ data class StoryViewersData(
     val screenshotCount: Int = 0,
     val reactionCount: Int = 0,
     val viewers: List<StoryViewerItem> = emptyList(),
+    /** من التقط لقطة شاشة — للجميع (المشترك وغيره)، بشكل viewers نفسه + screenshotAt. */
+    val screenshotters: List<StoryViewerItem> = emptyList(),
     val isPremiumRequired: Boolean = false
 )
 
@@ -156,3 +160,12 @@ object StoryErrorCodes {
     const val INVALID = "STORY_INVALID"
     const val NOT_FOUND = "STORY_NOT_FOUND"
 }
+
+/** `{place, x, y, size}` — x,y مركز الملصق نسبةً لعرض/ارتفاع الصورة، size ضلعه نسبةً لعرضها. */
+@JsonClass(generateAdapter = true)
+data class StoryLocationTag(
+    val place: String,
+    val x: Double = 0.5,
+    val y: Double = 0.5,
+    val size: Double = 0.3
+)
