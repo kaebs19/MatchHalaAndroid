@@ -178,8 +178,9 @@ data class ExternalPromoBlockedInfo(
     val violations: Int? = null,
     val threshold: Int? = null,
     val lockCount: Int? = null,
-    val durationHours: Int? = null,
-    val severity: String? = null,  // first | repeated | last_warning | locked | suspended
+    val durationHours: Int? = null,     // صار 0 دائماً — المدة في durationMinutes
+    val durationMinutes: Int? = null,
+    val severity: String? = null,  // first | repeated | last_warning | locked | paused | suspended
     val lockApplied: Boolean? = null,
     val suspended: Boolean? = null,
     val detectedPatterns: List<String>? = null

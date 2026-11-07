@@ -107,7 +107,7 @@ class AuthViewModel(
                     userId = body?.user?.id,
                     reason = data?.reason,
                     suspendedUntil = until,
-                    level = data?.level ?: 0,
+                    level = data?.levelInt ?: 0,
                     isPermanent = until.isNullOrBlank(),
                     token = body?.token
                 )
@@ -122,7 +122,7 @@ class AuthViewModel(
                     userId = body?.user?.id,
                     reason = body?.data?.reason ?: body?.message,
                     suspendedUntil = null,
-                    level = body?.data?.level ?: 0,
+                    level = body?.data?.levelInt ?: 0,
                     isPermanent = true,
                     token = body?.token
                 )

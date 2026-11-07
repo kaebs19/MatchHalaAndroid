@@ -1498,4 +1498,29 @@
         <item quantity="one">1 reaction</item>
         <item quantity="other">%1$d reactions</item>
     </plurals>
+    <string name="new_chat_pause_title">⏸ New chats paused</string>
+    <string name="new_chat_pause_body">Because of repeatedly sharing external accounts. %1$s left.\n\nYour current chats keep working as usual.</string>
+    <string name="action_ok_plain">OK</string>
+    <string name="promo_attempt">Attempt</string>
+    <string name="promo_attempt_of">%1$d of %2$d</string>
+    <string name="promo_repeat_title">If it happens again</string>
+    <string name="promo_repeat_desc">After 5 attempts, starting new chats is paused for a while; your current chats keep working.</string>
+    <string name="promo_review_title">Moderator review</string>
+    <string name="promo_review_desc">Repeated sharing refers the account to our moderation team for review.</string>
+    <string name="promo_got_it">Got it</string>
+    <string name="promo_pause_card_title">New chats paused</string>
+    <string name="promo_pause_count">Time #</string>
+    <string name="promo_pause_duration">Duration</string>
+    <string name="promo_default_message">To protect Hala users from scams, accounts and phone numbers are hidden automatically and weren\'t delivered. Any contact outside the app is your own responsibility.</string>
+    <string name="restriction_new_chats_paused">New chats paused</string>
+    <string name="restriction_current_chats_ok">Your current chats keep working</string>
+    <string name="restriction_ends_in">%1$s • ends in %2$s</string>
+    <plurals name="duration_minutes">
+        <item quantity="one">%1$d min</item>
+        <item quantity="other">%1$d min</item>
+    </plurals>
+    <plurals name="duration_days">
+        <item quantity="one">1 day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
 </resources>

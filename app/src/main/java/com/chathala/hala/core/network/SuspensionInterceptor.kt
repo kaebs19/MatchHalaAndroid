@@ -37,7 +37,7 @@ class SuspensionInterceptor : Interceptor {
                         userId = parsed.user?.id,
                         reason = parsed.data?.reason,
                         suspendedUntil = until,
-                        level = parsed.data?.level ?: 0,
+                        level = parsed.data?.levelInt ?: 0,
                         isPermanent = until.isNullOrBlank(),
                         // أثناء الجلسة نستخدم توكن الجلسة المخزّن لتقديم الاستئناف
                         token = null

@@ -240,7 +240,9 @@ class UserProfileViewModel(
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(requesting = false) }
-                    _message.tryEmit(ErrorMessages.friendly(r))
+                    if (!com.chathala.hala.core.network.RestrictionCenter.consumeNewChatPause(r)) {
+                        _message.tryEmit(ErrorMessages.friendly(r))
+                    }
                 }
             }
         }

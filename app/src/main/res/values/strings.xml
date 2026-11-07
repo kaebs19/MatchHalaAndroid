@@ -1568,4 +1568,37 @@
         <item quantity="many">%1$d تفاعلاً</item>
         <item quantity="other">%1$d تفاعل</item>
     </plurals>
+    <string name="new_chat_pause_title">⏸ بدء المحادثات الجديدة موقوف</string>
+    <string name="new_chat_pause_body">بسبب تكرار مشاركة حسابات خارجية. يتبقّى %1$s.\n\nمحادثاتك الحالية تعمل كالمعتاد، ويمكنك المراسلة فيها.</string>
+    <string name="action_ok_plain">حسناً</string>
+    <string name="promo_attempt">المحاولة</string>
+    <string name="promo_attempt_of">%1$d من %2$d</string>
+    <string name="promo_repeat_title">عند التكرار</string>
+    <string name="promo_repeat_desc">بعد 5 محاولات يتوقف بدء محادثات جديدة مؤقتاً، ومحادثاتك الحالية تعمل.</string>
+    <string name="promo_review_title">مراجعة الإشراف</string>
+    <string name="promo_review_desc">تكرار المشاركة يُحيل الحساب لمراجعة فريق الإشراف.</string>
+    <string name="promo_got_it">فهمت</string>
+    <string name="promo_pause_card_title">إيقاف المحادثات الجديدة</string>
+    <string name="promo_pause_count">المرة</string>
+    <string name="promo_pause_duration">المدة</string>
+    <string name="promo_default_message">لحماية مستخدمي هلا من النصب والاحتيال، تُحجب الحسابات وأرقام الهاتف تلقائياً، ولم تصل للطرف الآخر. أي تواصل خارج التطبيق يكون على مسؤوليتك.</string>
+    <string name="restriction_new_chats_paused">بدء المحادثات الجديدة موقوف مؤقتاً</string>
+    <string name="restriction_current_chats_ok">محادثاتك الحالية تعمل كالمعتاد</string>
+    <string name="restriction_ends_in">%1$s • ينتهي خلال %2$s</string>
+    <plurals name="duration_minutes">
+        <item quantity="zero">أقل من دقيقة</item>
+        <item quantity="one">دقيقة</item>
+        <item quantity="two">دقيقتان</item>
+        <item quantity="few">%1$d دقائق</item>
+        <item quantity="many">%1$d دقيقة</item>
+        <item quantity="other">%1$d دقيقة</item>
+    </plurals>
+    <plurals name="duration_days">
+        <item quantity="zero">أقل من يوم</item>
+        <item quantity="one">يوم</item>
+        <item quantity="two">يومان</item>
+        <item quantity="few">%1$d أيام</item>
+        <item quantity="many">%1$d يوماً</item>
+        <item quantity="other">%1$d يوم</item>
+    </plurals>
 </resources>

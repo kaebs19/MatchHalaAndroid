@@ -275,7 +275,9 @@ class DiscoverViewModel(
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(requestingUserId = null) }
-                    _message.tryEmit(ErrorMessages.friendly(r))
+                    if (!com.chathala.hala.core.network.RestrictionCenter.consumeNewChatPause(r)) {
+                        _message.tryEmit(ErrorMessages.friendly(r))
+                    }
                     onFailure?.invoke()
                 }
             }

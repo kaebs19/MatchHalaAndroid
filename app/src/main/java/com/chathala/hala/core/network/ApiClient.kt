@@ -94,6 +94,7 @@ object ApiClient {
                 chain.proceed(tagged)
             }
             .addInterceptor(SuspensionInterceptor())
+            .addInterceptor(RestrictionHeaderInterceptor())
             .addInterceptor(logging)
             .authenticator(
                 TokenAuthenticator(

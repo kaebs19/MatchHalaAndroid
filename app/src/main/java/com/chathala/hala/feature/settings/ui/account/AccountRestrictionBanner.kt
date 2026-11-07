@@ -40,6 +40,8 @@ import com.chathala.hala.HalaApp
 import com.chathala.hala.core.network.ApiClient
 import com.chathala.hala.feature.settings.data.AccountStandingData
 import kotlinx.coroutines.flow.first
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.filled.PauseCircle
 
 private val Red = Color(0xFFE53935)
 private val Orange = Color(0xFFFF8C00)
@@ -93,7 +95,21 @@ fun AccountRestrictionBanner(
         }
     }
 
-    val standing by produceState<AccountStandingData?>(initialValue = null, refreshKey, liftTick) {
+    // ترويسات X-Restriction-* — إيقاف الحسابات الخارجية (new_only) بانر برتقالي بلا «مراجعة»:
+    // الاستئناف للتقييد الكامل فقط، وإيقاف دقائق ينتهي قبل مراجعته.
+    val header by com.chathala.hala.core.network.RestrictionCenter.header
+        .collectAsStateWithLifecycle()
+    header?.takeIf { it.isNewChatPause }?.let { pause ->
+        val now by produceState(System.currentTimeMillis(), pause) {
+            while (true) { kotlinx.coroutines.delay(30_000); value = System.currentTimeMillis() }
+        }
+        if (pause.active(now)) {
+            NewChatPauseBanner(pause.untilMillis, modifier)
+            return
+        }
+    }
+
+    val standing by produceState<AccountStandingData?>(initialValue = null, refreshKey, liftTick, header) {
         value = runCatching {
             val token = app.tokenStorage.token.first() ?: return@runCatching null
             ApiClient.service.getAccountStanding("Bearer $token").data
@@ -254,5 +270,46 @@ private fun DetailRow(label: String, value: String) {
             style = MaterialTheme.typography.labelMedium,
             color = Color.White.copy(alpha = 0.85f)
         )
+    }
+}
+
+/** بانر «بدء المحادثات الجديدة موقوف مؤقتاً» — المحادثات القائمة تعمل، بلا زرّ مراجعة. */
+@Composable
+private fun NewChatPauseBanner(untilMillis: Long?, modifier: Modifier) {
+    val subtitle = if (untilMillis != null) {
+        S.get(
+            R.string.restriction_ends_in,
+            S.get(R.string.restriction_current_chats_ok),
+            com.chathala.hala.core.network.RestrictionCenter.formatRemaining(untilMillis)
+        )
+    } else S.get(R.string.restriction_current_chats_ok)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                androidx.compose.ui.graphics.Brush.linearGradient(
+                    listOf(Orange, Orange.copy(alpha = 0.85f))
+                )
+            )
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Filled.PauseCircle, null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.size(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                S.get(R.string.restriction_new_chats_paused),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.White
+            )
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.9f),
+                maxLines = 2
+            )
+        }
     }
 }

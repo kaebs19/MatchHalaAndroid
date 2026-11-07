@@ -87,8 +87,13 @@ data class ErrorBody(
 data class SuspensionPayload(
     val reason: String? = null,
     val suspendedUntil: String? = null,
-    val level: Int? = null
-)
+    // ⚠️ رقمٌ في تعليق الحساب ونصٌّ («new_only»/«all») في MESSAGING_RESTRICTED — كان Int
+    //    فيفشل تحليل جسم الخطأ كلّه ويظهر «خطأ 403» بدل رسالة الخادم.
+    val level: Any? = null,
+    val until: String? = null
+) {
+    val levelInt: Int get() = (level as? Number)?.toInt() ?: (level as? String)?.toIntOrNull() ?: 0
+}
 
 @JsonClass(generateAdapter = true)
 data class ValidationError(

@@ -73,6 +73,8 @@ class MainActivity : ComponentActivity() {
                             // شريط الرسالة الواردة — خارج شجرة التنقّل عمداً: يعلو أي
                             // شاشة، ولا يُعاد تركيبه مع كل انتقال، ويصل النقرَ إلى
                             // المحادثة عبر PushIntentCoordinator بلا NavController.
+                            com.chathala.hala.feature.chats.ui.chat.components.NewChatPauseDialogHost()
+
                             com.chathala.hala.feature.push.InAppMessageBanner(
                                 onOpenConversation = {
                                     com.chathala.hala.feature.push.PushIntentCoordinator

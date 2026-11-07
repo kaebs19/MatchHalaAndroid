@@ -467,7 +467,9 @@ class ChatViewModel(
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(reopening = false) }
-                    _message.tryEmit(ErrorMessages.friendly(r))
+                    if (!com.chathala.hala.core.network.RestrictionCenter.consumeNewChatPause(r)) {
+                        _message.tryEmit(ErrorMessages.friendly(r))
+                    }
                 }
             }
         }
