@@ -101,14 +101,51 @@ data class DisappearingInfo(
     val expiresAt: String? = null,
     /** للفيديو فقط: `once` | `24h`. */
     val mode: String? = null,
-    val viewedBy: List<DisappearingView>? = null
-)
+    val viewedBy: List<DisappearingView>? = null,
+    /** ↩️ أُرسل بـ allowReplay — إعادة فتح واحدة لهلا+ */
+    val replayable: Boolean? = null,
+    /** ↩️ حتى متى يبقى محجوزاً بعد أول مشاهدة */
+    val replayUntil: String? = null
+) {
+    private fun ms(iso: String?): Long? = iso?.takeIf { it.isNotBlank() }?.let {
+        runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull()
+    }
+
+    /** ما زالت إعادة الفتح الوحيدة متاحة لي؟ */
+    fun canReplay(userId: String?, now: Long = System.currentTimeMillis()): Boolean {
+        if (replayable != true || userId == null) return false
+        val until = ms(replayUntil) ?: return false
+        if (until <= now) return false
+        val view = viewedBy?.firstOrNull { it.user == userId } ?: return false
+        return view.replayedAt == null && view.expired != true
+    }
+
+    /** انتهت مشاهدتي الأولى وما بقي إلا إعادة الفتح؟ */
+    fun awaitsReplay(userId: String?, now: Long = System.currentTimeMillis()): Boolean {
+        if (!canReplay(userId, now)) return false
+        val closed = viewedBy?.firstOrNull { it.user == userId }?.closedAt != null
+        return closed || (ms(expiresAt) ?: Long.MAX_VALUE) <= now
+    }
+
+    /** أعاد أحد فتحه — يراها المرسل على الفقاعة */
+    val wasReplayed: Boolean get() = viewedBy?.any { it.replayedAt != null } == true
+
+    fun updatingView(userId: String?, change: (DisappearingView) -> DisappearingView): DisappearingInfo {
+        val list = viewedBy.orEmpty()
+        val existing = list.firstOrNull { it.user == userId }
+        val updated = if (existing != null) list.map { if (it.user == userId) change(it) else it }
+        else list + change(DisappearingView(user = userId, viewedAt = java.time.Instant.now().toString()))
+        return copy(viewedBy = updated)
+    }
+}
 
 @JsonClass(generateAdapter = true)
 data class DisappearingView(
     val user: String? = null,
     val viewedAt: String? = null,
-    val expired: Boolean? = null
+    val expired: Boolean? = null,
+    val closedAt: String? = null,
+    val replayedAt: String? = null
 )
 
 /** وضع الفيديو المؤقت. */
@@ -329,5 +366,6 @@ data class ViewPhotoData(
     val duration: Int? = null,
     val mode: String? = null,
     val expiresAt: String? = null,
+    val replayUntil: String? = null,
     val mediaUrl: String? = null
 )

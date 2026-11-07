@@ -1512,7 +1512,7 @@
     <string name="editor_trim_label">المقطع: %1$.1f ث (حتى 15 ثانية)</string>
     <string name="video_mode_once">مرة واحدة</string>
     <string name="video_mode_24h">24 ساعة</string>
-    <string name="video_mode_once_hint">يختفي بعد أن يشاهده الطرف الآخر مرة واحدة</string>
+    <string name="video_mode_once_hint">يختفي بعد مشاهدته. لمشترك هلا+ إعادته مرة خلال 10 دقائق وسنُعلمك</string>
     <string name="video_mode_24h_hint">يمكن إعادة مشاهدته حتى 24 ساعة من الإرسال</string>
     <string name="video_compressing">جارٍ التجهيز… %1$d٪</string>
     <string name="video_compress_failed">تعذّر تجهيز الفيديو</string>
@@ -1663,4 +1663,8 @@
     <string name="mood_workout">رياضة</string>
     <string name="mood_gaming">ألعاب</string>
     <string name="mood_music">موسيقى</string>
+    <string name="media_replay_once">إعادة تشغيل مرة واحدة</string>
+    <string name="media_replay_premium">إعادة تشغيل مع هلا+</string>
+    <string name="media_reopened_once">أُعيد فتحها مرة واحدة</string>
+    <string name="editor_timer_replay_hint">تختفي بعد %1$d ثانية من فتحها. لمشترك هلا+ إعادة فتحها مرة خلال 10 دقائق وسنُعلمك</string>
 </resources>

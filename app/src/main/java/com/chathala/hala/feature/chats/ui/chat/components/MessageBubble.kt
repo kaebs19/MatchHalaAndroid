@@ -92,6 +92,9 @@ fun MessageBubble(
     disappearingLoading: Boolean = false,
     /** الصورة المؤقتة انتهت/دُمِّرت */
     disappearingExpired: Boolean = false,
+    /** ↩️ انتهت المشاهدة الأولى وبقيت إعادة فتح واحدة لهلا+ */
+    awaitingReplay: Boolean = false,
+    isPremium: Boolean = false,
     onToggleAudio: (Message) -> Unit = {},
     onSeekAudio: (Message, Float) -> Unit = { _, _ -> },
     onLongPress: (Message) -> Unit = {},
@@ -210,7 +213,8 @@ fun MessageBubble(
                     isMine = isMine,
                     state = videoState,
                     textColor = textColor,
-                    onOpen = { onOpenVideo(message) }
+                    onOpen = { onOpenVideo(message) },
+                    isPremium = isPremium
                 )
                 "image" -> {
                     if (message.disappearing?.enabled == true && !isMine) {
@@ -219,6 +223,8 @@ fun MessageBubble(
                             expiresAtMs = disappearingExpiresAtMs,
                             isLoading = disappearingLoading,
                             isDestroyed = disappearingExpired,
+                            awaitingReplay = awaitingReplay,
+                            isPremium = isPremium,
                             onView = { onViewDisappearing(message) },
                             onReport = { reason -> onReportMedia(message, reason) }
                         )
@@ -227,7 +233,8 @@ fun MessageBubble(
                         SenderDisappearingContent(
                             durationSec = message.disappearing.duration ?: 10,
                             expiresAtMs = disappearingExpiresAtMs,
-                            isDestroyed = disappearingExpired
+                            isDestroyed = disappearingExpired,
+                            wasReplayed = message.disappearing.wasReplayed
                         )
                     } else {
                         ImageContent(
@@ -629,7 +636,8 @@ private fun FullscreenImageViewer(url: String, onDismiss: () -> Unit) {
 private fun SenderDisappearingContent(
     durationSec: Int,
     expiresAtMs: Long?,
-    isDestroyed: Boolean
+    isDestroyed: Boolean,
+    wasReplayed: Boolean = false
 ) {
     val nowMs by produceNow()
     val isViewing = !isDestroyed && expiresAtMs != null && nowMs < expiresAtMs
@@ -662,6 +670,7 @@ private fun SenderDisappearingContent(
             )
             Text(
                 text = when {
+                    wasReplayed && !isViewing -> S.get(R.string.media_reopened_once)
                     expired -> S.get(R.string.label_expired)
                     isViewing -> S.get(R.string.photo_opened_disappears, remainingSec)
                     else -> S.get(R.string.photo_not_opened, durationSec)
@@ -680,7 +689,9 @@ private fun DisappearingImageContent(
     isLoading: Boolean,
     isDestroyed: Boolean,
     onView: () -> Unit,
-    onReport: (com.chathala.hala.feature.reporting.data.ReportReason) -> Unit = {}
+    onReport: (com.chathala.hala.feature.reporting.data.ReportReason) -> Unit = {},
+    awaitingReplay: Boolean = false,
+    isPremium: Boolean = false
 ) {
     val durationSec = message.disappearing?.duration ?: 10
     var reportOpen by remember { mutableStateOf(false) }
@@ -699,6 +710,7 @@ private fun DisappearingImageContent(
     else durationSec
 
     val phase = when {
+        awaitingReplay && !isViewing && !isLoading -> "replay"
         isExpired -> "expired"
         isViewing -> "viewing"
         isLoading -> "loading"
@@ -734,6 +746,22 @@ private fun DisappearingImageContent(
                         text = S.get(R.string.photo_expired),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            "replay" -> {
+                // ↩️ إعادة تشغيل مرة واحدة (هلا+) — الضغط يفتحها أو يقود للاشتراك
+                Column(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight().clickable(onClick = onView),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = if (isPremium) "↩️" else "👑", style = MaterialTheme.typography.displayMedium)
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        text = S.get(if (isPremium) R.string.media_replay_once else R.string.media_replay_premium),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }

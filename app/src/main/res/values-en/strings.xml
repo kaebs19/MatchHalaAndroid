@@ -1450,7 +1450,7 @@
     <string name="editor_trim_label">Clip: %1$.1fs (up to 15 seconds)</string>
     <string name="video_mode_once">View once</string>
     <string name="video_mode_24h">24 hours</string>
-    <string name="video_mode_once_hint">Disappears after it is watched once</string>
+    <string name="video_mode_once_hint">Disappears once watched. A Hala+ member can replay it once within 10 minutes — we\'ll tell you</string>
     <string name="video_mode_24h_hint">Can be rewatched for 24 hours after sending</string>
     <string name="video_compressing">Preparing… %1$d%%</string>
     <string name="video_compress_failed">Could not prepare the video</string>
@@ -1585,4 +1585,8 @@
     <string name="mood_workout">Working out</string>
     <string name="mood_gaming">Gaming</string>
     <string name="mood_music">Listening to music</string>
+    <string name="media_replay_once">Replay once</string>
+    <string name="media_replay_premium">Replay with Hala+</string>
+    <string name="media_reopened_once">Reopened once</string>
+    <string name="editor_timer_replay_hint">Disappears %1$d seconds after opening. A Hala+ member can reopen it once within 10 minutes — we\'ll tell you</string>
 </resources>

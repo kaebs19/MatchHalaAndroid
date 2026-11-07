@@ -128,6 +128,8 @@ data class ChatUiState(
     val loadingDisappearing: Set<String> = emptySet(),
     /** صور مؤقتة دُمِّرت على الخادم — تُعرض «انتهت» */
     val expiredDisappearing: Set<String> = emptySet(),
+    /** ↩️ انتهت مشاهدتي الأولى وبقيت إعادة فتح واحدة لهلا+ */
+    val awaitingReplay: Set<String> = emptySet(),
     // حالة المحادثة (pending/accepted/rejected/expired) — لمنع الردّ قبل القبول
     val conversationStatus: String? = null,
     val isCreator: Boolean = false,
@@ -199,6 +201,41 @@ class ChatViewModel(
 
     private val _message = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val message: SharedFlow<String> = _message.asSharedFlow()
+
+    /** ميزة لهلا+ (إعادة فتح الوسيط المؤقت) — الشاشة تفتح الاشتراك */
+    private val _openSubscription = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val openSubscription: SharedFlow<Unit> = _openSubscription.asSharedFlow()
+
+    private fun selfId(): String? = _state.value.currentUserId
+
+    /** يحدّث معلومات الوسيط المؤقت لرسالة واحدة محلياً. */
+    private fun updateDisappearing(messageId: String, change: (com.chathala.hala.feature.chats.data.DisappearingInfo) -> com.chathala.hala.feature.chats.data.DisappearingInfo) {
+        _state.update { s ->
+            s.copy(messages = s.messages.map { m ->
+                val d = m.disappearing
+                if (m.id == messageId && d != null) m.copy(disappearing = change(d)) else m
+            })
+        }
+    }
+
+    /**
+     * ↩️ إعادة فتح الوسيط المؤقت مرة واحدة (هلا+). غير المشترك ← الاشتراك.
+     * الخادم يضبط مهلة جديدة ويُعلم المرسل (`media-replayed`).
+     */
+    fun replayDisappearing(message: Message) {
+        if (message.id !in _state.value.awaitingReplay) return
+        if (!_state.value.isPremium) { _openSubscription.tryEmit(Unit); return }
+        _state.update { it.copy(awaitingReplay = it.awaitingReplay - message.id, expiredDisappearing = it.expiredDisappearing - message.id) }
+        if (message.isVideo()) openVideo(message, replay = true) else viewDisappearingPhoto(message, replay = true)
+    }
+
+    /** يرجع الرسالة لحالة «إعادة الفتح» إن رفضها الخادم لغير المشترك. */
+    private fun handleReplayRejected(messageId: String, error: NetworkResult.Error): Boolean {
+        if (error.code != "REPLAY_PREMIUM_REQUIRED") return false
+        _state.update { it.copy(awaitingReplay = it.awaitingReplay + messageId) }
+        _openSubscription.tryEmit(Unit)
+        return true
+    }
 
     private var messagesLoadJob: Job? = null
     private var composerLoadJob: Job? = null
@@ -603,6 +640,21 @@ class ChatViewModel(
                 val mode = evt.json.optString("chatMode").takeIf { it.isNotBlank() } ?: return
                 _state.update { it.copy(chatMode = mode) }
             }
+            is SocketEvent.MediaReplayed -> {
+                // ↩️ أعاد الطرف الآخر فتح وسيطي — يظهر «أُعيد فتحها مرة واحدة»
+                val msgId = evt.json.optString("messageId").takeIf { it.isNotBlank() } ?: return
+                val at = evt.json.optString("replayedAt").takeIf { it.isNotBlank() } ?: java.time.Instant.now().toString()
+                _state.update { s ->
+                    s.copy(messages = s.messages.map { m ->
+                        val d = m.disappearing
+                        if (m.id != msgId || d == null) m
+                        else m.copy(disappearing = d.copy(viewedBy = d.viewedBy.orEmpty().let { list ->
+                            if (list.isEmpty()) listOf(com.chathala.hala.feature.chats.data.DisappearingView(replayedAt = at))
+                            else list.mapIndexed { i, v -> if (i == 0) v.copy(replayedAt = at) else v }
+                        }))
+                    })
+                }
+            }
             is SocketEvent.PartnerAccountState -> {
                 // حُظر الطرف الآخر أو عاد نشطاً — نعيد جلبه فتتحدّث الترويسة وشريط «غير متاح»
                 val uid = evt.json.optString("userId")
@@ -673,7 +725,8 @@ class ChatViewModel(
                         },
                         expiredDisappearing = s.expiredDisappearing + msgId,
                         viewedDisappearing = s.viewedDisappearing - msgId,
-                        loadingDisappearing = s.loadingDisappearing - msgId
+                        loadingDisappearing = s.loadingDisappearing - msgId,
+                        awaitingReplay = s.awaitingReplay - msgId
                     )
                 }
             }
@@ -1212,11 +1265,12 @@ class ChatViewModel(
      * فتح فيديو مؤقت: **نزّل الملف كاملاً قبل `view-photo`** (التسجيل يبدأ العدّ)، ثم سجّل
      * المشاهدة. المرسل يشاهد فيديوه دون تسجيل.
      */
-    fun openVideo(message: Message) {
+    fun openVideo(message: Message, replay: Boolean = false) {
+        if (!replay && message.id in _state.value.awaitingReplay) { replayDisappearing(message); return }
         val url = message.mediaUrl ?: return
         val id = message.id
         val s = _state.value
-        if (id in s.expiredDisappearing || id in s.loadingDisappearing || s.playingVideo != null) return
+        if ((!replay && id in s.expiredDisappearing) || id in s.loadingDisappearing || s.playingVideo != null) return
         val isMine = message.sender?.id == s.currentUserId
         _state.update { it.copy(loadingDisappearing = it.loadingDisappearing + id) }
         viewModelScope.launch {
@@ -1250,10 +1304,18 @@ class ChatViewModel(
                                 expiredDisappearing = if (r.httpCode == 410) st.expiredDisappearing + id else st.expiredDisappearing
                             )
                         }
-                        _message.tryEmit(if (r.httpCode == 410) S.get(R.string.video_state_expired) else ErrorMessages.friendly(r))
+                        if (!handleReplayRejected(id, r)) {
+                            _message.tryEmit(if (r.httpCode == 410) S.get(R.string.video_state_expired) else ErrorMessages.friendly(r))
+                        }
                         return@launch
                     }
-                    is NetworkResult.Success -> deadline = messageTimestamp(r.data.expiresAt) ?: deadline
+                    is NetworkResult.Success -> {
+                        deadline = messageTimestamp(r.data.expiresAt) ?: deadline
+                        updateDisappearing(id) { d ->
+                            d.copy(replayUntil = if (replay) null else r.data.replayUntil ?: d.replayUntil)
+                                .updatingView(selfId()) { v -> if (replay) v.copy(replayedAt = java.time.Instant.now().toString(), closedAt = null) else v }
+                        }
+                    }
                 }
             }
             _state.update {
@@ -1271,7 +1333,12 @@ class ChatViewModel(
         val playing = _state.value.playingVideo ?: return
         _state.update { it.copy(playingVideo = null) }
         if (playing.once && !playing.isMine) {
-            markDisappearingExpired(playing.messageId)
+            val msg = _state.value.messages.firstOrNull { it.id == playing.messageId }
+            if (msg?.disappearing?.canReplay(selfId()) == true) {
+                // ↩️ الخادم يضع closedAt ويحجزه لإعادة فتح واحدة
+                updateDisappearing(playing.messageId) { d -> d.updatingView(selfId()) { it.copy(closedAt = java.time.Instant.now().toString()) } }
+                _state.update { it.copy(awaitingReplay = it.awaitingReplay + playing.messageId) }
+            } else markDisappearingExpired(playing.messageId)
             viewModelScope.launch { messagesRepo.expireDisappearingMedia(playing.messageId) }
         }
     }
@@ -1282,7 +1349,8 @@ class ChatViewModel(
             s.copy(
                 messages = s.messages.map { if (it.id == messageId) it.copy(mediaUrl = null) else it },
                 viewedDisappearing = s.viewedDisappearing - messageId,
-                expiredDisappearing = s.expiredDisappearing + messageId
+                expiredDisappearing = s.expiredDisappearing + messageId,
+                awaitingReplay = s.awaitingReplay - messageId
             )
         }
     }
@@ -1368,11 +1436,12 @@ class ChatViewModel(
      * المؤقّت **لا** يبدأ عند الضغط، بل بعد تحميل الصورة فعلياً إلى كاش Coil —
      * وإلا احتُسبت ثواني العرض على شاشة سوداء عند بطء الشبكة.
      */
-    fun viewDisappearingPhoto(message: Message) {
+    fun viewDisappearingPhoto(message: Message, replay: Boolean = false) {
+        if (!replay && message.id in _state.value.awaitingReplay) { replayDisappearing(message); return }
         val duration = message.disappearing?.duration ?: return
         val url = message.mediaUrl ?: return
-        if (message.id in _state.value.expiredDisappearing ||
-            message.id in _state.value.viewedDisappearing ||
+        if ((!replay && message.id in _state.value.expiredDisappearing) ||
+            (!replay && message.id in _state.value.viewedDisappearing) ||
             message.id in _state.value.loadingDisappearing
         ) return
 
@@ -1396,10 +1465,17 @@ class ChatViewModel(
                 if (result is NetworkResult.Error || message.id in _state.value.expiredDisappearing) {
                     evictImageCache(url)
                     _state.update { it.copy(loadingDisappearing = it.loadingDisappearing - message.id) }
-                    if (result is NetworkResult.Error) _message.tryEmit(ErrorMessages.friendly(result))
+                    if (result is NetworkResult.Error && !handleReplayRejected(message.id, result)) {
+                        _message.tryEmit(ErrorMessages.friendly(result))
+                    }
                     return@launch
                 }
-                // The current endpoint returns no deadline, so use the configured duration.
+                val data = (result as NetworkResult.Success).data
+                // المشاهدة محلياً: replayUntil (أول مشاهدة قابلة للإعادة) أو replayedAt (الإعادة)
+                updateDisappearing(message.id) { d ->
+                    d.copy(replayUntil = if (replay) null else data.replayUntil ?: d.replayUntil)
+                        .updatingView(selfId()) { v -> if (replay) v.copy(replayedAt = java.time.Instant.now().toString(), closedAt = null) else v }
+                }
                 val expiresAt = System.currentTimeMillis() + duration * 1000L
                 _state.update {
                     it.copy(
@@ -1436,7 +1512,20 @@ class ChatViewModel(
         disappearingRemovalJobs.remove(messageId)?.cancel()
         disappearingRemovalJobs[messageId] = viewModelScope.launch {
             delay((expiresAtMs - System.currentTimeMillis()).coerceAtLeast(0L))
-            val url = _state.value.messages.firstOrNull { it.id == messageId }?.mediaUrl
+            val msg = _state.value.messages.firstOrNull { it.id == messageId }
+            val url = msg?.mediaUrl
+            // ↩️ مستلمٌ والوسيط محجوز لإعادة الفتح ← «إعادة تشغيل مع هلا+» بدل «انتهت»
+            if (msg != null && msg.sender?.id != selfId() && msg.disappearing?.canReplay(selfId()) == true) {
+                url?.let { evictImageCache(it) }
+                _state.update { s ->
+                    s.copy(
+                        viewedDisappearing = s.viewedDisappearing - messageId,
+                        awaitingReplay = s.awaitingReplay + messageId
+                    )
+                }
+                disappearingRemovalJobs.remove(messageId)
+                return@launch
+            }
             _state.update { s ->
                 s.copy(
                     messages = s.messages.map {
@@ -1453,7 +1542,13 @@ class ChatViewModel(
     }
 
     private fun restoreDisappearingDeadlines() {
-        _state.value.messages.filter { it.disappearing?.enabled == true }.forEach { message ->
+        // ↩️ ما انتهت مشاهدتي الأولى له وبقيت إعادته — من بيانات الخادم (closedAt/replayUntil)
+        val me = selfId()
+        val awaiting = _state.value.messages.filter {
+            it.sender?.id != me && it.disappearing?.awaitsReplay(me) == true
+        }.map { it.id }.toSet()
+        if (awaiting.isNotEmpty()) _state.update { it.copy(awaitingReplay = it.awaitingReplay + awaiting) }
+        _state.value.messages.filter { it.disappearing?.enabled == true && it.id !in awaiting }.forEach { message ->
             val deadline = messageTimestamp(message.disappearing?.expiresAt) ?: return@forEach
             // الفيديو: expiresAt حدّه الأقصى (24 ساعة) لا «فُتح» — نجدول الانتهاء فقط
             if (!message.isVideo()) {

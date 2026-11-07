@@ -64,4 +64,7 @@ sealed class SocketEvent {
 
     /** حُظر طرف محادثة أو عاد نشطاً — `{ userId, suspended }`. */
     data class PartnerAccountState(val json: JSONObject) : SocketEvent()
+
+    /** ↩️ أعاد الطرف الآخر فتح وسيطي المؤقت مرة — `{ messageId, conversationId, replayedAt }`. */
+    data class MediaReplayed(val json: JSONObject) : SocketEvent()
 }

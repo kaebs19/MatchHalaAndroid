@@ -216,6 +216,7 @@ class HalaSocket(
         s.on("conversation:block-state") { args ->
             args.firstJson()?.let { emit(SocketEvent.ConversationBlockState(it)) }
         }
+        s.on("media-replayed") { args -> args.firstJson()?.let { emit(SocketEvent.MediaReplayed(it)) } }
         s.on("partner:account-state") { args ->
             args.firstJson()?.let { emit(SocketEvent.PartnerAccountState(it)) }
         }

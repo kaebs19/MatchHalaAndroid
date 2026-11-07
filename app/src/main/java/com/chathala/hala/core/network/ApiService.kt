@@ -480,7 +480,9 @@ interface ApiService {
         @Part("mode") mode: okhttp3.RequestBody,
         @Part("width") width: okhttp3.RequestBody?,
         @Part("height") height: okhttp3.RequestBody?,
-        @Part("replyTo") replyTo: okhttp3.RequestBody?
+        @Part("replyTo") replyTo: okhttp3.RequestBody?,
+        /** ↩️ «1» — لمشترك هلا+ إعادته مرة (once فقط على الخادم) */
+        @Part("allowReplay") allowReplay: okhttp3.RequestBody? = null
     ): SendMessageResponse
 
     @Multipart
@@ -491,7 +493,8 @@ interface ApiService {
         @Part("conversationId") conversationId: okhttp3.RequestBody,
         @Part("caption") caption: okhttp3.RequestBody?,
         @Part("imageSource") imageSource: okhttp3.RequestBody?,
-        @Part("disappearingDuration") disappearingDuration: okhttp3.RequestBody
+        @Part("disappearingDuration") disappearingDuration: okhttp3.RequestBody,
+        @Part("allowReplay") allowReplay: okhttp3.RequestBody? = null
     ): SendMessageResponse
 
     @GET("api/mobile/violations-history")

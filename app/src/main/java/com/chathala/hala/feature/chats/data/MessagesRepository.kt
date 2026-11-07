@@ -129,10 +129,11 @@ class MessagesRepository(
         resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_forward_failed))
     }
 
-    suspend fun viewDisappearingPhoto(messageId: String): NetworkResult<Unit> = safeApiCall {
+    /** 403 REPLAY_PREMIUM_REQUIRED: إعادة الفتح لغير المشترك. */
+    suspend fun viewDisappearingPhoto(messageId: String): NetworkResult<ViewPhotoData> = safeApiCall {
         val response = api.viewDisappearingPhoto(bearer(), messageId)
         check(response.success) { S.serverOr(response.message, R.string.err_unexpected) }
-        Unit
+        response.data ?: ViewPhotoData()
     }
 
     /** تسجيل مشاهدة فيديو مؤقت — بعد تنزيله كاملاً (التسجيل يبدأ العدّ). 410 PHOTO_EXPIRED إن انتهى. */
@@ -173,7 +174,9 @@ class MessagesRepository(
             mode = MediaUploadHelper.plainText(mode),
             width = width?.let { MediaUploadHelper.plainText(it.toString()) },
             height = height?.let { MediaUploadHelper.plainText(it.toString()) },
-            replyTo = replyTo?.let(MediaUploadHelper::plainText)
+            replyTo = replyTo?.let(MediaUploadHelper::plainText),
+            // نصّ خيار «مرة واحدة» عند المرسل يذكر إعادة الفتح لهلا+ — الخادم يقبلها لما أُرسل هكذا فقط
+            allowReplay = MediaUploadHelper.plainText("1")
         )
         resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_video_send_failed))
     }
@@ -199,7 +202,8 @@ class MessagesRepository(
             conversationId = MediaUploadHelper.plainText(conversationId),
             caption = null,
             imageSource = MediaUploadHelper.plainText(imageSource),
-            disappearingDuration = MediaUploadHelper.plainText(durationSeconds.toString())
+            disappearingDuration = MediaUploadHelper.plainText(durationSeconds.toString()),
+            allowReplay = MediaUploadHelper.plainText("1")
         )
         resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_image_send_failed))
     }

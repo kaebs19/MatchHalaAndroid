@@ -626,6 +626,10 @@ private fun TimerPanel(value: Int?, onChange: (Int?) -> Unit) {
                 )
             }
         }
+        if (value != null) {
+            Spacer(Modifier.height(8.dp))
+            Text(S.get(R.string.editor_timer_replay_hint, value), color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
+        }
     }
 }
 

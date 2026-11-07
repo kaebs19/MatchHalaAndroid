@@ -167,6 +167,7 @@ fun ChatScreen(
     }
 
     LaunchedEffect(Unit) {
+        launch { viewModel.openSubscription.collect { onOpenSubscription() } }
         viewModel.message.collect { snackbarHost.showSnackbar(it) }
     }
 
@@ -427,6 +428,8 @@ fun ChatScreen(
                                                 disappearingExpiresAtMs = state.viewedDisappearing[msg.id],
                                                 disappearingLoading = msg.id in state.loadingDisappearing,
                                                 disappearingExpired = msg.id in state.expiredDisappearing,
+                                                awaitingReplay = msg.id in state.awaitingReplay,
+                                                isPremium = state.isPremium,
                                                 onToggleAudio = { m ->
                                                     m.mediaUrl?.let { url ->
                                                         viewModel.audioPlayer.toggle(m.id, url)
@@ -1516,6 +1519,7 @@ private fun videoRowState(
         outgoing != null && outgoing.status != com.chathala.hala.feature.chats.data.OutgoingStatus.SENT ->
             com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.FAILED
         msg.id in state.loadingDisappearing -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.LOADING
+        !isMine && msg.id in state.awaitingReplay -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.REPLAY
         msg.id in state.expiredDisappearing || msg.mediaUrl.isNullOrBlank() -> com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.EXPIRED
         isMine && (msg.id in state.viewedVideos || !msg.disappearing?.viewedBy.isNullOrEmpty()) ->
             com.chathala.hala.feature.chats.ui.chat.components.VideoRowState.VIEWED

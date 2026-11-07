@@ -72,7 +72,7 @@ import kotlinx.coroutines.delay
 import java.io.File
 
 /** حالة صفّ الفيديو. */
-enum class VideoRowState { SENDING, FAILED, NOT_OPENED, VIEWED, EXPIRED, LOADING }
+enum class VideoRowState { SENDING, FAILED, NOT_OPENED, VIEWED, EXPIRED, LOADING, REPLAY }
 
 /**
  * صفّ فيديو مدمج **بلا معاينة**: 🎥 + المدة + الحالة (لم يُفتح/شوهد/انتهى/يُرسل/فشل).
@@ -84,11 +84,14 @@ fun VideoMessageContent(
     isMine: Boolean,
     state: VideoRowState,
     textColor: Color,
-    onOpen: () -> Unit
+    onOpen: () -> Unit,
+    isPremium: Boolean = false
 ) {
     val seconds = (message.videoDuration ?: message.disappearing?.duration?.toDouble() ?: 0.0).let { Math.round(it).toInt() }
     val once = message.disappearing?.mode != VideoMode.DAY
-    val openable = state == VideoRowState.NOT_OPENED || (state == VideoRowState.VIEWED && (!once || isMine))
+    val openable = state == VideoRowState.NOT_OPENED || state == VideoRowState.REPLAY ||
+        (state == VideoRowState.VIEWED && (!once || isMine))
+    val replayed = message.disappearing?.wasReplayed == true
     Row(
         Modifier
             .clip(RoundedCornerShape(12.dp))
@@ -119,8 +122,9 @@ fun VideoMessageContent(
                     VideoRowState.SENDING -> S.get(R.string.video_state_sending)
                     VideoRowState.FAILED -> S.get(R.string.video_state_failed)
                     VideoRowState.LOADING -> S.get(R.string.video_state_loading)
-                    VideoRowState.EXPIRED -> S.get(R.string.video_state_expired)
-                    VideoRowState.VIEWED -> S.get(if (isMine) R.string.video_state_viewed else if (once) R.string.video_state_expired else R.string.video_state_replay)
+                    VideoRowState.EXPIRED -> S.get(if (isMine && replayed) R.string.media_reopened_once else R.string.video_state_expired)
+                    VideoRowState.REPLAY -> S.get(if (isPremium) R.string.media_replay_once else R.string.media_replay_premium)
+                    VideoRowState.VIEWED -> S.get(if (isMine && replayed) R.string.media_reopened_once else if (isMine) R.string.video_state_viewed else if (once) R.string.video_state_expired else R.string.video_state_replay)
                     VideoRowState.NOT_OPENED -> S.get(if (isMine) R.string.video_state_not_opened else R.string.video_state_tap)
                 } + " · " + S.get(if (once) R.string.video_mode_once else R.string.video_mode_24h),
                 color = textColor.copy(alpha = 0.75f),
