@@ -149,6 +149,7 @@ class ChatsViewModel(
                     // تحديث حالة الاتصال فورياً دون إعادة جلب
                     is SocketEvent.UserOnline -> updateParticipantPresence(evt.json, online = true)
                     is SocketEvent.UserOffline -> updateParticipantPresence(evt.json, online = false)
+                    is SocketEvent.PartnerAccountState -> reloadConversationsWith(evt.json.optString("userId"))
                     else -> Unit
                 }
             }
@@ -209,6 +210,24 @@ class ChatsViewModel(
                 unreadCount = if (isMine) s.all[idx].unreadCount else s.all[idx].unreadCount + 1
             )
             s.copy(all = listOf(updated) + s.all.filterIndexed { i, _ -> i != idx })
+        }
+    }
+
+    /**
+     * حُظر طرف أو عاد نشطاً: نعيد جلب كل محادثة هو طرفها فيصل اسمه وصورته مقنّعين
+     * (أو الحقيقيين). Conversation صنف بيانات — تغيّر isSuspendedAccount يُعيد رسم الصفّ.
+     */
+    private fun reloadConversationsWith(userId: String) {
+        if (userId.isBlank()) return
+        val ids = _state.value.all.filter { c -> c.participants.any { it.id == userId } }.map { it.id }
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            ids.forEach { id ->
+                val r = repo.fetchConversation(id)
+                if (r is NetworkResult.Success) {
+                    _state.update { s -> s.copy(all = s.all.map { if (it.id == id) r.data else it }) }
+                }
+            }
         }
     }
 

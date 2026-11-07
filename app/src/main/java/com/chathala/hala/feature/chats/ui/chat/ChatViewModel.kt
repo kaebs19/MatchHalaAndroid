@@ -603,6 +603,19 @@ class ChatViewModel(
                 val mode = evt.json.optString("chatMode").takeIf { it.isNotBlank() } ?: return
                 _state.update { it.copy(chatMode = mode) }
             }
+            is SocketEvent.PartnerAccountState -> {
+                // حُظر الطرف الآخر أو عاد نشطاً — نعيد جلبه فتتحدّث الترويسة وشريط «غير متاح»
+                val uid = evt.json.optString("userId")
+                if (uid.isBlank() || uid != _state.value.otherUserId) return
+                viewModelScope.launch {
+                    val selfId = userRepo.currentUser.first()?.id
+                    val r = conversationsRepo.fetchConversation(conversationId)
+                    if (r is NetworkResult.Success) applyOtherFrom(r.data, selfId)
+                    else if (evt.json.has("suspended")) {
+                        _state.update { it.copy(otherUserSuspended = evt.json.optBoolean("suspended")) }
+                    }
+                }
+            }
             is SocketEvent.ConversationBlockState -> {
                 // الحظر/إلغاؤه والمحادثة مفتوحة: يُقفل الحقل ويظهر الشريط فوراً (لا ننتظر
                 // رفض الخادم أو إعادة الفتح)، ويختفي عند الإلغاء

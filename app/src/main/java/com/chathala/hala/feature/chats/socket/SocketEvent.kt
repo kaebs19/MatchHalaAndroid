@@ -61,4 +61,7 @@ sealed class SocketEvent {
 
     /** تغيّرت حالة الحظر في محادثة — `{ conversationId, ... }`. */
     data class ConversationBlockState(val json: JSONObject) : SocketEvent()
+
+    /** حُظر طرف محادثة أو عاد نشطاً — `{ userId, suspended }`. */
+    data class PartnerAccountState(val json: JSONObject) : SocketEvent()
 }
