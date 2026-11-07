@@ -150,6 +150,8 @@ class ChatsViewModel(
                     is SocketEvent.UserOnline -> updateParticipantPresence(evt.json, online = true)
                     is SocketEvent.UserOffline -> updateParticipantPresence(evt.json, online = false)
                     is SocketEvent.PartnerAccountState -> reloadConversationsWith(evt.json.optString("userId"))
+                    is SocketEvent.MessagesRead -> applyReceipt(evt.json, read = true)
+                    is SocketEvent.MessageDelivered -> applyReceipt(evt.json, read = false)
                     else -> Unit
                 }
             }
@@ -210,6 +212,30 @@ class ChatsViewModel(
                 unreadCount = if (isMine) s.all[idx].unreadCount else s.all[idx].unreadCount + 1
             )
             s.copy(all = listOf(updated) + s.all.filterIndexed { i, _ -> i != idx })
+        }
+    }
+
+    /**
+     * ✓✓ لحظياً في القائمة: وصول/قراءة آخر رسالة لي. `messages-read` يصل القارئ نفسه أيضاً
+     * (غرفة المحادثة) — قراءتي أنا لا تعلّم رسالتي مقروءة.
+     */
+    private fun applyReceipt(json: org.json.JSONObject, read: Boolean) {
+        val convId = json.optString("conversationId").takeIf { it.isNotBlank() } ?: return
+        val selfId = _state.value.currentUserId ?: return
+        if (read && json.optString("readBy") == selfId) return
+        val messageId = json.optString("messageId").takeIf { it.isNotBlank() }
+        _state.update { s ->
+            s.copy(all = s.all.map { c ->
+                val last = c.lastMessage
+                if (c.id != convId || last == null || last.sender != selfId) return@map c
+                if (!read && messageId != null && last.id != null && last.id != messageId) return@map c
+                if (read && last.isRead == true || !read && (last.isDelivered == true || last.isRead == true)) return@map c
+                c.copy(lastMessage = last.copy(
+                    isRead = if (read) true else last.isRead,
+                    isDelivered = true,
+                    status = if (read) "read" else "delivered"
+                ))
+            })
         }
     }
 

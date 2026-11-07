@@ -176,7 +176,10 @@ fun ConversationRow(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val senderId = lastMessage?.sender
                 if (senderId != null && currentUserId != null && senderId == currentUserId) {
-                    ReadStatusIcon(isRead = lastMessage.isRead == true)
+                    ReadStatusIcon(
+                        isRead = lastMessage.isRead == true || lastMessage.status == "read",
+                        isDelivered = lastMessage.isDelivered == true || lastMessage.status == "delivered"
+                    )
                     Spacer(Modifier.size(4.dp))
                 }
                 Text(
@@ -306,9 +309,10 @@ private fun UnreadBadge(count: Int) {
 }
 
 @Composable
-private fun ReadStatusIcon(isRead: Boolean) {
+private fun ReadStatusIcon(isRead: Boolean, isDelivered: Boolean = false) {
+    // ✓ أُرسلت · ✓✓ رمادية وصلت · ✓✓ ملوّنة قُرئت
     Icon(
-        imageVector = if (isRead) Icons.Filled.DoneAll else Icons.Filled.Done,
+        imageVector = if (isRead || isDelivered) Icons.Filled.DoneAll else Icons.Filled.Done,
         contentDescription = null,
         tint = if (isRead)
             MaterialTheme.colorScheme.primary
