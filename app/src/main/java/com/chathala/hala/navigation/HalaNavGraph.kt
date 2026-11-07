@@ -94,6 +94,15 @@ fun HalaNavGraph() {
         PushIntentCoordinator.consumeConversation()
     }
 
+    // زرّ إشعار «شاهد ملفه» / «راسله» → ملف المستخدم
+    val pendingUserId by PushIntentCoordinator.pendingUserId.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingUserId, token) {
+        val uid = pendingUserId ?: return@LaunchedEffect
+        if (token.isNullOrBlank()) return@LaunchedEffect
+        nav.navigate(Routes.userProfile(uid))
+        PushIntentCoordinator.consumeUser()
+    }
+
     NavHost(
         navController = nav,
         startDestination = Routes.SPLASH,

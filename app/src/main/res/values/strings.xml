@@ -1605,4 +1605,15 @@
     <string name="banned_word_notice">⚠️ حُجبت كلمات من رسالتك عن المستلم لمخالفتها قواعد المجتمع%1$s.</string>
     <string name="banned_word_last_warning">⚠️ تحذير أخير: حُجبت كلمات من رسالتك عن المستلم لمخالفتها قواعد المجتمع%1$s. مخالفة أخرى توقف حسابك.</string>
     <string name="banned_word_account_banned">تم حظر حسابك بسبب مخالفات متكررة</string>
+    <string name="notif_action_accept">قبول</string>
+    <string name="notif_action_decline">رفض</string>
+    <string name="notif_action_message">راسله</string>
+    <string name="notif_action_like_back">أعجبني أيضاً</string>
+    <string name="notif_action_view_profile">شاهد ملفه</string>
+    <string name="notif_friend_accepted_done">✓ أصبحتما صديقين</string>
+    <string name="notif_friend_declined_done">رُفض الطلب</string>
+    <string name="notif_like_back_done">❤️ أُرسل إعجابك</string>
+    <string name="notif_action_failed">تعذّر تنفيذ الإجراء، افتح التطبيق وحاول مجدداً</string>
+    <string name="notif_card_locked">اشترك في هلا+ لترى من أعجب بك</string>
+    <string name="notif_new_admirer">معجب جديد</string>
 </resources>

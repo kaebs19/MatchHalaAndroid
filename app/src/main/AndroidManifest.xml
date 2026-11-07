@@ -51,6 +51,11 @@
             android:name=".feature.push.WinBackReceiver"
             android:exported="false" />
 
+        <!-- أزرار الإشعار: قبول/رفض الصداقة و«أعجبني أيضاً» دون فتح التطبيق -->
+        <receiver
+            android:name=".feature.push.NotificationActionReceiver"
+            android:exported="false" />
+
         <!-- Firebase Cloud Messaging -->
         <service
             android:name=".feature.push.HalaMessagingService"

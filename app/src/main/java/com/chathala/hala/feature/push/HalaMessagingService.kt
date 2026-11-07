@@ -106,6 +106,7 @@ class HalaMessagingService : FirebaseMessagingService() {
             extras: Map<String, String>
         ) {
             val channelId = HalaNotificationChannels.channelForType(type)
+            val notifId = Random.nextInt()
 
             val tapIntent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -132,7 +133,9 @@ class HalaMessagingService : FirebaseMessagingService() {
             // `AdaptiveIconDrawable` تُرسَم كاملة (خلفية + مقدّمة) عبر toBitmap.
             //
             // الأيقونة الصغيرة تبقى أحادية اللون بإلزام النظام (يطمس أي لون فيها).
-            val senderImage = extras["senderImage"]?.takeIf { it.isNotBlank() }
+            // بطاقة الملف (إعجاب/زيارة/تطابق): الإعجاب لغير المشترك مقفل → لا صورة واضحة ولا اسم
+            val card = ProfileCard.from(type, extras)
+            val senderImage = extras["senderImage"]?.takeIf { it.isNotBlank() && card?.locked != true }
             val largeIcon = (senderImage?.let { loadCircularBitmap(context, it, 128) })
                 ?: runCatching {
                     ContextCompat.getDrawable(context, R.mipmap.ic_launcher)?.toBitmap(128, 128)
@@ -145,8 +148,10 @@ class HalaMessagingService : FirebaseMessagingService() {
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(
-                    // صورة مرفقة (إشعار من اللوحة) → صورة كبيرة؛ وإلا النص كاملاً
-                    extras["image"]?.takeIf { it.isNotBlank() }
+                    // بطاقة الملف → صورة كبيرة (مموّهة إن كانت مقفلة) والاسم والعمر والدولة
+                    card?.let { buildCardStyle(context, it, body) }
+                        // صورة مرفقة (إشعار من اللوحة) → صورة كبيرة؛ وإلا النص كاملاً
+                        ?: extras["image"]?.takeIf { it.isNotBlank() }
                         ?.let { loadBitmap(context, it) }
                         ?.let { picture ->
                             NotificationCompat.BigPictureStyle()
@@ -166,8 +171,34 @@ class HalaMessagingService : FirebaseMessagingService() {
                         NotificationCompat.PRIORITY_DEFAULT
                 )
 
+            NotificationActions.attach(context, builder, type, extras, notifId)
+
             val manager = context.getSystemService<NotificationManager>() ?: return
-            manager.notify(Random.nextInt(), builder.build())
+            manager.notify(notifId, builder.build())
+        }
+
+        /** BigPictureStyle لبطاقة الملف: الصورة (مموّهة إن كانت مقفلة) + سطر التفاصيل. */
+        private fun buildCardStyle(context: Context, card: ProfileCard, body: String): NotificationCompat.Style? {
+            val lockedText = com.chathala.hala.core.i18n.S.get(R.string.notif_card_locked)
+            val bitmap = card.image?.let { loadBitmap(context, it) }?.let { if (card.locked) blur(it) else it }
+            if (bitmap == null) {
+                return if (card.locked) NotificationCompat.BigTextStyle().bigText("$body\n$lockedText") else null
+            }
+            val summary = if (card.locked) lockedText else card.details().ifBlank { body }
+            return NotificationCompat.BigPictureStyle()
+                .bigPicture(bitmap)
+                .bigLargeIcon(null as android.graphics.Bitmap?)
+                .setBigContentTitle(if (card.locked) com.chathala.hala.core.i18n.S.get(R.string.notif_new_admirer) else card.titleLine())
+                .setSummaryText(summary)
+        }
+
+        /** تمويه رخيص بلا مكتبة: تصغير شديد ثم تكبير بالتنعيم — يُخفي الملامح تماماً. */
+        private fun blur(src: android.graphics.Bitmap): android.graphics.Bitmap {
+            val w = (src.width / 28).coerceAtLeast(4)
+            val h = (src.height / 28).coerceAtLeast(4)
+            var small = android.graphics.Bitmap.createScaledBitmap(src, w, h, true)
+            small = android.graphics.Bitmap.createScaledBitmap(small, (w * 3).coerceAtLeast(8), (h * 3).coerceAtLeast(8), true)
+            return android.graphics.Bitmap.createScaledBitmap(small, src.width.coerceAtMost(720), (src.height * (src.width.coerceAtMost(720).toFloat() / src.width)).toInt().coerceAtLeast(1), true)
         }
 
         /**

@@ -1527,4 +1527,15 @@
     <string name="banned_word_notice">⚠️ Words in your message were hidden from the recipient for breaking community rules%1$s.</string>
     <string name="banned_word_last_warning">⚠️ Final warning: words in your message were hidden from the recipient for breaking community rules%1$s. One more violation suspends your account.</string>
     <string name="banned_word_account_banned">Your account has been banned due to repeated violations</string>
+    <string name="notif_action_accept">Accept</string>
+    <string name="notif_action_decline">Decline</string>
+    <string name="notif_action_message">Message</string>
+    <string name="notif_action_like_back">Like back</string>
+    <string name="notif_action_view_profile">View profile</string>
+    <string name="notif_friend_accepted_done">✓ You\'re now friends</string>
+    <string name="notif_friend_declined_done">Request declined</string>
+    <string name="notif_like_back_done">❤️ Like sent</string>
+    <string name="notif_action_failed">Couldn\'t complete that. Open the app and try again</string>
+    <string name="notif_card_locked">Subscribe to Hala+ to see who liked you</string>
+    <string name="notif_new_admirer">New admirer</string>
 </resources>

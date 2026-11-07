@@ -27,6 +27,12 @@ object PushIntentCoordinator {
     val pendingConversationId: StateFlow<String?> = _pendingConversationId.asStateFlow()
 
     /** رابط ويب مرفق بإشعار رسمي (من لوحة الإدارة) — يُفتح عند الضغط على الإشعار. */
+    /** ملف مستخدم يُفتح من زرّ إشعار («شاهد ملفه» / «راسله»). */
+    private val _pendingUserId = MutableStateFlow<String?>(null)
+    val pendingUserId: StateFlow<String?> = _pendingUserId.asStateFlow()
+    fun consumeUser() { _pendingUserId.value = null }
+    const val EXTRA_OPEN_USER = "hala_open_user"
+
     private val _pendingLink = MutableStateFlow<String?>(null)
     val pendingLink: StateFlow<String?> = _pendingLink.asStateFlow()
 
@@ -62,6 +68,8 @@ object PushIntentCoordinator {
             }
         }
 
+        intent.getStringExtra(EXTRA_OPEN_USER)?.takeIf { it.isNotBlank() }?.let { _pendingUserId.value = it }
+
         extra("link")?.trim()
             ?.takeIf { com.chathala.hala.feature.notifications.ui.components.isSafeLink(it) }
             ?.let { _pendingLink.value = it }
@@ -74,6 +82,7 @@ object PushIntentCoordinator {
         intent.removeExtra("data_conversation_id")
         intent.removeExtra("data_link")
         intent.removeExtra("link")
+        intent.removeExtra(EXTRA_OPEN_USER)
     }
 
     /** يستهلك رابط الإشعار — يُستدعى بعد فتحه. */
