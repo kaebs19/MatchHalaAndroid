@@ -1554,4 +1554,14 @@
     <string name="reply_type_location">Location</string>
     <string name="friends_menu_view_profile">View profile</string>
     <string name="friends_menu_remove">Remove friend</string>
+    <string name="sticker_tab_emoji">😊 Emoji</string>
+    <string name="sticker_tab_favorites">⭐ Favorites</string>
+    <string name="sticker_favorites_empty">Long-press a sticker in a chat to add it here</string>
+    <string name="sticker_section_favorites">Favorites</string>
+    <string name="sticker_section_recent">Recent</string>
+    <string name="sticker_premium_category">This category is for Hala+ members</string>
+    <string name="sticker_add_favorite">Add to favorites</string>
+    <string name="sticker_remove_favorite">Remove from favorites</string>
+    <string name="sticker_unavailable">This sticker is no longer available</string>
+    <string name="sticker_button">Stickers and emoji</string>
 </resources>

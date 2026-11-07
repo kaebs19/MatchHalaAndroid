@@ -1632,4 +1632,14 @@
     <string name="reply_type_location">موقع</string>
     <string name="friends_menu_view_profile">عرض البروفايل</string>
     <string name="friends_menu_remove">إزالة من الأصدقاء</string>
+    <string name="sticker_tab_emoji">😊 إيموجي</string>
+    <string name="sticker_tab_favorites">⭐ المفضلة</string>
+    <string name="sticker_favorites_empty">اضغط مطوّلاً على ملصق في المحادثة لإضافته هنا</string>
+    <string name="sticker_section_favorites">المفضلة</string>
+    <string name="sticker_section_recent">الأخيرة</string>
+    <string name="sticker_premium_category">هذه الفئة لمشتركي هلا+</string>
+    <string name="sticker_add_favorite">إضافة للمفضلة</string>
+    <string name="sticker_remove_favorite">إزالة من المفضلة</string>
+    <string name="sticker_unavailable">هذا الملصق لم يعد متاحاً</string>
+    <string name="sticker_button">ملصقات وإيموجي</string>
 </resources>

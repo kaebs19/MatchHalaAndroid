@@ -120,6 +120,10 @@ object ApiClient {
         retrofit.create(com.chathala.hala.feature.stories.data.StoryApiService::class.java)
     }
 
+    val stickerService: com.chathala.hala.feature.stickers.StickerApi by lazy {
+        retrofit.create(com.chathala.hala.feature.stickers.StickerApi::class.java)
+    }
+
     val bootstrapService: com.chathala.hala.core.session.data.BootstrapApi by lazy {
         retrofit.create(com.chathala.hala.core.session.data.BootstrapApi::class.java)
     }

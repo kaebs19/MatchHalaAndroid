@@ -1,5 +1,8 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.material.icons.outlined.EmojiEmotions
+import androidx.compose.material.icons.filled.Keyboard
 import com.chathala.hala.core.i18n.S
 
 import android.Manifest
@@ -76,9 +79,16 @@ fun ChatInputBar(
     isRecording: Boolean,
     recordingSeconds: Int,
     enabled: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isPremium: Boolean = false,
+    /** ملصقات لوحة التحكم — null = إيموجي فقط */
+    onSticker: ((com.chathala.hala.feature.stickers.StickerItem) -> Unit)? = null,
+    onPremiumRequired: () -> Unit = {}
 ) {
     val haptics = LocalHapticFeedback.current
+    // لوحة الإيموجي/الملصقات تحلّ محلّ لوحة المفاتيح تحت الشريط
+    var showStickers by remember { mutableStateOf(false) }
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val context = LocalContext.current
     val trimmed = value.trim()
     val canSendText = trimmed.isNotEmpty() && enabled
@@ -124,8 +134,9 @@ fun ChatInputBar(
         return
     }
 
+    androidx.compose.foundation.layout.Column(modifier.fillMaxWidth()) {
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 10.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(28.dp))
@@ -186,7 +197,9 @@ fun ChatInputBar(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged { if (it.isFocused) showStickers = false },
             placeholder = { Text(S.get(R.string.chat_input_hint)) },
             shape = RoundedCornerShape(24.dp),
             maxLines = 5,
@@ -199,6 +212,22 @@ fun ChatInputBar(
             )
         )
 
+        // 😊 الإيموجي والملصقات
+        IconButton(
+            onClick = {
+                if (!showStickers) keyboard?.hide()
+                showStickers = !showStickers
+            },
+            enabled = enabled,
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = if (showStickers) Icons.Filled.Keyboard else Icons.Outlined.EmojiEmotions,
+                contentDescription = S.get(R.string.sticker_button),
+                tint = if (showStickers) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
         // ── يسار (RTL): زر «+» يفتح شيت الإرفاق ──
         IconButton(
             onClick = { showAttachMenu = true },
@@ -210,6 +239,15 @@ fun ChatInputBar(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+    if (showStickers && enabled) {
+        com.chathala.hala.feature.stickers.ChatStickerPanel(
+            isPremium = isPremium,
+            onEmoji = { onValueChange(value + it) },
+            onSticker = onSticker?.let { send -> { s -> send(s); showStickers = false } },
+            onPremiumRequired = onPremiumRequired
+        )
+    }
     }
 
     // ── شيت الإرفاق (معرض / كاميرا) بأسلوب واتساب ──

@@ -576,7 +576,10 @@ fun ChatScreen(
                         recordingSeconds = state.recordingSeconds,
                         // الرفع الجاري لا يحجز الإرسال — إلا داخل طلب معلّق (رسالة واحدة)
                         enabled = state.composerReady && !state.deleting &&
-                            !(state.conversationStatus == "pending" && (state.sending || state.uploadingMedia))
+                            !(state.conversationStatus == "pending" && (state.sending || state.uploadingMedia)),
+                        isPremium = state.isPremium,
+                        onSticker = viewModel::sendSticker,
+                        onPremiumRequired = onOpenSubscription
                     )
                 }
                 else -> {
@@ -629,7 +632,17 @@ fun ChatScreen(
                     viewModel.dismissReactionSheet()
                     onOpenSubscription()
                 },
-                onDismiss = viewModel::dismissReactionSheet
+                onDismiss = viewModel::dismissReactionSheet,
+                stickerFavorite = com.chathala.hala.feature.stickers.StickerLibrary
+                    .takeIf { target.imageSource == "sticker" }
+                    ?.stickerForUrl(target.mediaUrl)
+                    ?.let { com.chathala.hala.feature.stickers.StickerLibrary.isFavorite(it.id) },
+                onToggleStickerFavorite = {
+                    com.chathala.hala.feature.stickers.StickerLibrary.setOwner(state.currentUserId)
+                    com.chathala.hala.feature.stickers.StickerLibrary.stickerForUrl(target.mediaUrl)
+                        ?.let(com.chathala.hala.feature.stickers.StickerLibrary::toggleFavorite)
+                    viewModel.dismissReactionSheet()
+                }
             )
         }
     }

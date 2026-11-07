@@ -209,6 +209,7 @@ class HalaApp : Application(), coil.ImageLoaderFactory {
         tokenStorage = TokenStorage(applicationContext)
         userStorage = UserStorage(applicationContext, ApiClient.moshi)
         ApiClient.init(tokenStorage = tokenStorage)
+        com.chathala.hala.feature.stickers.StickerLibrary.init(applicationContext, tokenStorage)
         networkMonitor = NetworkMonitor(applicationContext)
         appPreferences = AppPreferences(applicationContext)
         // اللغة يجب أن تُضبط قبل أي نص يُقرأ (رسائل الإشعارات، الـ repositories)

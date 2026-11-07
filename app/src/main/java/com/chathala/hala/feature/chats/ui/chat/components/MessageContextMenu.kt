@@ -1,5 +1,7 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Star
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
 
@@ -87,7 +89,10 @@ fun MessageContextMenu(
     onDelete: () -> Unit,
     onReport: () -> Unit,
     onPremiumRequired: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    /** ملصق: «إضافة للمفضلة» / «إزالة من المفضلة» — null لغير الملصق */
+    stickerFavorite: Boolean? = null,
+    onToggleStickerFavorite: () -> Unit = {}
 ) {
     val haptics = LocalHapticFeedback.current
     val density = LocalDensity.current
@@ -95,6 +100,11 @@ fun MessageContextMenu(
 
     val actions = buildList {
         add(MenuAction(S.get(R.string.action_reply), Icons.AutoMirrored.Filled.Reply, onReply))
+        if (stickerFavorite != null) add(MenuAction(
+            S.get(if (stickerFavorite) R.string.sticker_remove_favorite else R.string.sticker_add_favorite),
+            if (stickerFavorite) Icons.Filled.StarBorder else Icons.Filled.Star,
+            onToggleStickerFavorite
+        ))
         if (canCopy) add(MenuAction(S.get(R.string.action_copy), Icons.Filled.ContentCopy, onCopy))
         if (canForward) add(MenuAction(S.get(R.string.action_forward), Icons.AutoMirrored.Filled.Send, onForward))
         if (canEdit) add(MenuAction(S.get(R.string.action_edit), Icons.Filled.Edit, onEdit, premium = true))

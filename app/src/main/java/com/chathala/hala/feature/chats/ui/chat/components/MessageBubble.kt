@@ -1,5 +1,6 @@
 package com.chathala.hala.feature.chats.ui.chat.components
 
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Flag
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
@@ -123,6 +124,12 @@ fun MessageBubble(
     // system message — centered pill
     if (message.type == "system") {
         SystemMessageBubble(message = message, modifier = modifier)
+        return
+    }
+
+    // ملصق من لوحة التحكم — بلا فقاعة، يقفز عند الضغط ولا يُفتح، والضغط المطوّل للقائمة
+    if (message.isSticker()) {
+        StickerMessage(message, isMine, isPending, onLongPress = { onLongPress(message) }, modifier = modifier)
         return
     }
     // فقاعة الطرف الآخر بلون السطح مع حدّ شعري — كانت تذوب في خلفية المحادثة المنقوشة
@@ -1046,4 +1053,50 @@ private fun MineStatusIcon(
         tint = if (isRead) readTint else tint,
         modifier = Modifier.size(14.dp)
     )
+}
+
+fun Message.isSticker(): Boolean = type == "image" && imageSource == "sticker" && isDeleted != true
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun StickerMessage(
+    message: Message,
+    isMine: Boolean,
+    isPending: Boolean,
+    onLongPress: () -> Unit,
+    modifier: Modifier
+) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val bounce = remember { androidx.compose.animation.core.Animatable(1f) }
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
+    ) {
+        HalaAsyncImage(
+            model = message.mediaUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .padding(horizontal = 6.dp)
+                .size(140.dp)
+                .graphicsLayer { scaleX = bounce.value; scaleY = bounce.value; alpha = if (isPending) 0.6f else 1f }
+                .combinedClickable(
+                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        scope.launch {
+                            bounce.animateTo(1.15f, androidx.compose.animation.core.tween(120))
+                            bounce.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.4f))
+                        }
+                    },
+                    onLongClick = onLongPress
+                )
+        )
+        Text(
+            text = NotificationFormat.timeAgo(message.createdAt),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 10.dp)
+        )
+    }
 }

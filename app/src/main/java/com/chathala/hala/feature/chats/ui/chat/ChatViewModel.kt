@@ -1472,6 +1472,26 @@ class ChatViewModel(
         }
     }
 
+    // ── الملصقات ─────────────────────────────────────────────────
+
+    /** ملصق من لوحة التحكم — رسالة صورة بـ imageSource «sticker» (الخادم يتحقق من الفئة والاشتراك). */
+    fun sendSticker(sticker: com.chathala.hala.feature.stickers.StickerItem) {
+        viewModelScope.launch {
+            when (val r = com.chathala.hala.feature.stickers.StickerLibrary.send(conversationId, sticker)) {
+                is NetworkResult.Success -> _state.update { s ->
+                    if (s.messages.any { it.id == r.data.id }) s else s.copy(messages = s.messages + r.data)
+                }
+                is NetworkResult.Error -> _message.tryEmit(
+                    when (r.code) {
+                        "STICKER_UNAVAILABLE" -> S.get(R.string.sticker_unavailable)
+                        "STICKER_PREMIUM_REQUIRED" -> S.get(R.string.sticker_premium_category)
+                        else -> ErrorMessages.friendly(r)
+                    }
+                ).also { if (r.code == "STICKER_UNAVAILABLE") viewModelScope.launch { com.chathala.hala.feature.stickers.StickerLibrary.refresh(force = true) } }
+            }
+        }
+    }
+
     // ── External Promo Dialog ─────────────────────────────────────
 
     fun showExternalPromoInfo(message: Message) {
