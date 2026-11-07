@@ -1601,4 +1601,8 @@
         <item quantity="many">%1$d يوماً</item>
         <item quantity="other">%1$d يوم</item>
     </plurals>
+    <string name="banned_word_counter">(مخالفة %1$d من %2$d)</string>
+    <string name="banned_word_notice">⚠️ حُجبت كلمات من رسالتك عن المستلم لمخالفتها قواعد المجتمع%1$s.</string>
+    <string name="banned_word_last_warning">⚠️ تحذير أخير: حُجبت كلمات من رسالتك عن المستلم لمخالفتها قواعد المجتمع%1$s. مخالفة أخرى توقف حسابك.</string>
+    <string name="banned_word_account_banned">تم حظر حسابك بسبب مخالفات متكررة</string>
 </resources>

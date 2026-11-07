@@ -156,7 +156,8 @@ data class SendMessageResponse(
     val data: SendMessageData? = null,
     val message: String? = null,
     val externalPromoBlocked: ExternalPromoBlockedInfo? = null,
-    val messagingLocked: MessagingLockedInfo? = null
+    val messagingLocked: MessagingLockedInfo? = null,
+    val warning: BannedWordWarning? = null
 )
 
 @JsonClass(generateAdapter = true)

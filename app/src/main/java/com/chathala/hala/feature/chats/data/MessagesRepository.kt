@@ -51,6 +51,8 @@ class MessagesRepository(
             return@safeApiCall Triple(null, null, resp.messagingLocked)
         }
         val msg = resp.data?.message ?: throw IllegalStateException(S.get(R.string.msg_send_failed))
+        // تحذير الكلمات المحظورة — ورقة الحسابات الخارجية تغني عنه إن وُجدت
+        if (resp.warning != null && resp.externalPromoBlocked == null) BannedWordNotice.show(resp.warning)
         Triple(msg, resp.externalPromoBlocked, null)
     }
 

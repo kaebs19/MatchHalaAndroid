@@ -1523,4 +1523,8 @@
         <item quantity="one">1 day</item>
         <item quantity="other">%1$d days</item>
     </plurals>
+    <string name="banned_word_counter">(violation %1$d of %2$d)</string>
+    <string name="banned_word_notice">⚠️ Words in your message were hidden from the recipient for breaking community rules%1$s.</string>
+    <string name="banned_word_last_warning">⚠️ Final warning: words in your message were hidden from the recipient for breaking community rules%1$s. One more violation suspends your account.</string>
+    <string name="banned_word_account_banned">Your account has been banned due to repeated violations</string>
 </resources>
