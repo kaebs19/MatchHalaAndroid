@@ -137,6 +137,7 @@ data class MessageReply(
 
 @JsonClass(generateAdapter = true)
 data class MessageReplySender(
+    @Json(name = "_id") val id: String? = null,
     val name: String? = null
 )
 

@@ -1623,4 +1623,11 @@
     <string name="story_location_open_maps">فتح في الخرائط</string>
     <string name="stories_feed_button">القصص</string>
     <string name="stories_feed_empty">لا قصص الآن — شارك قصتك من زرّ صورتك</string>
+    <string name="reply_user_fallback">مستخدم</string>
+    <string name="reply_you_to_yourself">رددتَ على نفسك</string>
+    <string name="reply_you_to">رددتَ على %1$s</string>
+    <string name="reply_to_you">ردّ عليك</string>
+    <string name="reply_to_their_message">ردّ على رسالته</string>
+    <string name="reply_type_video">فيديو</string>
+    <string name="reply_type_location">موقع</string>
 </resources>

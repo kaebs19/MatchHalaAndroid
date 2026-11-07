@@ -1545,4 +1545,11 @@
     <string name="story_location_open_maps">Open in Maps</string>
     <string name="stories_feed_button">Stories</string>
     <string name="stories_feed_empty">No stories right now — share yours from your photo</string>
+    <string name="reply_user_fallback">User</string>
+    <string name="reply_you_to_yourself">You replied to yourself</string>
+    <string name="reply_you_to">You replied to %1$s</string>
+    <string name="reply_to_you">Replied to you</string>
+    <string name="reply_to_their_message">Replied to their message</string>
+    <string name="reply_type_video">Video</string>
+    <string name="reply_type_location">Location</string>
 </resources>

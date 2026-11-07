@@ -27,6 +27,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Reply
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.filled.Close
@@ -154,6 +159,16 @@ fun MessageBubble(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
     ) {
+        // اقتباس الرد فوق الفقاعة (نمط iOS 11.6): خطّ موصل على الحافة الخارجية + «↩ رددتَ على…»
+        // + بطاقة صلبة بإطار رفيع، ومسافة 4dp قبل الفقاعة بلا تداخل — قابل للنقر للقفز
+        message.replyTo?.let { replyTo ->
+            ReplyQuoteAbove(
+                reply = replyTo,
+                isMine = isMine,
+                quotedMine = replyTo.sender?.id != null && replyTo.sender.id == currentUserId,
+                onTap = { replyTo.id?.let(onReplyTap) }
+            )
+        }
         Box {
             Column(
                 modifier = Modifier
@@ -182,23 +197,6 @@ fun MessageBubble(
                 horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
             ) {
             var showFullscreen by remember { mutableStateOf(false) }
-            // Reply preview داخل الفقاعة — قابل للنقر للقفز
-            val replyTo = message.replyTo
-            if (replyTo != null) {
-                Box(
-                    modifier = Modifier.clickable {
-                        replyTo.id?.let { onReplyTap(it) }
-                    }
-                ) {
-                    ReplyPreviewInBubble(
-                        reply = replyTo,
-                        isMine = isMine,
-                        textColor = textColor
-                    )
-                }
-                Spacer(Modifier.size(6.dp))
-            }
-
             when (message.type) {
                 "video" -> VideoMessageContent(
                     message = message,
@@ -370,42 +368,88 @@ fun MessageBubble(
 }
 
 @Composable
-private fun ReplyPreviewInBubble(
+private fun ReplyQuoteAbove(
     reply: com.chathala.hala.feature.chats.data.MessageReply,
     isMine: Boolean,
-    textColor: androidx.compose.ui.graphics.Color
+    quotedMine: Boolean,
+    onTap: () -> Unit
 ) {
-    val accent = if (isMine) textColor else MaterialTheme.colorScheme.primary
+    val name = reply.sender?.name?.takeIf { it.isNotBlank() } ?: S.get(R.string.reply_user_fallback)
+    val caption = when {
+        isMine && quotedMine -> S.get(R.string.reply_you_to_yourself)
+        isMine -> S.get(R.string.reply_you_to, name)
+        quotedMine -> S.get(R.string.reply_to_you)
+        else -> S.get(R.string.reply_to_their_message)
+    }
+    val (icon, text) = when (reply.type) {
+        "image" -> Icons.Filled.Image to S.get(R.string.msg_type_photo)
+        "audio" -> Icons.Filled.Mic to S.get(R.string.msg_type_audio)
+        "video" -> Icons.Filled.Videocam to S.get(R.string.reply_type_video)
+        else -> {
+            val c = reply.content.orEmpty()
+            if (c.startsWith("📍")) Icons.Filled.Place to (c.split("|", limit = 2).getOrNull(1)?.takeIf { it.isNotBlank() } ?: S.get(R.string.reply_type_location))
+            else null to c.ifBlank { "…" }
+        }
+    }
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val connector: @Composable () -> Unit = {
+        Box(
+            Modifier
+                .width(2.dp)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(1.dp))
+                .background(onSurface.copy(alpha = 0.18f))
+        )
+    }
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(textColor.copy(alpha = 0.08f))
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = 6.dp)
+            .padding(bottom = 4.dp)
+            .widthIn(max = 280.dp)
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onTap),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .height(32.dp)
-                .background(accent)
-        )
-        Spacer(Modifier.size(6.dp))
-        Column {
-            Text(
-                text = reply.sender?.name ?: "",
-                style = MaterialTheme.typography.labelSmall,
-                color = accent.copy(alpha = 0.9f)
-            )
-            Text(
-                text = when (reply.type) {
-                    "image" -> S.get(R.string.msg_type_photo)
-                    "audio" -> S.get(R.string.msg_type_audio)
-                    else -> reply.content?.takeIf { it.isNotBlank() } ?: "…"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = textColor.copy(alpha = 0.8f),
-                maxLines = 1
-            )
+        if (!isMine) connector()
+        Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.AutoMirrored.Filled.Reply, null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(11.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    caption,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+            Spacer(Modifier.height(3.dp))
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .background(onSurface.copy(alpha = 0.05f))
+                    .border(0.5.dp, onSurface.copy(alpha = 0.16f), RoundedCornerShape(16.dp))
+                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (icon != null) {
+                    Icon(icon, null, tint = onSurface.copy(alpha = 0.7f), modifier = Modifier.size(13.dp))
+                    Spacer(Modifier.width(5.dp))
+                }
+                Text(
+                    text,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = onSurface.copy(alpha = 0.7f),
+                    maxLines = 2
+                )
+            }
         }
+        if (isMine) connector()
     }
 }
 
