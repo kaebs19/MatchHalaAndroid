@@ -1,6 +1,7 @@
 package com.chathala.hala.feature.discover.ui
 
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.fillMaxHeight
 import com.chathala.hala.core.util.showToast
 import com.chathala.hala.core.i18n.S
 import com.chathala.hala.R
@@ -516,7 +517,9 @@ private fun CardStack(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                // البطاقة أقصر 10% (مطابق لـ iOS 11.5) — متنفّس للأزرار والبانر تحتها
+                .fillMaxHeight(0.9f),
             contentAlignment = Alignment.Center
         ) {
             // Next card peek (behind current) — صورة فقط بدون overlay
