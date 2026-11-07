@@ -135,3 +135,32 @@ object InfoStickers {
                 if (s == Style.LIGHT) 0xFFF2F2F7.toInt() else 0xFFFFFFFF.toInt())
         }
 }
+
+/** ✍️ نصّ على صورة القصة (هلا+): يُرسم صورةً بلون مختار وظلّ خفيف، حتى 80 حرفاً. */
+object TextSticker {
+    const val MAX_LENGTH = 80
+    val colors = listOf(0xFFFFFFFF.toInt(), 0xFFFFD60A.toInt(), 0xFFFF375F.toInt(), 0xFF5AC8FA.toInt(), 0xFF30D158.toInt())
+
+    fun render(text: String, color: Int): String {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = 84f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            this.color = color
+            setShadowLayer(10f, 0f, 3f, 0xAA000000.toInt())
+        }
+        val maxW = 960
+        val width = minOf(maxW, (text.lines().maxOf { paint.measureText(it) } + 40).toInt()).coerceAtLeast(60)
+        val layout = android.text.StaticLayout.Builder.obtain(text, 0, text.length, paint, width - 20)
+            .setAlignment(android.text.Layout.Alignment.ALIGN_CENTER)
+            .setMaxLines(3)
+            .setEllipsize(TextUtils.TruncateAt.END)
+            .build()
+        val bmp = Bitmap.createBitmap(width, layout.height + 30, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+        c.translate(10f, 15f)
+        layout.draw(c)
+        val key = "local:${System.nanoTime()}"
+        StickerImageStore.put(key, bmp)
+        return key
+    }
+}

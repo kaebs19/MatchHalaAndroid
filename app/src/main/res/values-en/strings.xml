@@ -1589,4 +1589,7 @@
     <string name="media_replay_premium">Replay with Hala+</string>
     <string name="media_reopened_once">Reopened once</string>
     <string name="editor_timer_replay_hint">Disappears %1$d seconds after opening. A Hala+ member can reopen it once within 10 minutes — we\'ll tell you</string>
+    <string name="story_text_premium">Text on stories is a Hala+ feature</string>
+    <string name="story_text_hint">Type your text</string>
+    <string name="story_text_add">Add</string>
 </resources>

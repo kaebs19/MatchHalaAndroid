@@ -42,7 +42,9 @@ data class Sticker(
     /** ملصق المدينة: الاسم فقط (لا إحداثيات) — يُرسل locationTag مع القصة */
     val locationPlace: String? = null,
     /** العرض ÷ الارتفاع لملصق الصورة (الشارات أعرض من طولها) */
-    val aspect: Float = 1f
+    val aspect: Float = 1f,
+    /** ✍️ نصّ القصة (هلا+) — يُرسم صورةً ويُرسل caption ليمرّ على الفلاتر */
+    val text: String? = null
 )
 
 /** تعديلات صورة واحدة (لكل صورة تعديلاتها في وضع تعدّد الصور). */

@@ -1667,4 +1667,7 @@
     <string name="media_replay_premium">إعادة تشغيل مع هلا+</string>
     <string name="media_reopened_once">أُعيد فتحها مرة واحدة</string>
     <string name="editor_timer_replay_hint">تختفي بعد %1$d ثانية من فتحها. لمشترك هلا+ إعادة فتحها مرة خلال 10 دقائق وسنُعلمك</string>
+    <string name="story_text_premium">النص على القصة ميزة لمشتركي هلا+</string>
+    <string name="story_text_hint">اكتب نصّك هنا</string>
+    <string name="story_text_add">إضافة</string>
 </resources>

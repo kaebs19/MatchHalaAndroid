@@ -1,4 +1,6 @@
 package com.chathala.hala.feature.editor
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.TextFields
 
 import androidx.compose.ui.layout.onSizeChanged
 import com.chathala.hala.ui.components.dialogSafeBottom
@@ -120,10 +122,12 @@ class EditedPhoto(
     val jpeg: ByteArray,
     val timerSec: Int?,
     /** ملصق المدينة في القصة — موضعه نسبي من الصورة المُرسلة */
-    val locationTag: com.chathala.hala.feature.stories.data.StoryLocationTag? = null
+    val locationTag: com.chathala.hala.feature.stories.data.StoryLocationTag? = null,
+    /** ✍️ نصوص القصة المرسومة — تمرّ على فلاتر الخادم وتُحفظ للإشراف */
+    val caption: String? = null
 )
 
-private enum class Tool { CROP, TIMER, STICKERS, BLUR, COLORS, TRIM }
+private enum class Tool { CROP, TIMER, STICKERS, TEXT, BLUR, COLORS, TRIM }
 
 private val EMOJIS = listOf(
     "😀", "😂", "😍", "🥰", "😎", "🤩", "😜", "🤔", "😴", "🥳", "😇", "🙈",
@@ -224,6 +228,7 @@ fun PhotoEditorDialog(
                 add(Tool.CROP to Icons.Filled.Crop)
                 if (mode == EditorMode.CHAT) add(Tool.TIMER to Icons.Filled.Timer)
                 add(Tool.STICKERS to Icons.Filled.EmojiEmotions)
+                if (mode == EditorMode.STORY) add(Tool.TEXT to Icons.Filled.TextFields)
                 add(Tool.BLUR to Icons.Filled.FaceRetouchingOff)
                 add(Tool.COLORS to Icons.Filled.MoreHoriz)
             }
@@ -235,6 +240,11 @@ fun PhotoEditorDialog(
                         Tool.CROP -> CropPanel(current, { a -> update { it.copy(aspect = a) } }, { update { it.copy(rotation = (it.rotation + 90) % 360) } })
                         Tool.TIMER -> TimerPanel(current.timerSec) { v -> update { it.copy(timerSec = v) } }
                         Tool.STICKERS -> EditorStickerPanel(mode, EMOJIS) { st ->
+                            update { it.copy(stickers = it.stickers + st) }
+                            selectedSticker = st.id
+                            tool = null
+                        }
+                        Tool.TEXT -> StoryTextPanel { st ->
                             update { it.copy(stickers = it.stickers + st) }
                             selectedSticker = st.id
                             tool = null
@@ -286,7 +296,8 @@ fun PhotoEditorDialog(
                                             place = it.locationPlace!!, x = it.x.toDouble(), y = it.y.toDouble(), size = it.size.toDouble()
                                         )
                                     }
-                                    EditedPhoto(ImageCompressor.compress(rendered), edits[i].timerSec, tag)
+                                    val caption = edits[i].stickers.mapNotNull { it.text }.joinToString("\n").takeIf { it.isNotBlank() }
+                                    EditedPhoto(ImageCompressor.compress(rendered), edits[i].timerSec, tag, caption)
                                 }
                                 busy = false
                                 if (out.isEmpty()) context.showToast(S.get(R.string.profile_photo_read_failed)) else onDone(out)
@@ -697,5 +708,55 @@ private fun TrimPanel(durationMs: Long, startMs: Long, endMs: Long, onChange: (L
             },
             valueRange = 0f..durationMs.toFloat().coerceAtLeast(1f)
         )
+    }
+}
+
+/** ✍️ نصّ على صورة القصة — لهلا+ فقط (الخادم يرفضه لغيره)، يصير ملصقاً يُسحب ويُكبَّر. */
+@Composable
+private fun StoryTextPanel(onAdd: (Sticker) -> Unit) {
+    val context = LocalContext.current
+    val app = context.applicationContext as com.chathala.hala.HalaApp
+    val user by app.userRepository.currentUser.collectAsState(initial = null)
+    if (user?.isPremium != true) {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("👑", fontSize = 28.sp)
+            Spacer(Modifier.height(6.dp))
+            Text(S.get(R.string.story_text_premium), color = Color.White, textAlign = TextAlign.Center)
+        }
+        return
+    }
+    var text by remember { mutableStateOf("") }
+    var color by remember { mutableIntStateOf(TextSticker.colors.first()) }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        androidx.compose.material3.OutlinedTextField(
+            value = text,
+            onValueChange = { text = it.take(TextSticker.MAX_LENGTH) },
+            placeholder = { Text(S.get(R.string.story_text_hint), color = Color.White.copy(alpha = 0.45f)) },
+            textStyle = androidx.compose.ui.text.TextStyle(color = Color(color), fontWeight = FontWeight.Bold, fontSize = 19.sp, textAlign = TextAlign.Center),
+            maxLines = 3,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            TextSticker.colors.forEach { c ->
+                Box(
+                    Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .background(Color(c))
+                        .then(if (c == color) Modifier.border(2.5.dp, Color.White.copy(alpha = 0.9f), CircleShape) else Modifier)
+                        .clickable { color = c }
+                )
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(
+            onClick = {
+                val t = text.trim()
+                if (t.isNotEmpty()) onAdd(Sticker(System.nanoTime(), "", size = 0.6f, imageKey = TextSticker.render(t, color), text = t))
+            },
+            enabled = text.isNotBlank(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
+        ) { Text(S.get(R.string.story_text_add), fontWeight = FontWeight.Bold) }
     }
 }

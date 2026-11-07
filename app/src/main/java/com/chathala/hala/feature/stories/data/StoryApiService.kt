@@ -20,7 +20,9 @@ interface StoryApiService {
         @Header("Authorization") bearer: String,
         @Part image: MultipartBody.Part,
         /** JSON `{place,x,y,size}` — ملصق المدينة، بلا إحداثيات */
-        @Part("locationTag") locationTag: okhttp3.RequestBody? = null
+        @Part("locationTag") locationTag: okhttp3.RequestBody? = null,
+        /** ✍️ نصّ مرسوم على الصورة (هلا+) — يمرّ على الفلاتر */
+        @Part("caption") caption: okhttp3.RequestBody? = null
     ): StoryEnvelope<StoryPublishData>
 
     @POST("api/mobile/stories/text")

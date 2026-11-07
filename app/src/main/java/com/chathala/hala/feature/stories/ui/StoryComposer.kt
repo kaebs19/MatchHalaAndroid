@@ -208,7 +208,7 @@ fun StoryComposerHost(
                 app.appScopeLaunch {
                     var published = 0
                     for (photo in photos) {
-                        when (val r = manager.publishImage(photo.jpeg, photo.locationTag)) {
+                        when (val r = manager.publishImage(photo.jpeg, photo.locationTag, photo.caption)) {
                             is NetworkResult.Success -> published++
                             is NetworkResult.Error -> {
                                 handleError(r)
