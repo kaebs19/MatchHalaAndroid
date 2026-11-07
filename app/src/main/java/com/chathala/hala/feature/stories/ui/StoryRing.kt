@@ -280,7 +280,7 @@ fun AddStoryButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
  * تنبض بهدوء ما دامت هناك قصص لم تُشاهد — وتثبت مع «تقليل الحركة» (مقياس الحركة = 0).
  */
 @Composable
-fun StoriesFeedButton(loading: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun StoriesFeedButton(loading: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, compact: Boolean = false) {
     val app = LocalContext.current.applicationContext as HalaApp
     val statuses by app.storyManager.statuses.collectAsState()
     val hasUnseen = statuses.values.any { it.count > 0 && it.hasUnseen }
@@ -290,7 +290,7 @@ fun StoriesFeedButton(loading: Boolean, onClick: () -> Unit, modifier: Modifier 
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.08f))
             .clickable(enabled = !loading, onClick = onClick)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = if (compact) 9.dp else 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
@@ -307,12 +307,16 @@ fun StoriesFeedButton(loading: Boolean, onClick: () -> Unit, modifier: Modifier 
                 }
             }
         }
-        androidx.compose.foundation.layout.Spacer(Modifier.width(6.dp))
-        androidx.compose.material3.Text(
-            com.chathala.hala.core.i18n.S.get(com.chathala.hala.R.string.stories_feed_button),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        // الشاشات الضيّقة: الحلقة وحدها كي لا يُعصر عنوان الاكتشاف
+        if (!compact) {
+            androidx.compose.foundation.layout.Spacer(Modifier.width(6.dp))
+            androidx.compose.material3.Text(
+                com.chathala.hala.core.i18n.S.get(com.chathala.hala.R.string.stories_feed_button),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1
+            )
+        }
     }
 }
 

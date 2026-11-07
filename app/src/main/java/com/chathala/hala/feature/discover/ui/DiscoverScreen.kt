@@ -399,28 +399,39 @@ private fun TopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         VisitorsPill(isPremium = isPremium, onClick = onVisitorsClick)
         Spacer(Modifier.width(8.dp))
         com.chathala.hala.feature.stories.ui.AddStoryButton(onClick = onAddStory)
         Spacer(Modifier.width(8.dp))
-        com.chathala.hala.feature.stories.ui.StoriesFeedButton(loading = storiesFeedLoading, onClick = onOpenStoriesFeed)
+        com.chathala.hala.feature.stories.ui.StoriesFeedButton(
+            loading = storiesFeedLoading,
+            onClick = onOpenStoriesFeed,
+            compact = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp < 440
+        )
         Column(
-            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+            modifier = Modifier.weight(1f).padding(horizontal = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = S.get(R.string.discover_title),
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onBackground
+                style = (if (androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp < 440)
+                    MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall)
+                    .copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             if (availableLabel != null) {
                 Text(
                     text = availableLabel,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
         }

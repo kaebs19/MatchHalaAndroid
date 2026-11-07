@@ -83,12 +83,11 @@ internal fun EditorStickerPanel(
         busy = true
         scope.launch {
             val place = runCatching {
-                val me = LocationHelper.fetchLastLocation(context) ?: return@runCatching null
-                withContext(Dispatchers.IO) {
-                    @Suppress("DEPRECATION")
-                    Geocoder(context, LocaleManager.locale).getFromLocation(me.lat, me.lng, 1)?.firstOrNull()
-                        ?.let { it.locality ?: it.subAdminArea ?: it.adminArea }
-                }
+                // بلا مهلة كان يدور للأبد حين لا يتوفّر موقع (الجهاز داخل مبنى/محاكٍ)
+                val me = recentLocation(context)
+                    ?: kotlinx.coroutines.withTimeoutOrNull(12_000) { LocationHelper.fetchLastLocation(context) }
+                    ?: return@runCatching null
+                cityName(context, me.lat, me.lng)
             }.getOrNull()
             busy = false
             if (place.isNullOrBlank()) {
@@ -201,4 +200,43 @@ private fun PanelTab(title: String, selected: Boolean, onClick: () -> Unit) {
         Text(title, color = Color.White, fontSize = 13.sp,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
     }
+}
+
+/** اسم المدينة بلغة الواجهة — الواجهة غير المتزامنة على 33+ (المتزامنة تُرجع فارغاً هناك). */
+private suspend fun cityName(context: android.content.Context, lat: Double, lng: Double): String? {
+    if (!Geocoder.isPresent()) return null
+    val geocoder = Geocoder(context, LocaleManager.locale)
+    val address = kotlinx.coroutines.withTimeoutOrNull(10_000) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+                geocoder.getFromLocation(lat, lng, 1, object : Geocoder.GeocodeListener {
+                    override fun onGeocode(list: MutableList<android.location.Address>) {
+                        if (cont.isActive) cont.resume(list.firstOrNull()) {}
+                    }
+                    override fun onError(errorMessage: String?) {
+                        if (cont.isActive) cont.resume(null) {}
+                    }
+                })
+            }
+        } else withContext(Dispatchers.IO) {
+            @Suppress("DEPRECATION")
+            runCatching { geocoder.getFromLocation(lat, lng, 1)?.firstOrNull() }.getOrNull()
+        }
+    } ?: return null
+    return address.locality ?: address.subAdminArea ?: address.adminArea
+}
+
+/** آخر موقع معروف إن كان حديثاً (≤10 دقائق) — المدينة لا تتغيّر في دقائق، وأسرع من طلب جديد. */
+@android.annotation.SuppressLint("MissingPermission")
+private suspend fun recentLocation(context: android.content.Context): com.chathala.hala.core.util.LatLng? {
+    if (!LocationHelper.hasLocationPermission(context)) return null
+    val loc = kotlinx.coroutines.withTimeoutOrNull(3_000) {
+        kotlinx.coroutines.suspendCancellableCoroutine<android.location.Location?> { cont ->
+            com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context).lastLocation
+                .addOnSuccessListener { if (cont.isActive) cont.resume(it) {} }
+                .addOnFailureListener { if (cont.isActive) cont.resume(null) {} }
+        }
+    } ?: return null
+    val ageMs = (android.os.SystemClock.elapsedRealtimeNanos() - loc.elapsedRealtimeNanos) / 1_000_000
+    return if (ageMs <= 10 * 60_000) com.chathala.hala.core.util.LatLng(loc.latitude, loc.longitude, loc.accuracy) else null
 }
