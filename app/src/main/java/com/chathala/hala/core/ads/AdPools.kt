@@ -85,7 +85,8 @@ internal object BannerAdPool {
     private fun create(activity: Activity, key: String, unitId: String, width: Int): Slot {
         val view = AdView(activity).apply {
             adUnitId = unitId
-            setAdSize(AdSize.getLargeAnchoredAdaptiveBannerAdSize(activity, width))
+            // المعيار (≈50–60dp) لا «الكبير» (≈100dp) — كان يأخذ مساحة كبيرة من الاكتشاف
+            setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, width))
         }
         val slot = Slot(view, width, unitId, activity)
         view.adListener = object : AdListener() {

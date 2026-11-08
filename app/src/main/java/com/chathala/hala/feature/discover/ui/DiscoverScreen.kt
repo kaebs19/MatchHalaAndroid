@@ -219,7 +219,8 @@ fun DiscoverScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopBar(
-                availableLabel = availableUsersLabel(state.total),
+                // بلا «أكثر من 100 شخص» — طلب المالك
+                availableLabel = null,
                 hasActiveFilters = hasActiveFilters(state.filters),
                 isPremium = isPremium,
                 onSearchClick = onOpenSearch,
@@ -402,14 +403,13 @@ private fun TopBar(
             .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        VisitorsPill(isPremium = isPremium, onClick = onVisitorsClick)
-        Spacer(Modifier.width(8.dp))
+        // الزوّار أُزيلوا من الاكتشاف (طلب المالك) — يبقى مدخلهم في «ملفي»
         com.chathala.hala.feature.stories.ui.AddStoryButton(onClick = onAddStory)
         Spacer(Modifier.width(8.dp))
         com.chathala.hala.feature.stories.ui.StoriesFeedButton(
             loading = storiesFeedLoading,
             onClick = onOpenStoriesFeed,
-            compact = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp < 440
+            compact = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp < 360
         )
         Column(
             modifier = Modifier.weight(1f).padding(horizontal = 6.dp),
@@ -417,9 +417,7 @@ private fun TopBar(
         ) {
             Text(
                 text = S.get(R.string.discover_title),
-                style = (if (androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp < 440)
-                    MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall)
-                    .copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
                 softWrap = false,
@@ -460,43 +458,6 @@ private fun TopBar(
                         .background(MaterialTheme.colorScheme.primary)
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun VisitorsPill(isPremium: Boolean, onClick: () -> Unit) {
-    Box {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Visibility,
-                contentDescription = S.get(R.string.visitors_title_short),
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                text = S.get(R.string.visitors_title_short),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        if (!isPremium) {
-            Icon(
-                imageVector = Icons.Filled.Star,
-                contentDescription = null,
-                tint = Color(0xFFFFC107),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(12.dp)
-            )
         }
     }
 }
